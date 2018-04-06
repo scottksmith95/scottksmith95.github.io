@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Azure | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/azure/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Using secure cookies in Node on Azure]]></title>
+    <link href="http://scottksmith.com/blog/2014/08/22/using-secure-cookies-in-node-on-azure/"/>
+    <updated>2014-08-22T12:36:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2014/08/22/using-secure-cookies-in-node-on-azure</id>
+    <content type="html"><![CDATA[<p>In most cases, using secure cookies works just fine. As long as you are using a secure endpoint over HTTPS, the server application will send back cookies to the client with the secure flag set (assuming you have it configured to do so).</p>
+
+<p>When using systems like Heroku and Azure, the secure endpoint is terminated before your application and proxied to you. This means that your application is actually not running on a secure port or protocol. The way your application knows the connection could be considered secure is from the addition of the X-Protocol-Proto header from the proxy.</p>
+
+<!-- more -->
+
+
+<p>In most cases this is just fine because web application frameworks like Express will watch for this header to know the application is running behind a reverse proxy. If you have configured Express to trust this proxy it will consider the request secure. Once it considers it secure, it will allow the setting of cookies that are marked to be secure.</p>
+
+<p>There is a problem with this on Azure that isn't obvious at first. The Azure proxy does not add the X-Protocol-Proto header. Instead it adds x-arr-ssl. This means that even though the request could be considered secure, Express does not know that so it will not set any cookies in the response that are marked as secure.</p>
+
+<p>In order to get secure cookies to work in Azure you will need to trick Express.</p>
+
+<p>What you need to do is add the following anonymous function as middleware before you attempt to set any secure cookies.</p>
+
+<p>```javascript
+//Tell Express that we're running behind a
+//reverse proxy that supplies https for you
+app.set('trust proxy', 1);</p>
+
+<p>//Add middleware that will trick Express
+//into thinking the request is secure
+app.use(function(req, res, next) {
+  if(req.headers['x-arr-ssl'] &amp;&amp; !req.headers['x-forwarded-proto']) {</p>
+
+<pre><code>req.headers['x-forwarded-proto'] = 'https';
+</code></pre>
+
+<p>  }
+  return next();
+});
+```</p>
+
+<p>What we have done is setup code to watch for the x-arr-ssl header and set the x-forwarded-proto header. Express will now see this header set as https and secure cookies will be sent to the client.</p>
+
+<p>Edit August 23rd, 2014: As mentioned in the comments by Ranjith, there is a setting called enableXFF in the web.config/iisde.yml that can be set to true to enable the addition of the X-Forwarded-Proto header.</p>
+]]></content>
+  </entry>
+  
+</feed>

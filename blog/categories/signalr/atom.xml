@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[SignalR | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/signalr/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[SignalR: Awesome Real-Time with .NET - Part 2]]></title>
+    <link href="http://scottksmith.com/blog/2012/10/31/signalr-awesome-real-time-with-net-part-2/"/>
+    <updated>2012-10-31T14:59:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/10/31/signalr-awesome-real-time-with-net-part-2</id>
+    <content type="html"><![CDATA[<p>Welcome to part two of the series SignalR: Awesome Real-Time with .NET.</p>
+
+<p>Part 1 - <a href="http://scottksmith95.wordpress.com/2012/10/30/signalr-awesome-real-time-with-net/">SignalR: Awesome Real-Time with .NET</a></p>
+
+<p>Part 2 - SignalR: Awesome Real-Time with .NET - Part 2</p>
+
+<p>For this post, we will start where we left off from part one. If you don't want to follow part one and create the solution, project, code, etc, you can get the source on <a href="https://github.com/scottksmith95/SignalRTutorial">GitHub</a>.</p>
+
+<p><strong>Step 1 - Specifying the route for the Hub</strong></p>
+
+<p>Because Hubs are at a higher level than PersistentConnections, there is no need to manually set the route for the Hub. Some of the magic I talked about before does this for us automatically by creating the route /SignalR. To change the route for the Hub you need to register the route in the Global.asax file and update any client side references to the Hub.</p>
+
+<!-- more -->
+
+
+<p>Update Global.asax to change the route to /SignalR2</p>
+
+<pre>using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Http;
+using System.Web.Mvc;
+using System.Web.Routing;
+using SignalR;
+
+namespace SignalRTutorial
+{
+    // Note: For instructions on enabling IIS6 or IIS7 classic mode, 
+    // visit http://go.microsoft.com/?LinkId=9394801
+    public class MvcApplication : System.Web.HttpApplication
+    {
+        protected void Application_Start()
+        {
+            RouteTable.Routes.MapHubs("~/SignalR2");
+
+            AreaRegistration.RegisterAllAreas();
+
+            WebApiConfig.Register(GlobalConfiguration.Configuration);
+            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+        }
+    }
+}</pre>
+
+
+<p>Update your client side code in Index.cshtml to use the new route</p>
+
+<pre>&lt;script src="http://scottksmith.com/SignalR2/Hubs"&gt;&lt;/script&gt;</pre>
+
+
+<p><strong>Step 2 - Specifying the name of the Hub</strong></p>
+
+<p>Another thing that is done automatically is the name of the Hub itself. By default, the name we use client side to reference the Hub is the same as the Type of the Hub. In our code, this is TagHub which we reference with</p>
+
+<pre>$.connection.tagHub;</pre>
+
+
+<p>If we want to change it to something else, we only have to decorate our TagHub class with the HubName attribute.</p>
+
+<p>Decorate the TagHub class in TagHub.cs with the HubName attribute using tagHub as our name.</p>
+
+<pre>[HubName("ourTagHub")]
+public class TagHub : Hub</pre>
+
+
+<p>Because we changed the name of our Hub, we also need to update our reference to this Hub client side.</p>
+
+<p>Update your client side code in Index.cshtml to reference the new Hub name</p>
+
+<pre>var tagHub = $.connection.ourTagHub;</pre>
+
+
+<p><strong>Step 3 - Detecting connects and reconnects</strong></p>
+
+<p>It is pretty straightforward to detect connects and reconnects in your Hub. All you have to do is implement IConnected on your Hub. There are two functions that need to be implemented, Connect and Reconnect. Update your TagHub class by implementing IConnected.</p>
+
+<pre>using System.Collections.Generic;
+using System.Threading.Tasks;
+using SignalR.Hubs;
+
+namespace SignalRTutorial.Hubs
+{
+    [HubName("ourTagHub")]
+    public class TagHub : Hub, IConnected
+    {
+        static List _tags = new List();
+
+        static TagHub()
+        {
+            _tags.Add("c#");
+            _tags.Add(".NET");
+            _tags.Add("SignalR");
+        }
+
+        public void getTags()
+        {
+            //Call the initTags method on the calling client
+            Caller.initTags(_tags);
+        }
+
+        public void setTag(string tag)
+        {
+            //Add the new tag to the list of tags
+            _tags.Add(tag);
+
+            //Call the addTag method on all connected clients
+            Clients.addTag(tag);
+        }
+
+        public Task Connect()
+        {
+            return Clients.joined(Context.ConnectionId);
+        }
+
+        public Task Reconnect(IEnumerable groups)
+        {
+            return Clients.rejoined(Context.ConnectionId);
+        }
+    }
+}</pre>
+
+
+<p>As you can see, the Connect and Reconnect methods are making calls to all of our connected clients. Before we implement the client side code to support these calls, I want to point out Context.ConnectionId. Context.ConnectionId is the unique id assigned to the current connection and caller. The Caller property we used before to access the caller is the same thing as Clients[Context.ConnectionId]. The Context.ConnectionId is something that can be stored and used to access connections later.</p>
+
+<p>Here is the client side code needed to support the two new calls being made by our Hub. First add the following markup as the first element inside the &lt;body&gt; tag.</p>
+
+<pre>&lt;div style="float: right"&gt;
+    &lt;ul id="connections"&gt;&lt;/ul&gt;
+&lt;/div&gt;</pre>
+
+
+<p>Next add these two methods just below the tagHub.addTag method.</p>
+
+<pre>tagHub.joined = function (connectionId) {
+    $('#connections').append('&lt;li&gt;Connect: ' + connectionId + '&lt;/li&gt;');
+}
+
+tagHub.rejoined = function (connectionId) {
+    $('#connections').append('&lt;li&gt;Reconnect: ' + connectionId + '&lt;/li&gt;');
+}</pre>
+
+
+<p><strong>Step 4 - Detecting disconnects</strong></p>
+
+<p>Detecting disconnects is very similar to how we detected connects. This time we need to implement IDisconnect on our Hub and the method Disconnect.</p>
+
+<p>First implement IDisconnect on your TagHub class and then add the following method.</p>
+
+<pre>public class TagHub : Hub, IConnected, IDisconnect
+{
+
+    public Task Disconnect()
+    {
+        return Clients.leave(Context.ConnectionId);
+    }
+
+}</pre>
+
+
+<p>Next you will need to update the client side code and add the following method.</p>
+
+<pre>tagHub.leave = function (connectionId) {
+    $('#connections').append('&lt;li&gt;Disconnect: ' + connectionId + '&lt;/li&gt;');
+}</pre>
+
+
+<p><strong>Step 5 - State between client and server</strong></p>
+
+<p>It is very easy to  maintain state between the client and server. Any state sent by the client can be accessed by the server Hub via the Caller property. The server Hub can also set state that will be accessible by the client by setting any property on Caller. In our application you would do this by setting any property you want client side on the tagHub variable such as tagHub.name = 'scott';. You would then be able to access this server side in our Hub with Caller.name. You can also create a new property server side by using the  Caller property doing something like Caller.isCool = 'true';.</p>
+
+<p><strong>Step 6 - Broadcasting over a Hub outside of a Hub</strong></p>
+
+<p>There may be cases where you want to broadcast over a Hub from outside of the Hub itself. One example would be an action on a controller you want to be able to broadcast to all connected clients when it is called.</p>
+
+<p>Update the HomeController with the following code.</p>
+
+<pre>using SignalR;
+using SignalRTutorial.Hubs;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace SignalRTutorial.Controllers
+{
+    public class HomeController : Controller
+    {
+        //
+        // GET: /Home/
+
+        public ActionResult Index()
+        {
+            return View();
+        }
+
+        public void Notify()
+        {
+            var context = GlobalHost.ConnectionManager.GetHubContext&lt;TagHub&gt;();
+            context.Clients.addTag("notify called");
+        }
+    }
+}</pre>
+
+
+<p>The newly created Notify action on the Home controller gets the context to our TagHub. With this context we can now make calls to the clients via the Caller or Clients property.</p>
+
+<p><strong>Conclusion</strong></p>
+
+<p>That is it for now! Stayed tuned for part 3.</p>
+
+<p>The final source code can be found <a href="https://github.com/scottksmith95/SignalRTutorial-Part2">GitHub</a>.</p>
+
+<p><strong>Further reading</strong></p>
+
+<p><a href="https://github.com/SignalR/SignalR/wiki">SignalR official documentation
+</a></p>
+
+<p><a href="http://www.codeproject.com/Articles/322154/ASP-NET-MVC-SIngalR-and-Knockout-based-Real-time-U">ASP.NET MVC, SignalR and Knockout...</a></p>
+
+<p><a href="http://www.d80.co.uk/post/2011/10/21/SignalR.aspx">signalr tutorial with knockoutjs</a></p>
+
+<p><a href="http://www.bradygaster.com/testing-signalr-connections-with-nunit">Testing SignalR Connections with NUnit</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[SignalR: Awesome Real-Time with .NET]]></title>
+    <link href="http://scottksmith.com/blog/2012/10/30/signalr-awesome-real-time-with-net/"/>
+    <updated>2012-10-30T14:53:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/10/30/signalr-awesome-real-time-with-net</id>
+    <content type="html"><![CDATA[<p>Welcome to part one of the series SignalR: Awesome Real-Time with .NET</p>
+
+<p>Part 1 - SignalR: Awesome Real-Time with .NET</p>
+
+<p>Part 2 - <a href="http://scottksmith95.wordpress.com/2012/10/31/signalr-awesome-real-time-with-net-part-2/">SignalR: Awesome Real-Time with .NET - Part 2</a></p>
+
+<p><strong>What is SignalR?</strong></p>
+
+<p>SignalR is an async signaling library for .NET to help build real-time, multi-user interactive web applications</p>
+
+<p>Or...</p>
+
+<p>A real cool .NET framework hosted in ASP.NET and a JavaScript library (on the client side that helps build collaborative web apps quickly and painlessly. It is open source and freely available on <a href="https://github.com/SignalR/SignalR">GitHub</a>.</p>
+
+<p>And...</p>
+
+<p>It doesn't have to be hosted in ASP.NET. It can also be hosted using OWIN (Open Web Interface for .NET) or self host (console, windows service, azure, etc.).</p>
+
+<p>A JavaScript library isn't the only client side implementation as well. As of today, there are jQuery, Native .NET, WP7, iOS, Silverlight, WinRT, and Android (via Mono) implementations.</p>
+
+<!-- more -->
+
+
+<p><strong>What does it solve?</strong></p>
+
+<p>Pushing data from the server to the client (not just browser clients) has always been a tough problem. SignalR makes it dead easy and handles all the heavy lifting for you.</p>
+
+<p>SignalR abstracts the raw technique of keeping connections open between a client and a server. SignalR uses a fallback mechanism to connect the browser to the server. After an initial negotiation request the following transports are tried in order until a successful connection can be made: WebSockets, Server Sent Events (EventSource), Forever Frame, or Ajax long polling.</p>
+
+<p><strong>Implementations</strong></p>
+
+<p>There are two choices when developing with SignalR, PersistentConnections and Hubs.</p>
+
+<p>PersistentConnections - A PersistentConnection is the base class that has an api for exposing a SignalR service over http.</p>
+
+<p>Hubs - Hubs provide a higher level RPC framework over a PersistentConnection. If you have different types of messages that you want to send between server and client then hubs is recommended so you don't have to do your own dispatching.</p>
+
+<p>For this article and tutorial, we will be focusing on Hubs.</p>
+
+<p><strong>Time to Code</strong></p>
+
+<p>For this tutorial, we will be using <a title="Visual Studio 2012" href="http://www.microsoft.com/en-us/download/details.aspx?id=34673">Visual Studio 2012</a> with <a title="MVC 4" href="http://www.asp.net/mvc/mvc4">ASP.NET MVC 4</a>.</p>
+
+<p><strong>Step 1 - Create an empty ASP.NET MVC 4 web application</strong></p>
+
+<p>File -&gt; New Project -&gt; Web -&gt; ASP.NET MVC 4 Web Application. Call your project anything you like. I used SignalRTutorial .</p>
+
+<p><a href="http://scottksmith95.files.wordpress.com/2012/10/01.png"><img class="alignnone size-full wp-image-125" title="01" alt="" src="http://scottksmith95.files.wordpress.com/2012/10/01.png" height="409" width="593" /></a></p>
+
+<p><a href="http://scottksmith95.files.wordpress.com/2012/10/02.png"><img class="alignnone size-full wp-image-126" title="02" alt="" src="http://scottksmith95.files.wordpress.com/2012/10/02.png" height="598" width="593" /></a></p>
+
+<p><strong>Step 2 - Add the SignalR package via NuGet</strong></p>
+
+<p>Right click on the newly created project (in my case it is called SignalRTutorial) and click Manage NuGet Packages. Search online for SignalR and click install for the package named SignalR. It will automatically add all needed dependencies for you.</p>
+
+<p><a href="http://scottksmith95.files.wordpress.com/2012/10/03.png"><img class="alignnone size-full wp-image-127" title="03" alt="" src="http://scottksmith95.files.wordpress.com/2012/10/03.png" height="486" width="593" /></a></p>
+
+<p><strong>Step 3 - Create the Home Controller</strong></p>
+
+<p>Right click on the folder labeled Controllers and select Add -&gt; Controller. Name it HomeController and make sure the "Empty MVC controller" template is selected.</p>
+
+<p><a href="http://scottksmith95.files.wordpress.com/2012/10/04.png"><img class="alignnone size-full wp-image-128" title="04" alt="" src="http://scottksmith95.files.wordpress.com/2012/10/04.png" height="385" width="593" /></a></p>
+
+<p><strong>Step 4 - Create the Index view for the Home Controller</strong></p>
+
+<p>In the newly created HomeController.cs class, right click the Index method and select "Add View". Be sure to uncheck "Use a layout or master page" but leave everything else alone.</p>
+
+<p><a href="http://scottksmith95.files.wordpress.com/2012/10/05.png"><img class="alignnone size-full wp-image-129" title="05" alt="" src="http://scottksmith95.files.wordpress.com/2012/10/05.png" height="504" width="511" /></a></p>
+
+<p><strong>Step 5 - Make sure everything is working</strong></p>
+
+<p>Take a moment to make sure your project builds and run it using Ctrl-F5. You should see the web page open with nothing on the page. This is a good thing.</p>
+
+<p><strong>Step 6 - Create a simple SignalR Hub</strong></p>
+
+<p>Create a folder in your MVC 4 project called Hubs. This is just for organization and clarity. You are not required to have your hubs inside a folder called Hubs.</p>
+
+<p>Create a class called TagHub inside the Hubs folder. Make sure to have your class inherit from SignalR.Hubs.Hub. This will allow SignalR to work its magic.</p>
+
+<pre>using System.Collections.Generic;
+using SignalR.Hubs;
+
+namespace SignalRTutorial.Hubs
+{
+    public class TagHub : Hub
+    {
+        static List _tags = new List();
+
+        static TagHub()
+        {
+            _tags.Add("c#");
+            _tags.Add(".NET");
+            _tags.Add("SignalR");
+        }
+
+        public void getTags()
+        {
+            //Call the initTags method on the calling client
+            Caller.initTags(_tags);
+        }
+    }
+}</pre>
+
+
+<p><strong>Step 7 - Update your Index view for the Home Controller</strong></p>
+
+<p>Open Index.cshtml that was created earlier and modify it to the following code.</p>
+
+<pre>@{
+Layout = null;
+}
+
+&lt;!DOCTYPE html&gt;
+
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta name="viewport" content="width=device-width" /&gt;
+    &lt;title&gt;Index&lt;/title&gt;
+    &lt;script src="~/Scripts/jquery-1.6.4.js"&gt;&lt;/script&gt;
+    &lt;script src="~/Scripts/jquery.signalR-0.5.3.js"&gt;&lt;/script&gt;
+    &lt;script src="http://scottksmith.com/SignalR/Hubs"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;ul id="tags"&gt;&lt;/ul&gt;
+
+    &lt;script type="text/javascript"&gt;
+        $(function () {
+            var tagHub = $.connection.tagHub;
+
+            tagHub.initTags = function (tags) {
+                $.each(tags, function (index, value) {
+                    $('#tags').append('&lt;li&gt;' + value + '&lt;/li&gt;');
+                });
+            };
+
+            $.connection.hub.start()
+                .done(function () {
+                    tagHub.getTags();
+                })
+                .fail(function () {
+                    alert("Could not Connect!");
+                });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+
+
+<p><strong>Step 8 - Run the project and see what happens</strong></p>
+
+<p>So what exactly is going on here?</p>
+
+<p>The Caller property in our Hub is provided by SignalR as part of the Hub class definition. This is a  dynamic object that you can use to invoke a client side method written in JavaScript on the connection making the call to getTags. SignalR does the plumbing using web sockets, long polling, or what ever, and we don’t care. SignalR also generates a client side proxy hub to invoke methods in our TagHub. For example, using the client side proxy hub our client invokes the getTags method in the above Hub during initialization, the client invoking the getTags method (Caller) will get a callback to it’s initTags JavaScript method, with all the existing tags.</p>
+
+<p>So the order of events are:</p>
+
+<ol>
+    <li>Page loads</li>
+    <li>Client side
+<ol>
+    <li>var tagHub = $.connection.tagHub;
+<ol>
+    <li>Generates a client side proxy hub to our TagHub object</li>
+</ol>
+</li>
+    <li>$.connection.hub.start();
+<ol>
+    <li>Starts our connection to the hubs</li>
+</ol>
+</li>
+    <li>tagHub.getTags();
+<ol>
+    <li>Calls the getTags() method on the server side TabHub object</li>
+</ol>
+</li>
+</ol>
+</li>
+    <li>Server side
+<ol>
+    <li>Caller.initTags(_tags);
+<ol>
+    <li>Calls the initTags(tags) method on the client side</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+
+
+<p><strong>Step 9 - Supporting Clients on our Hub</strong></p>
+
+<p>We will now add support to our Tag web application to allow adding new tags. The one thing we want though is for all connected clients to have their list of tags updated when new ones are added.</p>
+
+<p>Add the following method to your TagHub class:</p>
+
+<pre>public void setTag(string tag)
+{
+    //Add the new tag to the list of tags
+    _tags.Add(tag);
+
+    //Call the addTag method on all connected clients
+    Clients.addTag(tag);
+}</pre>
+
+
+<p>Add the following HTML just above the unordered list showing the list of tags:</p>
+
+<pre>&lt;div&gt;
+    &lt;input id="newTagText" type="text" placeholder="Enter a new tag" /&gt;
+    &lt;input id="newTagSubmit" type="submit" value="Add new tag" /&gt;
+&lt;/div&gt;</pre>
+
+
+<p>Finally add the following methods to your JavaScript:</p>
+
+<pre>tagHub.addTag = function (tag) {
+    $('#tags').append('&lt;li&gt;' + tag + '&lt;/li&gt;');
+};
+
+$('#newTagSubmit').click(function () {
+    var tag = $('#newTagText').attr('value');
+    tagHub.setTag(tag);
+});</pre>
+
+
+<p><strong>Step 10 - Run the project again, open the page in more than one window, and add tags</strong></p>
+
+<p>So what exactly is going on here?</p>
+
+<p>The Clients property in our Hub is provided by SignalR as part of the Hub class definition. This is a  dynamic object that you can use to invoke a client side method written in JavaScript on all connected clients. Using the client side proxy hub our client invokes the setTags method in the TagHub, all connected clients will get a callback to it’s addTags JavaScript method, with the new tag.</p>
+
+<p>So the order of events are:</p>
+
+<ol>
+    <li>Page loads</li>
+    <li>Client side
+<ol>
+    <li>var tagHub = $.connection.tagHub;
+<ol>
+    <li>Generates a client side proxy hub to our TagHub object</li>
+</ol>
+</li>
+    <li>$.connection.hub.start();
+<ol>
+    <li>Starts our connection to the hubs</li>
+</ol>
+</li>
+    <li>tagHub.setTag(tag);
+<ol>
+    <li>Calls the setTag() method on the server side TagHub object</li>
+</ol>
+</li>
+</ol>
+</li>
+    <li>Server side
+<ol>
+    <li>Clients.addTag(tag);
+<ol>
+    <li>Calls the addTags(tag) method on all connected clients (client side)</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+
+
+<p><strong>Conclusion</strong></p>
+
+<p>That is it for now! With very little code, effort, and complexity we were able to implement a collaborative web application.</p>
+
+<p>The final source code can be found <a href="https://github.com/scottksmith95/SignalRTutorial">GitHub</a>.</p>
+
+<p><strong>Further reading</strong></p>
+
+<p><a href="https://github.com/SignalR/SignalR/wiki">SignalR official documentation
+</a></p>
+
+<p><a href="http://www.codeproject.com/Articles/322154/ASP-NET-MVC-SIngalR-and-Knockout-based-Real-time-U">ASP.NET MVC, SignalR and Knockout...</a></p>
+
+<p><a href="http://www.d80.co.uk/post/2011/10/21/SignalR.aspx">signalr tutorial with knockoutjs</a></p>
+
+<p><a href="http://www.bradygaster.com/testing-signalr-connections-with-nunit">Testing SignalR Connections with NUnit</a></p>
+]]></content>
+  </entry>
+  
+</feed>

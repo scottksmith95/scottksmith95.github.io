@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Visual Studio | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/visual-studio/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Productivity Power Tools 2012]]></title>
+    <link href="http://scottksmith.com/blog/2012/11/08/productivity-power-tools-2012/"/>
+    <updated>2012-11-08T15:00:00-08:00</updated>
+    <id>http://scottksmith.com/blog/2012/11/08/productivity-power-tools-2012</id>
+    <content type="html"><![CDATA[<p>The Visual Studio Engineering Team has released the productivity power tools for Visual Studio 2012.</p>
+
+<p><a href="http://blogs.msdn.com/b/visualstudio/archive/2012/11/07/productivity-power-tools-2012.aspx">http://blogs.msdn.com/b/visualstudio/archive/2012/11/07/productivity-power-tools-2012.aspx</a></p>
+
+<!-- more -->
+
+
+<p>Here are the details from their site:</p>
+
+<blockquote>By popular request, the new version of the Productivity Power Tools has arrived for Visual Studio 2012! These tools are the fruit of a few passionate engineers on the Visual Studio team that love sharing the power of Visual Studio with customers.
+
+The Productivity Power Tools are one of the top gallery extensions for Visual Studio 2010. With your feedback, some of the features made it into Visual Studio 2012 including Quick Find, Solution Explorer (nee Navigator), Quick Launch, and the new Add Reference dialog.
+
+The new edition enables the rest of the tools for Visual Studio 2012 and adds some new ones. In this post, we’d like to tell you about what is included in this power-packed release, a refresher for those of you that used the 2010 version and an introduction to those of you that haven’t! We’d love to hear what you think about these tools, please send us your feedback on the pack’s <a href="http://visualstudiogallery.msdn.microsoft.com/3a96a4dc-ba9c-4589-92c5-640e07332afd">Gallery Page</a>.
+<br />
+<br />
+<h1>Previously Available Tools</h1>
+Many of the tools included in the 2010 version of the Productivity Power Tools are available in this version as well. Here is a summary:
+<ul>
+    <li><strong><em>Enhanced Scrollbar</em></strong><em> </em>provides a source map of your file in the scroll bar that allow you to easily see interesting artifacts such as edits, breakpoints, bookmarks, errors and warnings and make it easy to navigate between them.</li>
+    <li><strong><em>Fix Mixed Tabs</em></strong> will warn you when you open or save a file that has a mixture of tabs &amp; spaces and offers to fix it for you.</li>
+    <li><strong><em>Automatic Brace Completion</em></strong> will automatically insert the closing code construct when the opening construct is typed for VB &amp; C#.</li>
+    <li><strong><em>Move Line Up/Down Commands</em></strong> easily moves the current line of code (or selected multiple lines) up or down using the Alt+Up Arrow &amp; Alt+Down Arrow keys.</li>
+    <li><strong><em>Organize VB Imports</em></strong>, that can be found in the context menu, allows you to sort the imports logically and remove the ones that aren’t being used.</li>
+    <li><strong><em>Colorized Parameter Help</em></strong> adds syntax highlighting to the contents of the Parameter Help window for C# &amp; VB.</li>
+    <li><strong><em>Column Guides</em></strong> allows you to draw a vertical line in the code editor from the context menu.</li>
+    <li><strong><em>Align Assignments</em></strong> makes your code more readable by aligning assignment statements when you type Ctrl+Alt+].</li>
+    <li><strong><em>Middle Click Scrolling</em></strong> Press down on your mouse scroll wheel and move the mouse to quickly scroll through your document.</li>
+    <li><strong><em>Ctrl + Click Go To Definition</em></strong> makes symbols in your code look like hyperlinks when you hold down the Ctrl key, and will navigate to their definition when you click the hyperlink.</li>
+    <li><strong><em>HTML Copy</em></strong> means copy/cut in the editor is saved in HTML format in your clipboard for rich pasting.</li>
+    <li><strong><em>Control via Tools Options</em></strong> means you are in control of which of these extensions you want on/off.</li>
+</ul>
+We received positive feedback on the extended capabilities of the Document Tab Well in the last Power Tools release. Some of the capabilities – such as floating document wells and pinned tabs – made it into Visual Studio 2012 and the rest are available in this new version. We rewrote most of this extension as the area underwent significant changes in Visual Studio 2012. The 2012 pack offers favorites like custom colorized tabs, custom tab locations and a moveable close document button:
+
+<a href="http://blogs.msdn.com/cfs-file.ashx/__key/communityserver-blogs-components-weblogfiles/00-00-01-29-92-metablogapi/2465.image_5F00_3CE3EABE.png"><img title="image" alt="image" src="http://blogs.msdn.com/cfs-file.ashx/__key/communityserver-blogs-components-weblogfiles/00-00-01-29-92-metablogapi/4606.image_5F00_thumb_5F00_6A650A81.png" height="392" width="576" /></a>
+
+You can control and customize which capabilities you want to use through the Tab Well’s tools/options page.
+<br />
+<br />
+<h1>New in this Release</h1>
+We have three additions to the Productivity Power Tools family. <strong>Color Printing</strong> from the editor and Power Commands for Visual Studio both shipped as separate extensions for Visual Studio 2010 and were very popular, so we added them to the pack. The <strong>Power Commands</strong> extension includes many useful commands, such as Clear All Output Panes, Email a Snippet of Code and Edit Project Files. For the full list, please visit our <a href="http://visualstudiogallery.msdn.microsoft.com/3a96a4dc-ba9c-4589-92c5-640e07332afd">Gallery Page</a>.
+
+We created a brand new extension, <strong>Quick Tasks</strong>, that uses Quick Launch to instantly perform common tasks. We identified a number of popular tasks in Visual Studio, such as collapsing and expanding regions, toggling line numbers and changing font size and made them available in the Quick Launch window when typing “<em>@tasks</em>“ as a prefix. The drop down list will show all the available tasks, and typing any letters in the task name will further filter the list for quicker location of the desired task. Here’s a quick screenshot:
+
+<a href="http://blogs.msdn.com/cfs-file.ashx/__key/communityserver-blogs-components-weblogfiles/00-00-01-29-92-metablogapi/1057.image_5F00_581C43BF.png"><img title="image" alt="image" src="http://blogs.msdn.com/cfs-file.ashx/__key/communityserver-blogs-components-weblogfiles/00-00-01-29-92-metablogapi/1070.image_5F00_thumb_5F00_7EEA59FF.png" height="371" width="576" /></a></blockquote>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Array Visualizer]]></title>
+    <link href="http://scottksmith.com/blog/2012/05/15/array-visualizer/"/>
+    <updated>2012-05-15T13:45:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/05/15/array-visualizer</id>
+    <content type="html"><![CDATA[<p>Found this the other day and wanted to share it. Array Visualizer is a free, open source extension for Visual Studio. It provides the ability to display 2D, 3D, and 4D arrays visually while debugging an application.</p>
+
+
+<p><a href="http://visualstudiogallery.msdn.microsoft.com/eedc48e7-5169-40d3-b602-ad451990a420">http://visualstudiogallery.msdn.microsoft.com/eedc48e7-5169-40d3-b602-ad451990a420</a></p>
+
+]]></content>
+  </entry>
+  
+</feed>

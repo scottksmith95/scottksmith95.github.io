@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[npm | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/npm/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[8 NPM tips for better Node development]]></title>
+    <link href="http://scottksmith.com/blog/2014/06/25/8-npm-tips-for-better-node-development/"/>
+    <updated>2014-06-25T11:20:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2014/06/25/8-npm-tips-for-better-node-development</id>
+    <content type="html"><![CDATA[<p><a href="https://www.npmjs.org/">npm</a> is the official package manager for Node.js. It is automatically installed when you install Node.js. You use npm through the command line to install, uninstall, update, and manage packages for your Node.js application. It can also be used to install packages locally or globally to provide functionality on the command line and not necessarily within your Node.js application.</p>
+
+<p>In this article, we will explore some tips related to npm to help super charge your Node.js development.</p>
+
+<!-- more -->
+
+
+<h2>Tip 1: Install packages locally</h2>
+
+<p><code>tcsh
+npm install &lt;package_name&gt;
+</code></p>
+
+<p>This is the most basic command that installs a package and any packages it depends on. The package will be installed into a folder named <code>node_modules</code> within the current working directory.</p>
+
+<h2>Tip 2: Install packages globally</h2>
+
+<p><code>tcsh
+npm install -g &lt;package_name&gt;
+</code></p>
+
+<p>If you want to install packages and have them available anywhere, you can use the <code>-g</code> optional flag. This will install packages in <code>{prefix}/lib/node_modules</code>, where <code>{prefix}</code> is usually something like <code>/usr/local</code>.</p>
+
+<h2>Tip 3: Install packages as dependencies</h2>
+
+<p><code>tcsh
+npm install &lt;package_name&gt; --save
+</code></p>
+
+<p>When installing packages, you can pass it the optional flag <code>--save</code> which will tell npm to add the package to the <code>dependencies</code> object within the <code>packages.json</code> file.</p>
+
+<p><code>javascript
+"dependencies": {
+  "express": "^4.0.0",
+  "body-parser": "^1.0.2"
+}
+</code></p>
+
+<p>This is critical when depolying your application to production. In most cases you won't be deploying your <code>node_modules</code> folder so it will need to know what packages your application depends on so they can be installed.</p>
+
+<p>This is also useful when working with other developers who may get a copy of your source code but not the <code>node_modules</code> folder. By having these dependencies listed, they can simply run <code>npm install</code> from within the application folder to have npm install all the necessary packages.</p>
+
+<p>You can of course update the <code>packages.json</code> file manually, but this will do it for you automatically.</p>
+
+<h2>Tip 4: Install packages as dev env dependencies</h2>
+
+<p><code>tcsh
+npm install &lt;package_name&gt; --save-dev
+</code></p>
+
+<p>Another optional flag you can us when installing packages is <code>--save-dev</code> which will tell npm to add the package to the <code>devDependencies</code> object within the <code>packages.json</code> file.</p>
+
+<p>```javascript
+"devDependencies": {</p>
+
+<pre><code>"mocha": "^1.18.2"
+</code></pre>
+
+<p>}
+```</p>
+
+<p>This is very useful because this allows you to install packages for test runners, debugging, and more but not have them install in production.</p>
+
+<h2>Tip 5: Install packages as exact version dependencies</h2>
+
+<p><code>tcsh
+npm install &lt;package_name&gt; --save --save-exact
+</code></p>
+
+<p>In some cases you may want to force an exact package version rather than based on a range or approximate. The <code>--save-exact</code> optional flag used in conjunction with the <code>--save</code> flag will do that for you.</p>
+
+<h2>Tip 6: Save time with Nodemon</h2>
+
+<p>Now is a good time to seque into some npm packages that will make things much easier when developing Node applications. <a href="http://nodemon.io/">Nodemon</a> is a utility that will monitor for any changes in your source and automatically restart your server.</p>
+
+<p>You can install it using npm using the following command. I like to install it globally so I can use it for all projects, but you can remove the <code>-g</code> to install it locally instead.</p>
+
+<p><code>tcsh
+npm install -g nodemon
+</code></p>
+
+<p>Now instead of using <code>node server.js</code> to run your application, you can use <code>nodemon server.js</code>. It will watch for any changes in your application and automatically restart your server for you.</p>
+
+<h2>Tip 7: Enable debugging with Node Inspector</h2>
+
+<p><a href="https://github.com/node-inspector/node-inspector">Node Inspector</a> is a debugger interface for Node.js applications that uses the Blink Developer Tools. The really cool thing is that it works almost exactly as the Chrome Developer Tools.</p>
+
+<p>Some of the things you can do with Node Inspector are:</p>
+
+<ul>
+<li>Navigate in your source files</li>
+<li>Set breakpoints (and specify trigger conditions)</li>
+<li>Step over, step in, step out, resume (continue)</li>
+<li>Inspect scopes, variables, object properties</li>
+<li>Hover your mouse over an expression in your source to display its value in a tooltip</li>
+<li>Edit variables and object properties</li>
+<li>Continue to location</li>
+<li>Break on exceptions</li>
+<li>Disable/enable all breakpoints</li>
+</ul>
+
+
+<p>Just like Nodemon, you can install it locally or globally. Use the following command to install it globablly:</p>
+
+<p><code>tcsh
+npm install -g node-inspector
+</code></p>
+
+<p>Once it is installed, you can run it using the following command. This will start the debugger and open your browser.</p>
+
+<p><code>tcsh
+node-debug server.js
+</code></p>
+
+<h2>Tip 8: Exclude node_modules from source control</h2>
+
+<p>If you are using git for your source control, you will want to add <code>node_modules</code> to your <code>.gitignore</code> file. This will exclude the folder and all installed packages from getting committed to source control. When someone else gets the soruce code, they can simply run <code>npm install</code> from within the application folder to have npm pull down all dependent packages.</p>
+
+<h2>Wrap up</h2>
+
+<p>These are but a few tips you can use to help make development Node.js applications easier.</p>
+
+<p>If you have tips or tools you use, please feel free to share them in the comments.</p>
+]]></content>
+  </entry>
+  
+</feed>

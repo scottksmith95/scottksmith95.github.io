@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Videos | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/videos/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[5 Fantastic &amp; Free Screencast Sites For Node Developers]]></title>
+    <link href="http://scottksmith.com/blog/2015/02/26/5-fantastic-and-free-screencast-sites-for-node-developers/"/>
+    <updated>2015-02-26T06:47:00-08:00</updated>
+    <id>http://scottksmith.com/blog/2015/02/26/5-fantastic-and-free-screencast-sites-for-node-developers</id>
+    <content type="html"><![CDATA[<p>While learning and working in Node, screencasts have been very beneficial. Over time I have come across many sites offering videos. Here is a list of my current top 5 every Node developer should know about.</p>
+
+<h3>KnowThen</h3>
+
+<p><a href="https://twitter.com/uknowthen">James Moore</a>, a personal friend of mine, is the newest kid on the block with KnowThen. He created the site to challenge himself to become a better instructor while at the same time creating quality videos for the community. What I really like about KnowThen is how it brings a fresh new look at Node.js by focusing on the bleeding edge. You will find videos on topics such as io.js, JSON Web Tokens, Koajs, Marko, and Generators to name a few.</p>
+
+<p><a href="http://knowthen.com/">http://knowthen.com/</a></p>
+
+<h3>Node Tuts</h3>
+
+<p>After a bit of a hiatus, Node Tuts by <a href="https://twitter.com/yldio">YLD</a> is back and planning to start adding more videos to their site. Node Tuts was born back in the early days of Node (version 0.1) because there weren't many resources around to learn from. There are currently four series to learn from: asynchronous, TCP servers, HTTP API servers, and tools, tips, &amp; tricks.</p>
+
+<p><a href="http://nodetuts.com/">http://nodetuts.com/</a></p>
+
+<h3>Tagtree</h3>
+
+<p>Tagtree, created by <a href="https://twitter.com/hendrikswan">Hendrik Swanepoel</a>, is focused on growing your full stack JavaScript skills. While not solely focused on Node.js, Tagtree brings fantastic screencasts along with some courses on topics such as Node streams, Express, promises, REST APIs, ES6, and lots more.</p>
+
+<p><a href="http://tagtree.tv/">http://tagtree.tv/</a></p>
+
+<h3>Learn All The Nodes</h3>
+
+<p>An oldie but goodie, Learn All The Nodes by <a href="https://twitter.com/bigohstudios">Big-Oh Studios</a> has been around since 2013. Their series are about sharing the things they learn and love. Their videos focus more on short demonstrations of useful tips, tricks, and packages.</p>
+
+<p><a href="http://www.learnallthenodes.com/">http://www.learnallthenodes.com/</a></p>
+
+<h3>StrongLoop</h3>
+
+<p><a href="https://twitter.com/StrongLoop">StrongLoop</a>, whose focus is to deliver expertise and software solutions to help developers be successful with their Node projects, has a great set of videos available to learn from. They currently have over 30 videos focusing on topics such as clustering, performance, debugging, web frameworks, and more.</p>
+
+<p><a href="http://strongloop.com/node-js/videos/">http://strongloop.com/node-js/videos/</a></p>
+
+<h3>Have Favorites of your Own?</h3>
+
+<p>If you have any favorites of you own, please share them in the comments. I am always looking to find more resources for myself and to share with others.</p>
+
+<p>If you found this article or others useful be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+]]></content>
+  </entry>
+  
+</feed>

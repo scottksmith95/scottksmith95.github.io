@@ -1,0 +1,621 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Secure Node Apps Against OWASP Top 10 - Authentication &amp; Sessions - Scott Smith</title>
+  <meta name="author" content="Scott Smith">
+
+  
+  <meta name="description" content="In this multipart series, we will explore some of the the OWASP top web application security flaws including how they work and best practices to protect your application from them. The focus will be &hellip;">
+  <meta name="keywords" content="Node.js, JavaScript, Security, OWASP">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://scottksmith.com/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions">
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@scottksmith95" />
+  <meta name="twitter:title" content="Secure Node Apps Against OWASP Top 10 - Authentication &amp; Sessions - Scott Smith" />
+  <meta name="twitter:description" content="In this multipart series, we will explore some of the the OWASP top web application security flaws including how they work and best practices to protect your application from them. The focus will be &hellip;" />
+  <meta name="twitter:url" content="http://scottksmith.com/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions" />
+
+  <meta property="og:title" content="Secure Node Apps Against OWASP Top 10 - Authentication &amp; Sessions - Scott Smith"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:description" content="In this multipart series, we will explore some of the the OWASP top web application security flaws including how they work and best practices to protect your application from them. The focus will be &hellip;"/>
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+  <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196">
+  <link rel="icon" type="image/png" href="/favicon-160x160.png" sizes="160x160">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <style>
+  #DegreedButton.degreed-28-full,.degreed-28-full {
+    background-color: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+    background-image: url(data:image/png;base64,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) !important;
+    height: 28px !important;
+    width: 162px !important;
+  }
+  </style>
+  <link href="/atom.xml" rel="alternate" title="Scott Smith" type="application/atom+xml">
+
+  <script src="//load.sumome.com/" data-sumo-site-id="0d857e605c25378eb99ef0880f3d471e6d4792fd62b3c1e378fa89057293706c" async="async"></script>
+</head>
+
+<body   >
+  <header role="banner"><div class="logo">
+  <img src="/images/logo.png" alt="Site Logo">
+</div>
+<hgroup>
+  <h1><a href="/">Scott Smith</a></h1>
+  <h2>
+    <a href="/">Blog</a>
+    <a href="/blog/categories/tutorials">Tutorials</a>
+    <a href="/projects">Projects</a>
+    <a href="/speaking">Speaking</a>
+    <a href="/atom.xml" class="rss">RSS</a>
+  </h2>
+</hgroup>
+</header>
+  <div id="main">
+    <div id="content">
+      <div style="padding-top: 0;">
+<article class="hentry" role="article">
+  
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title">Secure Node Apps Against OWASP Top 10 - Authentication &amp; Sessions</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-06-15T10:42:00-07:00" pubdate data-updated="true">Jun 15<span>th</span>, 2015</time>
+      </p>
+    
+    
+      <button style="margin-top: 20px;" onclick="var e=document.createElement('script');e.setAttribute('charset','UTF-8');e.setAttribute('src','https://az287915.vo.msecnd.net/scripts/degreed/media/bookmarklet.js?id=1&v=' + Math.random()*99999999);document.getElementsByTagName('body')[0].appendChild(e)" title="+ Degreed" id="DegreedButton" class="degreed-28-full">+ Degreed</button>
+    
+  </header>
+
+
+<div class="entry-content">
+  <p>Welcome to part 2 of the OWASP security series</p>
+
+<ol>
+<li><a href="/blog/2015/06/08/secure-node-apps-against-owasp-top-10-injection/">Injection</a></li>
+<li><a href="/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/">Broken Authentication &amp; Session Management</a></li>
+<li><a href="/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/">Cross Site Scripting (XSS)</a></li>
+<li><a href="/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/">Cross Site Request Forgery (CSRF)</a></li>
+<li>Using Components with Known Vulnerabilities (Coming soon)</li>
+</ol>
+
+
+<p>In this multipart series, we will explore some of the the <a href="https://www.owasp.org/index.php/Top_10_2013">OWASP top web application security flaws</a> including how they work and best practices to protect your application from them. The focus will be on Express web applications in Node, but the principles shown can be applied to any framework or environment.</p>
+
+<p>This part will cover <a href="https://www.owasp.org/index.php/Top_10_2013-A2-Broken_Authentication_and_Session_Management">broken authentication and session management</a>.</p>
+
+<h3>Broken Authentication and Session Management</h3>
+
+<p>So what exactly is a broken authentication or session management vulnerability? OWASP defines it as follows:</p>
+
+<p>&#8220;Attacker uses leaks or flaws in the authentication or session management functions (e.g., exposed accounts, passwords, session IDs) to impersonate users.&#8221;</p>
+
+<p>&#8220;An attacker can be an anonymous external attacker or a user with their own account who may attempt to steal accounts from others.&#8221;</p>
+
+<p>&#8220;Such flaws may allow some or even all accounts to be attacked. Once successful, the attacker can do anything the victim could do. Privileged accounts are frequently targeted.&#8221;</p>
+
+<p>The following scenarios will highlight some of the ways in which this type of vulnerability can be exploited and best practices to protect against them. Like all things security related, this list should not be considered the only ways in which you could be vulnerable.</p>
+
+<h3>Scenario 1: Plain text passwords</h3>
+
+<p>Surprisingly, there are still many sites that store user passwords in plain text. This becomes obvious when a site gets hacked and all their user&#8217;s information along with passwords are exposed.</p>
+
+<p>This is bad for obvious reasons. Once an attacker knows a user&#8217;s password, they can now log in as that user and do whatever they want.</p>
+
+<p>You should always build your applications assuming you will get hacked or data will get leaked. By taking this approach, you will be much more likely to take precautions to secure sensitive information. User passwords are one of the most important pieces of data to secure.</p>
+
+<p>The best way to secure user passwords is with a strong hash. Encrypting a password is better than plain text but still not as secure as a hash. With encryption, all the attacker needs do is get a hold of the keys and they can determine the password.</p>
+
+<p>One way to hash and verify passwords is with the following code.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">bcrypt</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;bcrypt-nodejs&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">hashPassword</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">password</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">bcrypt</span><span class="p">.</span><span class="nx">genSalt</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">salt</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nx">bcrypt</span><span class="p">.</span><span class="nx">hash</span><span class="p">(</span><span class="nx">password</span><span class="p">,</span> <span class="nx">salt</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">hash</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">hash</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">});</span>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">verifyPassword</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">password</span><span class="p">,</span> <span class="nx">hash</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">bcrypt</span><span class="p">.</span><span class="nx">compare</span><span class="p">(</span><span class="nx">password</span><span class="p">,</span> <span class="nx">hash</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">isMatch</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">isMatch</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'><span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Just because your user&#8217;s passwords are hashed doesn&#8217;t mean you shouldn&#8217;t worry about locking down your application. Even with hashed passwords, an attacker can eventually determine the passwords of some of your user&#8217;s accounts with enough time.</p>
+
+<h3>Scenario 2: Session IDs in the URL</h3>
+
+<p>Session IDs are unique numbers web applications assign to a user for the duration of the user&#8217;s visit. It is used so the web server knows the identify of the user making the request without the user having to log in again.</p>
+
+<p>Because the session ID can be used to identify a user as well as grant permissions, protecting it is very important. By passing the session ID via the URL, you are exposing your application and users to a hacker. Imagine the following request being made to your bank:</p>
+
+<p><strong>https://bank.com/account?sessionid=1234567</strong></p>
+
+<p>Passing session IDs like this can be bad for the following reasons:</p>
+
+<ul>
+<li>Sharing of link grants others full access</li>
+<li>Stored on cache servers</li>
+<li>Stored in browser history</li>
+<li>Leaked through the Referer header</li>
+<li>Leaked through logs not properly protected</li>
+<li>Much more visible and thus more dangerous</li>
+</ul>
+
+
+<p>The solution to this problem is pretty simple. Pass session IDs via cookies and not the URL. The following code is an example Express application that uses cookies for the session ID.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">session</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express-session&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">session</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">secret</span><span class="o">:</span> <span class="s1">&#39;our super secret session secret&#39;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nx">cookie</span><span class="o">:</span> <span class="p">{</span> <span class="nx">maxAge</span><span class="o">:</span> <span class="mi">3600000</span> <span class="p">}</span> <span class="c1">// 2 hours in milliseconds</span>
+</span><span class='line'><span class="p">}));</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Scenario 3: Site accessed over HTTP</h3>
+
+<p>The next scenario where vulnerabilities can occur is if your site is accessed over HTTP.</p>
+
+<p>This can be bad if you are not taking the necessary precautions to protect your users. Imagine if your user is on a public unencrypted wifi network. If your site is over HTTP, it is very easy for someone else on that wifi network to monitor and obtain your session ids. Even if the user is on a secure network, there is no guarantee that a third party somewhere along the route to the web application is not monitoring traffic.</p>
+
+<h4>Solution 1</h4>
+
+<p>The first and most obvious solution here is to run your site over HTTPS. If you have user accounts, users logging in, or session sate you should not run your site over HTTP. It is very affordable and even free solutions exist. By running over HTTPS, you will reduce a significant attack vector within your application.</p>
+
+<h4>Solution 2</h4>
+
+<p>The second solution is to not allow cookies to be sent over HTTP. Even if your site runs over HTTPS, you will very likely still be listening for HTTP requests in order to redirect them to the HTTPS endpoint. Because of this, unless you take measures, a user can still send their session id via the cookie over an unsecured channel.</p>
+
+<p>In order to stop this, you need to use the <code>secure</code> flag for your cookies. This flag, when set in the response that sets the cookie, will tell the browser to only send this cookie over an HTTPS request.</p>
+
+<p>The following Express application from previous examples is updated to show how to do this.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">session</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express-session&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;trust proxy&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">session</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">secret</span><span class="o">:</span> <span class="s1">&#39;our super secret session secret&#39;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nx">cookie</span><span class="o">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">maxAge</span><span class="o">:</span> <span class="mi">3600000</span><span class="p">,</span>
+</span><span class='line'>    <span class="nx">secure</span><span class="o">:</span> <span class="kc">true</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}));</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Here is an example of what the header looks like with both the <code>secure</code> and <code>httpOnly</code> flags set.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='http'><span class='line'><span class="err">Set-Cookie: connect.sid=fjdskfjdsksdfjksa; Domain=favatron.com; Path=/; Expires=Sun, 28 Jun 2015 02:12:41 GMT; Secure</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>Solution 3</h4>
+
+<p>The third solution is to not allow client side scripts access to your cookies. By default, client side JavaScript is able to read your cookies. This means that any third party JavaScript you are including has the potential to read your cookies and use the session id for nefarious purposes.</p>
+
+<p>In order to stop this, you need to use the <code>httpOnly</code> flag for your cookies. This flag, when set in the response that sets the cookie, will tell the browser to not allow any client side JavaScript access to it. The cookie is only sent over requests.</p>
+
+<p>The following Express application from previous examples is updated to show how to do this.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">session</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express-session&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">session</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">secret</span><span class="o">:</span> <span class="s1">&#39;our super secret session secret&#39;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nx">cookie</span><span class="o">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">maxAge</span><span class="o">:</span> <span class="mi">3600000</span><span class="p">,</span>
+</span><span class='line'>    <span class="nx">secure</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+</span><span class='line'>    <span class="nx">httpOnly</span><span class="o">:</span> <span class="kc">true</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}));</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Here is an example of what the header looks like with both the <code>secure</code> and <code>httpOnly</code> flags set.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='http'><span class='line'><span class="err">Set-Cookie: connect.sid=fjdskfjdsksdfjksa; Domain=favatron.com; Path=/; Expires=Sun, 28 Jun 2015 02:12:41 GMT; HttpOnly; Secure</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>Solution 4</h4>
+
+<p>The fourth solution is to tell the browser to never make HTTP requests again. There is a great response header you can send back on all responses that tells the browser to only make requests over HTTPS for a certain amount of time. This response is called HTTP Strict Transport Security (HSTS).</p>
+
+<p>This is a great feature, because it negates the problem where users may still make requests over HTTP to your site. Then at the most, users would make one request over HTTP. From that point forward, they would only make requests over HTTPS.</p>
+
+<p>The following Express application from previous examples is updated to show how to do this using the <code>helmet</code> package.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">session</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express-session&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">helmet</span>  <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;helmet&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">helmet</span><span class="p">.</span><span class="nx">hsts</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">maxAge</span><span class="o">:</span> <span class="mi">7776000000</span><span class="p">,</span>
+</span><span class='line'>  <span class="nx">includeSubdomains</span><span class="o">:</span> <span class="kc">true</span>
+</span><span class='line'><span class="p">}));</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;trust proxy&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">session</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">secret</span><span class="o">:</span> <span class="s1">&#39;our super secret session secret&#39;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nx">cookie</span><span class="o">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">maxAge</span><span class="o">:</span> <span class="mi">3600000</span><span class="p">,</span>
+</span><span class='line'>    <span class="nx">secure</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+</span><span class='line'>    <span class="nx">httpOnly</span><span class="o">:</span> <span class="kc">true</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}));</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Here is what the response header would look like.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='http'><span class='line'><span class="err">Strict-Transport-Security: max-age=7776000; includeSubDomains</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Along with using the response headers to control this, there is a registry where you can add your domain and have it automatically added to preload lists of Chrome, Firefox, Safari, and a future version of IE. This way, even that initial request over HTTP could be avoided. You can find the form <a href="https://hstspreload.appspot.com/">here</a>.</p>
+
+<h3>Wrap up</h3>
+
+<p>There are many more ways in which you can create broken authentication and session management. Hopefully this article has given you some insight into areas of your application to pay attention to.</p>
+
+<p>I have a lot more tutorials coming so be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+
+</div>
+
+
+  <button onclick="var e=document.createElement('script');e.setAttribute('charset','UTF-8');e.setAttribute('src','https://az287915.vo.msecnd.net/scripts/degreed/media/bookmarklet.js?id=1&v=' + Math.random()*99999999);document.getElementsByTagName('body')[0].appendChild(e)
+  " title="+ Degreed" id="DegreedButton" class="degreed-28-full">+ Degreed</button>
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Scott Smith</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-06-15T10:42:00-07:00" pubdate data-updated="true">Jun 15<span>th</span>, 2015</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/javascript/'>JavaScript</a>, <a class='category' href='/blog/categories/node-dot-js/'>Node.js</a>, <a class='category' href='/blog/categories/owasp/'>OWASP</a>, <a class='category' href='/blog/categories/security/'>Security</a>
+  
+</span>
+
+
+    </p>
+    
+      <!-- <div class="sharing">
+  <h4>Share On:</h4>
+  <a href="https://twitter.com/intent/tweet?text=Secure Node Apps Against OWASP Top 10 - Authentication &amp; Sessions&url=http://scottksmith.com/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/&via=scottksmith95" target="_blank">
+    <img src="/images/icons/twitter/twitter-128.png" alt="Share on Twitter" class="twitter">
+  </a>
+  <a href="https://plus.google.com/share?url=http://scottksmith.com/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/" target="_blank">
+    <img src="/images/icons/googleplus/googleplus-128.png" alt="Share on Google+" class="googleplus">
+  </a>
+  <a href="https://www.facebook.com/sharer/sharer.php?u=http://scottksmith.com/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/" target="_blank">
+    <img src="/images/icons/facebook/facebook-128.png" alt="Share on Facebook" class="facebook">
+  </a>
+  <a href="https://www.linkedin.com/shareArticle?mini=true&title=Secure Node Apps Against OWASP Top 10 - Authentication &amp; Sessions&url=http://scottksmith.com/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/" target="_blank">
+    <img src="/images/icons/linkedin/linkedin-128.png" alt="Share on LinkedIn" class="linkedin">
+  </a>
+  <a href="mailto:?body=http://scottksmith.com/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/&subject=Secure Node Apps Against OWASP Top 10 - Authentication &amp; Sessions">
+    <img src="/images/icons/email/email-128.png" alt="Share via Email" class="email">
+  </a>
+</div> -->
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/06/08/secure-node-apps-against-owasp-top-10-injection/" title="Previous Post: Secure Node Apps Against OWASP Top 10 - Injection">&laquo; Secure Node Apps Against OWASP Top 10 - Injection</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/" title="Next Post: Secure Node Apps Against OWASP Top 10 - Cross Site Scripting">Secure Node Apps Against OWASP Top 10 - Cross Site Scripting &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section id="links">
+  <div>
+    <a href="https://twitter.com/scottksmith95" target="_blank">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter" alt="Scott Smith on Twitter">
+    </a>
+  </div>
+  <div>
+    <a href="https://github.com/scottksmith95" target="_blank">
+      <img src="/images/icons/github/github-128.png" class="github" alt="Scott Smith on GitHub">
+    </a>
+  </div>
+  <div>
+    <a href="https://www.linkedin.com/profile/view?id=15073485" target="_blank">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin" alt="Scott Smith on LinkedIn">
+    </a>
+  </div>
+  <div>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email" alt="Scott Smith's Email">
+    </a>
+  </div>
+  <div>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss" "Site RSS Feed">
+    </a>
+  </div>
+</section>
+
+<section id="about">
+  <p>Software developer, learner, writer, & speaker.</p>
+  <p>Currently jailbreaking the degree at Degreed and promoting lifelong learning.</p>
+  <p>Past projects incude coderbits which was sold to Appirio in 2014 and Favatron.</p>
+</section><section id="newsletter">
+  <img src="/images/icons/email/email-128.png">
+  <h2>Get My Latest Articles</h2>
+  <form action="//favatron.us5.list-manage.com/subscribe/post?u=e8909f2779b99d9865361d28e&amp;id=1d7e590a16" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Email address" required>
+    <div style="position: absolute; left: -5000px;">
+      <input type="text" name="b_e8909f2779b99d9865361d28e_1d7e590a16" tabindex="-1" value="">
+    </div>
+    <div class="clear">
+      <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+    </div>
+  </form>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><span style="text-align: center">
+  Copyright &copy; 2017 <a rel="author" href="https://plus.google.com/107452035819962532888?rel=author">Scott Smith</a>
+</span>
+
+<div class="icons">
+  <span>
+    <a href="https://twitter.com/scottksmith95">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter">
+    </a>
+  </span>
+  <span>
+    <a href="https://github.com/scottksmith95">
+      <img src="/images/icons/github/github-128.png" class="github">
+    </a>
+  </span>
+  <span>
+    <a href="https://www.linkedin.com/profile/view?id=15073485">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin">
+    </a>
+  </span>
+  <span>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email">
+    </a>
+  </span>
+  <span>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss">
+    </a>
+  </span>
+</div></footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'scottksmithblog';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://scottksmith.com/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/';
+        var disqus_url = 'http://scottksmith.com/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+<script src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-40783302-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+</body>
+</html>

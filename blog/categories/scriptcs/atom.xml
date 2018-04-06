@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[ScriptCS | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/scriptcs/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Deeper dive into ScriptCS]]></title>
+    <link href="http://scottksmith.com/blog/2013/05/14/deeper-dive-into-scriptcs/"/>
+    <updated>2013-05-14T10:33:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2013/05/14/deeper-dive-into-scriptcs</id>
+    <content type="html"><![CDATA[<p>Welcome to part 2 of the ScriptCS series</p>
+
+<ol>
+<li><a href="/blog/2013/05/08/getting-started-with-scriptcs/">Getting started with ScriptCS</a></li>
+<li><a href="/blog/2013/05/14/deeper-dive-into-scriptcs/">Deeper dive into ScriptCS</a></li>
+</ol>
+
+
+<h2>Introduction</h2>
+
+<p>In this article, we will be exploring the newish REPL interactive mode, script packs, and many other cool features of ScriptCS.</p>
+
+<p>ScriptCS allows you to use C# as a scripting language. It harnesses the power of <a href="http://msdn.microsoft.com/en-us/vstudio/roslyn.aspx">Roslyn</a> and <a href="http://nuget.org/">NuGet</a> to enable you to write .NET applications with your favorite editor.</p>
+
+<p>If you are new to ScriptCS, I'd like to suggest reading my previous article <a href="/blog/2013/05/08/getting-started-with-scriptcs/">Getting started with ScriptCS</a> to learn more about how to install and use it.</p>
+
+<!-- more -->
+
+
+<h2>REPL</h2>
+
+<p><a href="http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop">REPL</a> (Read, Eval, Print, Loop) is now supported in the latest release of ScriptCS.</p>
+
+<p>Using REPL with ScriptCS can be done by running ScriptCS without any parameters and allows you to run C# statements from the command prompt without the neeed for files, editors, etc.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ scriptcs
+</span><span class='line'>scriptcs (ctrl-c or blank to exit)&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;blockquote>&lt;p>var name = "Scott";
+</span><span class='line'>var location = "California";
+</span><span class='line'>Console.WriteLine(name + " lives in " + location);
+</span><span class='line'>Scott lives in California</span></code></pre></td></tr></table></div></figure></notextile></div></p></blockquote>
+
+<p>When you run ScriptCS in REPL mode, you will see some help output on the screen indicating how to end the session. This can be done using Ctrl+C or pressing Enter with no input.</p>
+
+<h2>Script Packs</h2>
+
+<p>Script packs offer a great way to extend ScriptCS. They provide developers a way to create and share their own extensions for consumption by others using ScriptCS. The current list of available script packs can be found on the <a href="https://github.com/scriptcs/scriptcs/wiki/Script-Packs-master-list">ScriptCS Wiki</a>.</p>
+
+<p>Script packs will work in both normal execution and interactive REPL mode.</p>
+
+<p>Adding a script pack to your project can be done in a few ways but the simplest and best option is to use the ScriptCS install directive. You can read about more ways to install packages on the <a href="https://github.com/scriptcs/scriptcs/wiki/Package-installation">GitHub Wiki</a>.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>scriptcs -install ScriptCs.WebApi</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>In this example, we are using ScriptCS to install the package ScriptCs.WebApi into our current directory. This will pull down the assemblies from NuGet, place them in the packages and bin folders, and update packages.config.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>scriptcs -install ScriptCs.WebApi
+</span><span class='line'>INFO : Installing packages...
+</span><span class='line'>INFO : Installed: ScriptCs.WebApi
+</span><span class='line'>INFO : Installation completed successfully.
+</span><span class='line'>INFO : Copying assemblies to bin folder...
+</span><span class='line'>INFO : Copied: System.Net.Http.Formatting.dll.
+</span><span class='line'>INFO : Copied: System.Web.Http.dll.
+</span><span class='line'>INFO : Copied: System.Web.Http.SelfHost.dll.
+</span><span class='line'>INFO : Copied: System.Net.Http.dll.
+</span><span class='line'>INFO : Copied: System.Net.Http.WebRequest.dll.
+</span><span class='line'>INFO : Copied: Newtonsoft.Json.dll.
+</span><span class='line'>INFO : Copied: ScriptCs.Contracts.dll.
+</span><span class='line'>INFO : Copied: ScriptCs.WebApi.Pack.dll.
+</span><span class='line'>INFO : Restore completed successfully.
+</span><span class='line'>Initiated saving packages into packages.config...
+</span><span class='line'>Added Microsoft.AspNet.WebApi.Client, Version 4.0.20710.0, .NET 4.0
+</span><span class='line'>Added Microsoft.AspNet.WebApi.Core, Version 4.0.20710.0, .NET 4.0
+</span><span class='line'>Added Microsoft.AspNet.WebApi.SelfHost, Version 4.0.20918.0, .NET 4.0
+</span><span class='line'>Added Microsoft.Net.Http, Version 2.0.20710.0, .NET 4.5
+</span><span class='line'>Added Newtonsoft.Json, Version 4.5.11, .NET 4.0
+</span><span class='line'>Added ScriptCs.Contracts, Version 0.3.2, .NET 4.5
+</span><span class='line'>Added ScriptCs.WebApi, Version 0.1.0, .NET 4.5
+</span><span class='line'>Packages.config successfully created!</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Now that the package is installed, we can import it into our script by using <code>Require&lt;T&gt;()</code>. That is the beauty of script packs. They simplify the usage of other functionality that may otherwise be complex.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>var webApi = Require&lt;WebApi>();</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>With the inclusion of the WebApi script pack you can actually fire up a working Web API host. Try it out by running the following commands in interactive mode and then browsing to <a href="http://localhost:8888">localhost:8888</a>.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>scriptcs&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;blockquote>&lt;p>var webApi = Require&lt;WebApi>();
+</span><span class='line'>var server = webApi.CreateServer("http://localhost:8888");
+</span><span class='line'>server.OpenAsync().Wait();</span></code></pre></td></tr></table></div></figure></notextile></div></p></blockquote>
+
+<p>To shut the server down make sure to run</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;blockquote>&lt;p>server.CloseAsync().Wait();</span></code></pre></td></tr></table></div></figure></notextile></div></p></blockquote>
+
+<p>You may have noticed when you browsed to localhost:8888 the response indicated "No HTTP resource was found that matches the request URI 'http://localhost:8888/'". This means we have not yet defined any controllers. To do this we will take advantage of of the <code>#load</code> directive supported by ScriptCS. In your project directory where  you installed the ScriptCs.WebApi script pack, create a new script called Controllers.csx with the following code:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='csharp'><span class='line'><span class="k">public</span> <span class="k">class</span> <span class="nc">ScriptCSController</span> <span class="p">:</span> <span class="n">ApiController</span> <span class="p">{&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">pre</span><span class="p">&gt;&lt;</span><span class="n">code</span><span class="p">&gt;</span><span class="k">public</span> <span class="kt">string</span> <span class="n">Get</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="s">&quot;Thanks for using ScriptCS!&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="p">&lt;/</span><span class="n">code</span><span class="p">&gt;&lt;/</span><span class="n">pre</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>This code defines a ScriptCS controller that ScriptCs.WebApi will automatically detect and load when loaded via the <code>Require&lt;T&gt;()</code> command.</p>
+
+<p>In order to use this newly created script we will need to reference it using the <code>#load</code> directive. The <code>#load</code> directive is used to reference other scripts from within your script or interactive session. It must be placed at the top of a script otherwise it will be ignored. Also, you can use both relative and absolute paths.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>scriptcs&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;blockquote>&lt;h1>load "Controllers.csx";&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p>var webApi = Require&lt;WebApi>();
+</span><span class='line'>var server = webApi.CreateServer("http://localhost:8888");
+</span><span class='line'>server.OpenAsync().Wait();</span></code></pre></td></tr></table></div></figure></notextile></div></p></blockquote>
+
+<p>Now when you browse to <a href="http://localhost:8888/ScriptCS">localhost:8888/ScriptCS</a> you will see the response message "Thanks for using ScriptCS!". Finally, don't forget to shut the server down like we did before.</p>
+
+<p>Another directive worth mentioning is <code>#r</code>. This directive is used to explicitly reference assemblies within the GAC or your local bin folder. If you have added assemblies via the <code>scriptcs -install</code> or <code>scriptcs -restore</code> commands you do not need to use the <code>#r</code> directive. It is used for including other assemblies.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>r "MyCustomAssembly.dll"&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h2>Building a Script Pack</h2>
+
+<p>Rather than reinvent the wheel, I will refer to a great blog post by Martin Doms on <a href="http://blog.martindoms.com/2013/05/14/building-scriptcs-script-pack/">Building a scriptcs script pack</a>.</p>
+
+<h2>ClrMD</h2>
+
+<p>ClrMD, <a href="https://nuget.org/packages/Microsoft.Diagnostics.Runtime">Microsoft.Diagnostics.Runtime component</a>, is a set of advanced APIs for programmatically inspecting a crash dump of a .NET program and performing live process inspection. It allows you to write automated crash analysis for your applications and automate many common debugger tasks.</p>
+
+<p>This is a fabulous fit for the scriptable nature of ScriptCS. Using ScriptCS and ClrMD we have an environment where we can interactively debug and inspect .NET programs and processes.</p>
+
+<p>There are currently two projects in very early stages attempting to create script packs for ClrMD.</p>
+
+<p><a href="https://github.com/pwalat/ScriptCs.ClrDiagnostics">ScriptCs.ClrDiagnostics</a><br/>
+<a href="https://github.com/hackedbrain/scriptcs.clrmd">ScriptCs.ClrMD</a></p>
+
+<p>I would highly suggest taking a look at both.</p>
+
+<h2>Summary</h2>
+
+<p>ScriptCS is already a very powerful, flexible, and user friendly environment for working with C# as a scripting language. It takes advantage of an elegant language, incorporates Roslyn, and utilizes NuGet to provide scriptable C#, REPL, and Script Packs. I am personally looking forward to what will be coming next.</p>
+
+<p>Thanks for reading.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting started with ScriptCS]]></title>
+    <link href="http://scottksmith.com/blog/2013/05/08/getting-started-with-scriptcs/"/>
+    <updated>2013-05-08T07:58:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2013/05/08/getting-started-with-scriptcs</id>
+    <content type="html"><![CDATA[<p>Welcome to part 1 of the ScriptCS series</p>
+
+<ol>
+<li><a href="/blog/2013/05/08/getting-started-with-scriptcs/">Getting started with ScriptCS</a></li>
+<li><a href="/blog/2013/05/14/deeper-dive-into-scriptcs/">Deeper dive into ScriptCS</a></li>
+</ol>
+
+
+<h2>So what is ScriptCS?</h2>
+
+<p>ScriptCS allows you to use C# as a scripting language. It harnesses the power of <a href="http://msdn.microsoft.com/en-us/vstudio/roslyn.aspx">Roslyn</a> and <a href="http://nuget.org/">NuGet</a> to enable you to write .NET applications with your favorite editor.</p>
+
+<p>ScriptCS allows you to do something like this:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>copy con Sample.csx
+</span><span class='line'>var x = 2;
+</span><span class='line'>var y = 3;
+</span><span class='line'>var z = x * y;
+</span><span class='line'>Console.WriteLine(z);&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>scriptcs Sample.csx
+</span><span class='line'>6</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<!-- more -->
+
+
+<p>ScriptCS also offers its own REPL providing an interactive experience. You can install nuget packages, type some code, and have it execute instantly! As of writing this post, this functionality is in the dev branch and not yet available on the master branch. If you want learn more, head over to this <a href="http://codebetter.com/glennblock/2013/05/07/scriptcs-gets-a-repl/">blog post</a>.</p>
+
+<h2>Installation</h2>
+
+<p>There are two ways to install ScriptCS:</p>
+
+<ul>
+<li>Get the source from <a href="https://github.com/scriptcs/scriptcs">GitHub</a>, build it, and add scriptcs.exe to your path</li>
+<li>Use <a href="http://chocolatey.org/">Chocolatey</a> to download and install it automatically</li>
+</ul>
+
+
+<p>For simplicity, we will be using the Chocolatey Nuget method of installation. Copy and paste the following command into your console. This will execute a PowerShell script that will download Chocolatey, place it on your local drive, and configure your path. Make sure to reload your session so your new path is loaded.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='powershell'><span class='line'><span class="nv">@powershell</span> <span class="n">-NoProfile</span> <span class="n">-ExecutionPolicy</span> <span class="n">unrestricted</span> <span class="n">-Command</span> <span class="s2">&quot;iex ((new-object net.webclient).DownloadString(&#39;https://chocolatey.org/install.ps1&#39;))&quot;</span> <span class="p">&amp;</span><span class="n">amp</span><span class="err">;</span><span class="p">&amp;</span><span class="n">amp</span><span class="err">;</span> <span class="n">SET</span> <span class="n">PATH</span><span class="p">=</span><span class="k">%</span><span class="n">PATH</span><span class="p">%</span><span class="err">;</span><span class="k">%</span><span class="n">systemdrive</span><span class="p">%\</span><span class="n">chocolatey</span><span class="p">\</span><span class="n">bin</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Next execute the following command in your console. This will download ScriptCS, place it on your local drive, and configure your path. Make sure to reload your session again so your new path is loaded.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='powershell'><span class='line'><span class="n">cinst</span> <span class="n">scriptcs</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Note: If you are uncomfortable running these commands found on some random blog, you can either go to the Chocolatey site for installation instructions or get the ScriptCS source and build it yourself. Don't worry, I won't be offended.</p>
+
+<h2>Exploring one of the samples</h2>
+
+<p>We will be exploring the RavenDB sample.</p>
+
+<p>First, we need to get the samples from GitHub. The easiest way is to clone the repo:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git clone https://github.com/scriptcs/scriptcs-samples.git</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Change into the directory scriptcs-samples/ravendb. If you look in this directory you will notice there is a packages.config file. This file defines the packages dependencies for this sample. Since we do not have the packages yet (no packages directory) we need to get them. This is done by executing the command <code>scriptcs -install</code>.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ scriptcs -install
+</span><span class='line'>Installing packages...
+</span><span class='line'>Installed: RavenDB.Embedded 2.0.2261.0
+</span><span class='line'>Installation completed successfully.
+</span><span class='line'>Copying assemblies to bin folder...
+</span><span class='line'>Copied: Raven.Client.Embedded.dll.
+</span><span class='line'>Copied: Esent.Interop.dll.
+</span><span class='line'>Copied: GeoAPI.dll.
+</span><span class='line'>Copied: ICSharpCode.NRefactory.CSharp.dll.
+</span><span class='line'>Copied: ICSharpCode.NRefactory.dll.
+</span><span class='line'>Copied: Jint.Raven.dll.
+</span><span class='line'>Copied: Lucene.Net.Contrib.FastVectorHighlighter.dll.
+</span><span class='line'>Copied: Lucene.Net.Contrib.Spatial.NTS.dll.
+</span><span class='line'>Copied: Lucene.Net.dll.
+</span><span class='line'>Copied: Mono.Cecil.dll.
+</span><span class='line'>Copied: NetTopologySuite.dll.
+</span><span class='line'>Copied: PowerCollections.dll.
+</span><span class='line'>Copied: Raven.Abstractions.dll.
+</span><span class='line'>Copied: Raven.Database.dll.
+</span><span class='line'>Copied: Spatial4n.Core.NTS.dll.
+</span><span class='line'>Copied: Raven.Abstractions.dll.
+</span><span class='line'>Copied: Raven.Client.Lightweight.dll.
+</span><span class='line'>Restore completed successfully.</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>This will instruct NuGet to download all the packages defined in the packages.config. Now that we have all the necessary packages, we can run the sample with <code>scriptcs start.csx</code>.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ scriptcs start.csx
+</span><span class='line'>Found assembly reference: Esent.Interop.dll
+</span><span class='line'>Found assembly reference: GeoAPI.dll
+</span><span class='line'>Found assembly reference: ICSharpCode.NRefactory.CSharp.dll
+</span><span class='line'>Found assembly reference: ICSharpCode.NRefactory.dll
+</span><span class='line'>Found assembly reference: Jint.Raven.dll
+</span><span class='line'>Found assembly reference: Lucene.Net.Contrib.FastVectorHighlighter.dll
+</span><span class='line'>Found assembly reference: Lucene.Net.Contrib.Spatial.NTS.dll
+</span><span class='line'>Found assembly reference: Lucene.Net.dll
+</span><span class='line'>Found assembly reference: Mono.Cecil.dll
+</span><span class='line'>Found assembly reference: NetTopologySuite.dll
+</span><span class='line'>Found assembly reference: PowerCollections.dll
+</span><span class='line'>Found assembly reference: Raven.Abstractions.dll
+</span><span class='line'>Found assembly reference: Raven.Client.Embedded.dll
+</span><span class='line'>Found assembly reference: Raven.Client.Lightweight.dll
+</span><span class='line'>Found assembly reference: Raven.Database.dll
+</span><span class='line'>Found assembly reference: Spatial4n.Core.NTS.dll
+</span><span class='line'>Starting RavenDB Server, Please Be Patient...
+</span><span class='line'>RavenDB Started, Listening On http://localhost:8080</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Just like that we have RavenDB started and listing on port 8080.</p>
+
+<h2>Write our own</h2>
+
+<p>Let's get our environment setup to create our own example. Create a directory and name it whatever you want. We will call ours Sample. Change into the newly created directory and create a file called Start.csx. Open this file in whatever editor you want to and enter the following code:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.IO</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Web.Http</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Web.Http.SelfHost</span><span class="p">;&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span><span class="kt">var</span> <span class="n">address</span> <span class="p">=</span> <span class="s">&quot;http://localhost:8080&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="kt">var</span> <span class="n">conf</span> <span class="p">=</span> <span class="k">new</span> <span class="n">HttpSelfHostConfiguration</span><span class="p">(</span><span class="k">new</span> <span class="n">Uri</span><span class="p">(</span><span class="n">address</span><span class="p">));</span>
+</span><span class='line'><span class="n">conf</span><span class="p">.</span><span class="n">Routes</span><span class="p">.</span><span class="n">MapHttpRoute</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="s">&quot;DefaultApi&quot;</span><span class="p">,</span>
+</span><span class='line'>   <span class="n">routeTemplate</span><span class="p">:</span> <span class="s">&quot;api/{controller}/{id}&quot;</span><span class="p">,</span>
+</span><span class='line'>   <span class="n">defaults</span><span class="p">:</span> <span class="k">new</span> <span class="p">{</span> <span class="n">id</span> <span class="p">=</span> <span class="n">RouteParameter</span><span class="p">.</span><span class="n">Optional</span> <span class="p">}</span>
+</span><span class='line'><span class="p">);&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span><span class="kt">var</span> <span class="n">server</span> <span class="p">=</span> <span class="k">new</span> <span class="n">HttpSelfHostServer</span><span class="p">(</span><span class="n">conf</span><span class="p">);</span>
+</span><span class='line'><span class="n">server</span><span class="p">.</span><span class="n">OpenAsync</span><span class="p">().</span><span class="n">Wait</span><span class="p">();</span>
+</span><span class='line'><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;Listening...&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">Console</span><span class="p">.</span><span class="n">ReadKey</span><span class="p">();</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>You may notice we have references to System.Web.Http and System.Web.Http.SelfHost but those assemblies are not currently available. Try it out and see for yourself by running the command <code>scriptcs Start.csx</code>. The error you are receiving is because those assemblies are not available. To install them we need to execute the command <code>scriptcs -install Microsoft.AspNet.WebApi.SelfHost</code>.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>scriptcs -install Microsoft.AspNet.WebApi.SelfHost
+</span><span class='line'>Installing packages...
+</span><span class='line'>Installed: Microsoft.AspNet.WebApi.SelfHost
+</span><span class='line'>Installation completed successfully.
+</span><span class='line'>Copying assemblies to bin folder...
+</span><span class='line'>Copied: System.Net.Http.Formatting.dll.
+</span><span class='line'>Copied: System.Web.Http.dll.
+</span><span class='line'>Copied: System.Web.Http.SelfHost.dll.
+</span><span class='line'>Copied: System.Net.Http.dll.
+</span><span class='line'>Copied: System.Net.Http.WebRequest.dll.
+</span><span class='line'>Copied: Newtonsoft.Json.dll.
+</span><span class='line'>Restore completed successfully.
+</span><span class='line'>Initiated saving packages into packages.config...
+</span><span class='line'>Added Microsoft.AspNet.WebApi.Client, Version 4.0.20710.0, .NET 4.0
+</span><span class='line'>Added Microsoft.AspNet.WebApi.Core, Version 4.0.20710.0, .NET 4.0
+</span><span class='line'>Added Microsoft.AspNet.WebApi.SelfHost, Version 4.0.20918.0, .NET 4.0
+</span><span class='line'>Added Microsoft.Net.Http, Version 2.0.20710.0, .NET 4.5
+</span><span class='line'>Added Newtonsoft.Json, Version 4.5.11, .NET 4.0
+</span><span class='line'>Packages.config successfully created!</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Now that we have the required assemblies available, run the command <code>scriptcs Start.csx</code>.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>scriptcs start.csx
+</span><span class='line'>Found assembly reference: Newtonsoft.Json.dll
+</span><span class='line'>Found assembly reference: System.Net.Http.dll
+</span><span class='line'>Found assembly reference: System.Net.Http.Formatting.dll
+</span><span class='line'>Found assembly reference: System.Net.Http.WebRequest.dll
+</span><span class='line'>Found assembly reference: System.Web.Http.dll
+</span><span class='line'>Found assembly reference: System.Web.Http.SelfHost.dll
+</span><span class='line'>Listening...</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>If you open up your browser and navigate to http://localhost:8080 you should see that our ScriptCS program is running and listening for connections on port 8080.</p>
+
+<h2>Sublime Text 2</h2>
+
+<p>There is a <a href="https://github.com/scriptcs/scriptcs-sublime">Sublime Text 2 package</a> available to turn on syntax highlighting for CSX files. You can either install it manually via git or via the Package Control Plugin.</p>
+
+<h4>Package Control Plugin</h4>
+
+<p>The easiest way is to install the package is using the Package Control Plugin.</p>
+
+<p><img src="/images/package-control-plugin.png" alt="Package Control Plugin" /></p>
+
+<h4>Git</h4>
+
+<p>To install manually using git, go to your packages directory and run the command:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git clone https://github.com/scriptcs/scriptcs-sublime.git</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>If you want to update the scriptcs-sublime package, simply run this command from inside the scriptcs-sublime directory:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git pull origin master</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Along with syntax highlighting, the package will also provide a build system. To build, use Cmd+B on Mac or Ctrl+B on Windows. If you encounter any compilation errors, you can hit F4 to navigate to the error.</p>
+
+<h2>Summary</h2>
+
+<p>ScriptCS offers some great functionality for those wanting to experience C# as a scripting language. With the power of Roslyn and NuGet, ScriptCS is poised to become a very powerful tool.</p>
+
+<h2>Resources</h2>
+
+<p><a href="http://scriptcs.net/">Project site</a><br/>
+<a href="https://github.com/scriptcs/scriptcs">GitHub repository</a><br/>
+<a href="https://github.com/scriptcs/scriptcs-samples">Official examples</a><br/>
+<a href="https://github.com/scriptcs/scriptcs-sublime">Sublime Text 2 package</a></p>
+]]></content>
+  </entry>
+  
+</feed>

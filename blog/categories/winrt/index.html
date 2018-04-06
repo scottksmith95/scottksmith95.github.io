@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>WinRT - Scott Smith</title>
+  <meta name="author" content="Scott Smith">
+
+  
+  <meta name="description" content="WinRT 2012 Windows 8 Camp in a Box
+May 16 2012 posted in .NET, C#, HTML, JavaScript, WinRT, Windows 8, XAML Software developer, learner, writer, & speaker. Currently jailbreaking the degree at &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://scottksmith.comblog/categories/winrt">
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@scottksmith95" />
+  <meta name="twitter:title" content="WinRT - Scott Smith" />
+  <meta name="twitter:description" content="WinRT 2012 Windows 8 Camp in a Box
+May 16 2012 posted in .NET, C#, HTML, JavaScript, WinRT, Windows 8, XAML Software developer, learner, writer, & speaker. Currently jailbreaking the degree at &hellip;" />
+  <meta name="twitter:url" content="http://scottksmith.comblog/categories/winrt" />
+
+  <meta property="og:title" content="WinRT - Scott Smith"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:description" content="WinRT 2012 Windows 8 Camp in a Box
+May 16 2012 posted in .NET, C#, HTML, JavaScript, WinRT, Windows 8, XAML Software developer, learner, writer, & speaker. Currently jailbreaking the degree at &hellip;"/>
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+  <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196">
+  <link rel="icon" type="image/png" href="/favicon-160x160.png" sizes="160x160">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <style>
+  #DegreedButton.degreed-28-full,.degreed-28-full {
+    background-color: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+    background-image: url(data:image/png;base64,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) !important;
+    height: 28px !important;
+    width: 162px !important;
+  }
+  </style>
+  <link href="/atom.xml" rel="alternate" title="Scott Smith" type="application/atom+xml">
+
+  <script src="//load.sumome.com/" data-sumo-site-id="0d857e605c25378eb99ef0880f3d471e6d4792fd62b3c1e378fa89057293706c" async="async"></script>
+</head>
+
+<body   >
+  <header role="banner"><div class="logo">
+  <img src="/images/logo.png" alt="Site Logo">
+</div>
+<hgroup>
+  <h1><a href="/">Scott Smith</a></h1>
+  <h2>
+    <a href="/">Blog</a>
+    <a href="/blog/categories/tutorials">Tutorials</a>
+    <a href="/projects">Projects</a>
+    <a href="/speaking">Speaking</a>
+    <a href="/atom.xml" class="rss">RSS</a>
+  </h2>
+</hgroup>
+</header>
+  <div id="main">
+    <div id="content">
+      <div style="padding-top: 0; padding-bottom: 0;">
+<article role="article">
+  
+  <header style="padding-top: 0;">
+    <h1 class="entry-title">WinRT</h1>
+    
+  </header>
+  
+  <div id="blog-archives" class="category">
+
+
+
+  
+  <h2>2012</h2>
+
+<article>
+  
+<h3><a href="/blog/2012/05/16/windows-8-camp-in-a-box/">Windows 8 Camp in a Box</a></h3>
+<time datetime="2012-05-16T13:52:00-07:00" pubdate><span class='month'>May</span> <span class='day'>16</span> <span class='year'>2012</span></time>
+
+<footer>
+  <span class="categories">posted in <a class='category' href='/blog/categories/dot-net/'>.NET</a>, <a class='category' href='/blog/categories/c-number/'>C#</a>, <a class='category' href='/blog/categories/html/'>HTML</a>, <a class='category' href='/blog/categories/javascript/'>JavaScript</a>, <a class='category' href='/blog/categories/winrt/'>WinRT</a>, <a class='category' href='/blog/categories/windows-8/'>Windows 8</a>, <a class='category' href='/blog/categories/xaml/'>XAML</a></span>
+</footer>
+
+
+</article>
+
+</div>
+
+  
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section id="links">
+  <div>
+    <a href="https://twitter.com/scottksmith95" target="_blank">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter" alt="Scott Smith on Twitter">
+    </a>
+  </div>
+  <div>
+    <a href="https://github.com/scottksmith95" target="_blank">
+      <img src="/images/icons/github/github-128.png" class="github" alt="Scott Smith on GitHub">
+    </a>
+  </div>
+  <div>
+    <a href="https://www.linkedin.com/profile/view?id=15073485" target="_blank">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin" alt="Scott Smith on LinkedIn">
+    </a>
+  </div>
+  <div>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email" alt="Scott Smith's Email">
+    </a>
+  </div>
+  <div>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss" "Site RSS Feed">
+    </a>
+  </div>
+</section>
+
+<section id="about">
+  <p>Software developer, learner, writer, & speaker.</p>
+  <p>Currently jailbreaking the degree at Degreed and promoting lifelong learning.</p>
+  <p>Past projects incude coderbits which was sold to Appirio in 2014 and Favatron.</p>
+</section><section id="newsletter">
+  <img src="/images/icons/email/email-128.png">
+  <h2>Get My Latest Articles</h2>
+  <form action="//favatron.us5.list-manage.com/subscribe/post?u=e8909f2779b99d9865361d28e&amp;id=1d7e590a16" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Email address" required>
+    <div style="position: absolute; left: -5000px;">
+      <input type="text" name="b_e8909f2779b99d9865361d28e_1d7e590a16" tabindex="-1" value="">
+    </div>
+    <div class="clear">
+      <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+    </div>
+  </form>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><span style="text-align: center">
+  Copyright &copy; 2017 <a rel="author" href="https://plus.google.com/107452035819962532888?rel=author">Scott Smith</a>
+</span>
+
+<div class="icons">
+  <span>
+    <a href="https://twitter.com/scottksmith95">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter">
+    </a>
+  </span>
+  <span>
+    <a href="https://github.com/scottksmith95">
+      <img src="/images/icons/github/github-128.png" class="github">
+    </a>
+  </span>
+  <span>
+    <a href="https://www.linkedin.com/profile/view?id=15073485">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin">
+    </a>
+  </span>
+  <span>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email">
+    </a>
+  </span>
+  <span>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss">
+    </a>
+  </span>
+</div></footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'scottksmithblog';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+<script src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-40783302-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+</body>
+</html>

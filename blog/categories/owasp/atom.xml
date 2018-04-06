@@ -1,0 +1,1065 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[OWASP | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/owasp/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Secure Node Apps Against OWASP Top 10 - Cross Site Request Forgery]]></title>
+    <link href="http://scottksmith.com/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/"/>
+    <updated>2015-06-29T10:09:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery</id>
+    <content type="html"><![CDATA[<p>Welcome to part 4 of the OWASP security series</p>
+
+<ol>
+<li><a href="/blog/2015/06/08/secure-node-apps-against-owasp-top-10-injection/">Injection</a></li>
+<li><a href="/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/">Broken Authentication &amp; Session Management</a></li>
+<li><a href="/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/">Cross Site Scripting (XSS)</a></li>
+<li><a href="/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/">Cross Site Request Forgery (CSRF)</a></li>
+<li>Using Components with Known Vulnerabilities (Coming soon)</li>
+</ol>
+
+
+<p>In this multipart series, we will explore some of the the <a href="https://www.owasp.org/index.php/Top_10_2013">OWASP top web application security flaws</a> including how they work and best practices to protect your application from them. The focus will be on Express web applications in Node, but the principles shown can be applied to any framework or environment.</p>
+
+<p>This part will cover <a href="https://www.owasp.org/index.php/Top_10_2013-A8-Cross-Site_Request_Forgery_(CSRF%29">cross site request forgery (CSRF)</a>.</p>
+
+<h3>Cross Site Request Forgery (CSRF)</h3>
+
+<p>So what exactly is a cross site request forgery vulnerability?</p>
+
+<p>A CSRF attack occurs when an attacker is able to create forged HTTP requests and trick the victim into making those requests via image tags, XSS, and many other ways. When the user makes these malicious requests and is authenticated with the application, the attack can be even more devastating. The attacker is able to get the user to perform state changing operations that the user is authorized to do in the application such as updating account details, making purchases, transferring money, and even deleting the account. Essentially, the attacker takes advantage of the website's trust in the user.</p>
+
+<p>We will go over a few different scenarios and show how to protect against them.</p>
+
+<h3>Scenario 1: Changes allowed via GET requests</h3>
+
+<p>This first scenario occurs when a website allows changes to be done via GET requests.</p>
+
+<p><img src="/images/csrf1.png" alt="CSRF Scenario 1" /></p>
+
+<h4>Login</h4>
+
+<p>The first two steps show the victim logging into their bank. This is important because the user must be logged in for the CSRF attack to work.</p>
+
+<h4>GET /index.html</h4>
+
+<p>The attacker has a page on a site they control and shares a link on social media. Our user clicks the link to see what it is and their browser makes a request to <code>/index.html</code> on the attacker's site.</p>
+
+<h4>HTTP/1.1 200 OK</h4>
+
+<p>Requests to <code>/index.html</code> returns the following HTML content. If you look at the image tag, you will see it will make a request directly to the bank's transfer page along with some query string parameters specifying an account to transfer an amount of money to.</p>
+
+<p>```html
+<html></p>
+
+<p>  <img src="https://bank.com/transfer?to=12345&dollars=1000000" width="0" height="0"></p>
+
+<p></html>
+```</p>
+
+<h4>GET /transfer?to...</h4>
+
+<p>This is where things get bad. Because the bank supports changes via GET requests, the user browsing to the attackers site will automatically make a GET request to https://bank.com/transfer?to=12345&amp;dollars=1000000. Because the user has already logged in, their session cookie is passed along in the request and the attack will succeed.</p>
+
+<h4>Solution</h4>
+
+<p>The solution here is very simple. Never allow changes to occur on GET requests. Only allow changes to be made when the HTTP method is POST, PUT, or DELETE.</p>
+
+<h3>Scenario 2: Posting exploited data to sites</h3>
+
+<p>We have now locked our applications down to no longer allow changes via GET requests. This next attack occurs by getting the user to automatically submit a malicious POST request to the web application.</p>
+
+<p><img src="/images/csrf2.png" alt="CSRF Scenario 2" /></p>
+
+<h4>Login</h4>
+
+<p>The first two steps show the victim logging into their bank.</p>
+
+<h4>GET /index.html</h4>
+
+<p>The attacker has a page on a site they control and shares a link on social media. Our user clicks the link to see what it is and their browser makes a request to <code>/index.html</code> on the attacker's site.</p>
+
+<h4>HTTP/1.1 200 OK</h4>
+
+<p>Requests to <code>/index.html</code> returns the following HTML content. What is going on here is the attacker is creating a form that when submitted will POST to our transfer endpoint on our web application. The content then adds a script that will automatically trigger that POST.</p>
+
+<p>```html
+<html></p>
+
+<p>  <form name="bad" method="post" action="https://bank.com/transfer"></p>
+
+<pre><code>&lt;input type="hidden" name="to" value="12345"&gt;
+&lt;input type="hidden" name="dollars" value="1000000"&gt;
+</code></pre>
+
+<p>  </form></p>
+
+<p>  <script>document.bad.submit()</script></p>
+
+<p></html>
+```</p>
+
+<h4>POST /transfer?to...</h4>
+
+<p>This is where things get bad, again. Because the user is logged in and the attacker was able to get the user's browser to automatically POST a malicious request to our web application, the user's bank account will have been successfully hacked.</p>
+
+<h4>Solution</h4>
+
+<p>The solution here is to implement the synchronizer token pattern.</p>
+
+<p>The following sample Express application shows how to implement this using the <code>csurf</code> npm package.</p>
+
+<p>```javascript
+var express = require('express');
+var csrf    = require('csurf');</p>
+
+<p>var app = express();</p>
+
+<p>app.use(csrf());</p>
+
+<p>app.use(function(req, res, next) {
+  res.locals._csrf = req.csrfToken();
+  next();
+});</p>
+
+<p>//Add _csrf to rendered HTML forms as hidden field (see HTML below)</p>
+
+<p>app.listen(80);
+```</p>
+
+<p>```html
+<html></p>
+
+<p>  <form method="post" action="transfer"></p>
+
+<pre><code>&lt;input type="hidden" name="_csrf" value="_csrf"&gt;
+&lt;input type="text" name="to"&gt;
+&lt;input type="test" name="dollars"&gt;
+</code></pre>
+
+<p>  </form></p>
+
+<p></html>
+```</p>
+
+<p>What this code does is makes it so that all POSTs made to our application MUST include a CSRF token or nonce. This token is set when the user makes a request to our page that contains the form and expects that same token when a POST is made. If the token is not there, the POST is not allowed. This will defeat the scenario we just went over because the attacker will not be able to generate a token that our application is aware of.</p>
+
+<h3>Scenario 3: Bypassing CSRF protections</h3>
+
+<p>Now that we do not make changes via GET requests as well as implementing CSRF protection via nonce tokens, we are still vulnerable to some attacks that can get around CSRF protection.</p>
+
+<p><img src="/images/csrf3.png" alt="CSRF Scenario 3" /></p>
+
+<h4>Login</h4>
+
+<p>The first two steps show the victim logging into their bank.</p>
+
+<h4>GET /index.html</h4>
+
+<p>The attacker has a page on a site they control and shares a link on social media. Our user clicks the link to see what it is and their browser makes a request to <code>/index.html</code> on the attacker's site.</p>
+
+<h4>HTTP/1.1 200 OK</h4>
+
+<p>Requests to <code>/index.html</code> returns the following HTML content. What is going on here is the attacker is creating an iframe that loads up our page along with our form that includes the fields and the CSRF nonce token.</p>
+
+<p>```html
+<html></p>
+
+<p>  <iframe src="https://bank.com/transfer?to=12345&dollars=1000000"></p>
+
+<p></html>
+```</p>
+
+<p>For the sake of this scenario, the resulting form that would be loaded will look like the following.</p>
+
+<p><code>html
+&lt;form method="post"&gt;
+ &lt;input type="text" name="to" value=""&gt;
+ &lt;input type="text" name="dollars" value=""&gt;
+ &lt;input type="hidden" name="csrf" value="a0d73b12"&gt;
+&lt;/form&gt;
+</code></p>
+
+<p>And finally, here is our code on our server handling POSTs to the transfer endpoint.</p>
+
+<p>```javascript
+app.post('/transfer', function (req, res) {
+  if (isValid(req.body.csrfToken)) {</p>
+
+<pre><code>var to = req.params.to || req.body.to;
+var dollars = req.params.dollars || req.body.dollars;
+
+//Transfer money
+</code></pre>
+
+<p>  }
+});
+```</p>
+
+<h4>POST /transfer?to...</h4>
+
+<p>This is where things get bad, yet again. Like before, our user is logged in. The content from our page including the form is now loaded within an attackers site. Through <a href="https://www.owasp.org/index.php/Clickjacking">clickjacking</a> techniques the attack could potentially get the user to submit the form.</p>
+
+<h4>Solution 1</h4>
+
+<p>Before we discuss the solution, we need to understand what is wrong with our current setup. Even if the page loads up our form, the user would have to manually enter a bank account along with money for the form submission to work, right? Well, not exactly. Because we are not explicitly setting the form action, the default URL that will be POSTed to will be the Url the page was loaded from. In our case this will be the Url the attacker entered which contains query string parameters for the account to send money to and the amount.</p>
+
+<p>If you look at how we coded our handling of the POST, we are using parameters from either the query string or the POSTed data. In this example and attack, the query string parameters would get used and the attack would succeed.</p>
+
+<p>The first solution to this problem is to always set the form action. Instead of leaving it blank, you should always set it to the endpoint you want to submit to.</p>
+
+<p><code>html
+&lt;form method="post" action="https://bank.com/transfer"&gt;
+ &lt;input type="text" name="to" value=""&gt;
+ &lt;input type="text" name="dollars" value=""&gt;
+ &lt;input type="hidden" name="csrf" value="a0d73b12"&gt;
+&lt;/form&gt;
+</code></p>
+
+<p>This will make it so the attacker cannot get the user to submit the form to an endpoint along with query string parameters.</p>
+
+<h4>Solution 2</h4>
+
+<p>The second solution goes along with the first. This one is to never use query string parameters for user input. This will force our code to only use parameters sent via the POSTed form data.</p>
+
+<p>```javascript
+app.post('/transfer', function (req, res) {
+  if (isValid(req.body.csrfToken)) {</p>
+
+<pre><code>var to = req.body.to;
+var dollars = req.body.dollars;
+
+//Transfer money
+</code></pre>
+
+<p>  }
+});
+```</p>
+
+<h4>Solution 3</h4>
+
+<p>The final solution is one that is good to implement on all your applications in order to control how your application behaves and to help avoid this type of attack. The solution is to use the X-Frame-Options header.</p>
+
+<p>By taking advantage of this header, you can tell web browsers (that support it) to never allow your application within frames. With this in place, the attacker will not be able to load your page within theirs.</p>
+
+<p>Here is an example Express application using the helmet npm package to do this.</p>
+
+<p>```javascript
+var express = require('express');
+var helmet  = require('helmet');</p>
+
+<p>var app = express();</p>
+
+<p>app.use(helmet.xframe('deny'));       //never allow in frames</p>
+
+<p>app.listen(80);
+```</p>
+
+<p>This code will send back a response header that will tell the browser to never allow it to be within a frame. Here is what the header looks like.</p>
+
+<p><code>http
+X-Frame-Options: DENY
+</code></p>
+
+<h3>Wrap up</h3>
+
+<p>I hope that by learning how CSRF attacks are performed you have a better understanding of how to protect your applications. I have shown a few ways in which you can protect yourself but it is important to learn more on this subject using the links I shared above. Also, these solutions are not exclusive. You should implement many layers of protection for your application.</p>
+
+<p>I have a lot more tutorials coming so be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Secure Node Apps Against OWASP Top 10 - Cross Site Scripting]]></title>
+    <link href="http://scottksmith.com/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/"/>
+    <updated>2015-06-22T07:44:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting</id>
+    <content type="html"><![CDATA[<p>Welcome to part 3 of the OWASP security series</p>
+
+<ol>
+<li><a href="/blog/2015/06/08/secure-node-apps-against-owasp-top-10-injection/">Injection</a></li>
+<li><a href="/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/">Broken Authentication &amp; Session Management</a></li>
+<li><a href="/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/">Cross Site Scripting (XSS)</a></li>
+<li><a href="/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/">Cross Site Request Forgery (CSRF)</a></li>
+<li>Using Components with Known Vulnerabilities (Coming soon)</li>
+</ol>
+
+
+<p>In this multipart series, we will explore some of the the <a href="https://www.owasp.org/index.php/Top_10_2013">OWASP top web application security flaws</a> including how they work and best practices to protect your application from them. The focus will be on Express web applications in Node, but the principles shown can be applied to any framework or environment.</p>
+
+<p>This part will cover <a href="https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS%29">cross site scripting (XSS)</a>.</p>
+
+<h3>Cross Site Scripting (XSS)</h3>
+
+<p>So what exactly is a cross site scripting vulnerability?</p>
+
+<p>XSS, the most prevalent web application security flaw, occurs when an application includes user supplied data in a page sent to the browser without properly validating, escaping, or sanitizing that content.</p>
+
+<p>An XSS attack occurs when an attacker sends text-based scripts that exploit the interpreter in the browser. Essentially, the attacker takes advantage of the user's trust in the website. By this, I mean the end user viewing your web application trusts the content you are sending back. Because of this implicit trust, an attacker can exploit it by having your web application return malicious content.</p>
+
+<p>There are two main types of XSS attacks:</p>
+
+<ol>
+<li>Non-persistent</li>
+<li>Persistent</li>
+</ol>
+
+
+<h3>Non-persistent</h3>
+
+<p>Non-persistent, also referred to as reflected, are attacks where injected scripts are sent to a user's browser via the user's own request to the web application. These types of attacks are done by tricking the victim into initiating the attack via email, some other website, social media, etc. The result is the user clicks a malicious link, submits a form, or makes a request to a malicious site. In doing so, the user's browser is used as the medium to send the injected code to the web application through the request which is then reflected back to user in the response. The browser then executes the injected code because it came from the web application which it trusts.</p>
+
+<p>The following diagram shows how this type of attack is done. We will go over it step by step.</p>
+
+<p><img src="/images/xss1.png" alt="XSS Non-persistent" /></p>
+
+<p>In this example, Site (our web application) implements a search function at the endpoint <code>/search?q=searchTerm</code>. An attacker has found that when they do a normal search on the site, the results page shows the search term along with the results. After some testing, the attacker finds that the site is not escaping or sanitizing the search term before showing it in the results page. The attacker has just found an XSS vulnerability.</p>
+
+<p>Here is one way the attacker could exploit this vulnerability.</p>
+
+<h4>GET /index.html</h4>
+
+<p>The attacker has a page on a site they control and shares a link on social media. Our user clicks the link to see what it is and their browser makes a request to <code>/index.html</code> on the attacker's site.</p>
+
+<h4>HTTP/1.1 200 OK</h4>
+
+<p>Requests to <code>/index.html</code> returns the following HTML content. If you look at the anchor tag, you will see it links directly to the search page on our web application and supplies JavaScript as the search term.</p>
+
+<p>```html
+<html></p>
+
+<p>  <a href="https://site.com/search?q=<script>alert('hacked')</script>"></p>
+
+<pre><code>Click Here
+</code></pre>
+
+<p>  </a></p>
+
+<p></html>
+```</p>
+
+<h4>GET /search?q=...</h4>
+
+<p>If the user clicks the link, and many will, their browser will make a request to our search page along with the malicious JavaScript in the search term.</p>
+
+<p><code>http
+https://site.com/search?q=&lt;script&gt;alert('hacked')&lt;/script&gt;
+</code></p>
+
+<h4>HTTP/1.1 200 OK</h4>
+
+<p>Because our site is not properly escaping the search term being supplied by the user, we will return a response to the user that includes the injected JavaScript. In this example, it would just create an alert, but the attacker could do anything including injecting script tags that fetch other JavaScript.</p>
+
+<p>Here is the response in a normal case</p>
+
+<p>```html
+<html></p>
+
+<p>  <div></p>
+
+<pre><code>You searched for: Puppies
+</code></pre>
+
+<p>  </div></p>
+
+<p></html>
+```</p>
+
+<p>Here is the response in our exploited case</p>
+
+<p>```html
+<html></p>
+
+<p>  <div></p>
+
+<pre><code>You searched for: &lt;script&gt;alert('hacked')&lt;/script&gt;
+</code></pre>
+
+<p>  </div></p>
+
+<p></html>
+```</p>
+
+<h4>Send valuable data</h4>
+
+<p>The end user's browser will now execute the script that was injected into the page. The attacker could send valuable information embedded on the page, include other scripts to further the exploit, and more.</p>
+
+<p>In this example, the attacker setup a page that the user had to click a link on. This attack could be done easier by simply returning a 302 response with the Location header set to the search page on our web application. This takes out the step of the user needing to click a link and makes the attack more probable. The user's browser would get redirected to the exploited link and the attack would occur.</p>
+
+<h3>Persistent</h3>
+
+<p>Persistent, also referred to as stored, are attacks where the injected script is permanently stored on the target web application's database. Victims are then tricked into clicking a link to the web application that returns back the injected script in the response after retrieving it from the database or persistent storage.</p>
+
+<p>The following diagram shows how this type of attack is done. We will go over it step by step.</p>
+
+<p><img src="/images/xss2.png" alt="XSS Persistent" /></p>
+
+<p>In this example, Site (our web application) allows users to POST comments at the endpoint <code>/comment</code>. An attacker has found that when they POST comments on the site, the posted data is not escaped or sanitized before storing it and/or showing it. The attacker has just found an XSS vulnerability.</p>
+
+<p>Here is one way the attacker could exploit this vulnerability.</p>
+
+<h4>POST /comment</h4>
+
+<p>The attacker knows they can POST comments to the site that allow scripts to be injected. The attacker will POST an exploited comment to the site with the following content.</p>
+
+<p>```html</p>
+
+<script>alert('hacked')</script>
+
+
+<p>```</p>
+
+<p>This comment is now persisted because the content is stored in the database. Anytime a user views the comment, the injected script will be executed.</p>
+
+<h4>GET /comment?id=1</h4>
+
+<p>A user is browsing the site and views the exploited comment. They could get to this comment by just being on the site or could be directly to it via email, social share, etc.</p>
+
+<h4>HTTP/1.1 200 OK</h4>
+
+<p>Because our site is not properly escaping or sanitizing input or output, the resulting response to the user will include the injected script.</p>
+
+<h4>Send valuable data</h4>
+
+<p>The injected script will be executed on the end user's browser which allows the attacker to get a hold of valuable information embedded on the page, include other scripts to further the exploit, and more.</p>
+
+<h3>Solution 1</h3>
+
+<p>The first solution is to always validate, escape, or sanitize user input. As a rule, all user input should be treated as malicious. If you build your application in a way that distrusts user input, you will end up with a more secure system.</p>
+
+<p>This can be done by either sanitizing all user input as it enters the system or as it leaves. The following code is one way to do this in an Express application. What we are doing here is setting up middleware that will process all posted data by sanitizing it. I like this pattern because it avoids the case where newly added forms could be missed if you are sanitizing per input.</p>
+
+<p>```javascript
+var express    = require('express');
+var bodyParser = require('body-parser');
+var validator  = require('express-validator');</p>
+
+<p>var app = express();</p>
+
+<p>app.use(bodyParser.urlencoded());</p>
+
+<p>app.use(validator());
+app.use(function(req, res, next) {
+  for (var item in req.body) {</p>
+
+<pre><code>req.sanitize(item).escape();
+</code></pre>
+
+<p>  }
+  next();
+});</p>
+
+<p>app.listen(80);
+```</p>
+
+<p>With this code in place, our previous exploit examples of injecting JavaScript would turn</p>
+
+<p>```html</p>
+
+<script>alert('hacked')</script>
+
+
+<p>```</p>
+
+<p>into the following</p>
+
+<p><code>html
+&amp;gt;script&amp;lt;alert(&amp;#x27;hacked&amp;#x27;)&amp;gt;/script&amp;lt;
+</code></p>
+
+<p>One issue with sanitizing user input as it enters the system is if someone is able to get data into your database or persistent storage through another means. If this happens, your application can still be vulnerable to XSS attacks. In this case, you will want to consider sanitizing data as it leaves your application.</p>
+
+<h3>Solution 2</h3>
+
+<p>The second solution is to tell the web browser to allow content only from trusted sources.</p>
+
+<p>This can be done by taking advantage of a powerful response header called Content Security Policy or CSP. CSP is a response header that tells the browser the domains it should consider as valid sources of content.</p>
+
+<p>This can be used in two ways for our applications. First, we can tell the browser which domains it is allowed to trust and run JavaScript from. Second, we can tell the browser to not allow any in-line script. These two methods can protect many of our users (the ones with browsers that support CSP) from XSS attacks. If the attacker cannot get the browser to load or execute the injected JavaScript, then the attack is stopped.</p>
+
+<p>The following code shows an example Express application using the <code>helmet</code> package to implement CSP.</p>
+
+<p>```javascript
+var express = require('express');
+var helmet  = require('helmet');</p>
+
+<p>var app = express();</p>
+
+<p>app.use(helmet.csp({
+  defaultSrc: ["'self'"],
+  scriptSrc: ['<em>.google-analytics.com'],
+  styleSrc: ["'unsafe-inline'"],
+  imgSrc: ['</em>.google-analytics.com'],
+  connectSrc: ["'none'"],
+  fontSrc: [],
+  objectSrc: [],
+  mediaSrc: [],
+  frameSrc: []
+}));</p>
+
+<p>app.listen(80);
+```</p>
+
+<p>In this example, we are telling the browser to only allow scripts from our own domain as well as *.google-analytics.com.</p>
+
+<p>Here is what the response headers look like with newlines added for readability.</p>
+
+<p><code>http
+Content-Security-Policy:
+  default-src 'self';
+  script-src *.google-analytics.com;
+  object-src ;
+  img-src *.google-analytics.com;
+  media-src ;
+  frame-src ;
+  font-src ;
+  connect-src 'none';
+  style-src 'unsafe-inline'
+</code></p>
+
+<h3>Solution 3</h3>
+
+<p>The final solution is to do a deep analysis of your application and understand all the ways in which you could/should protect yourself. This <a href="https://www.owasp.org/index.php/XSS_(Cross_Site_Scripting">cheat sheet</a>_Prevention_Cheat_Sheet) provided by OWASP does a great job of discussing all the rules you should follow.</p>
+
+<h3>Wrap up</h3>
+
+<p>I hope that by learning how XSS attacks are performed you have a better understanding of how to protect your applications. I have shown a few ways in which you can protect yourself but it is important to learn more on this subject using the links I shared above. Also, these solutions are not exclusive. You should implement many layers of protection for your application.</p>
+
+<p>I have a lot more tutorials coming so be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Secure Node Apps Against OWASP Top 10 - Authentication &amp; Sessions]]></title>
+    <link href="http://scottksmith.com/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/"/>
+    <updated>2015-06-15T10:42:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions</id>
+    <content type="html"><![CDATA[<p>Welcome to part 2 of the OWASP security series</p>
+
+<ol>
+<li><a href="/blog/2015/06/08/secure-node-apps-against-owasp-top-10-injection/">Injection</a></li>
+<li><a href="/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/">Broken Authentication &amp; Session Management</a></li>
+<li><a href="/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/">Cross Site Scripting (XSS)</a></li>
+<li><a href="/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/">Cross Site Request Forgery (CSRF)</a></li>
+<li>Using Components with Known Vulnerabilities (Coming soon)</li>
+</ol>
+
+
+<p>In this multipart series, we will explore some of the the <a href="https://www.owasp.org/index.php/Top_10_2013">OWASP top web application security flaws</a> including how they work and best practices to protect your application from them. The focus will be on Express web applications in Node, but the principles shown can be applied to any framework or environment.</p>
+
+<p>This part will cover <a href="https://www.owasp.org/index.php/Top_10_2013-A2-Broken_Authentication_and_Session_Management">broken authentication and session management</a>.</p>
+
+<h3>Broken Authentication and Session Management</h3>
+
+<p>So what exactly is a broken authentication or session management vulnerability? OWASP defines it as follows:</p>
+
+<p>"Attacker uses leaks or flaws in the authentication or session management functions (e.g., exposed accounts, passwords, session IDs) to impersonate users."</p>
+
+<p>"An attacker can be an anonymous external attacker or a user with their own account who may attempt to steal accounts from others."</p>
+
+<p>"Such flaws may allow some or even all accounts to be attacked. Once successful, the attacker can do anything the victim could do. Privileged accounts are frequently targeted."</p>
+
+<p>The following scenarios will highlight some of the ways in which this type of vulnerability can be exploited and best practices to protect against them. Like all things security related, this list should not be considered the only ways in which you could be vulnerable.</p>
+
+<h3>Scenario 1: Plain text passwords</h3>
+
+<p>Surprisingly, there are still many sites that store user passwords in plain text. This becomes obvious when a site gets hacked and all their user's information along with passwords are exposed.</p>
+
+<p>This is bad for obvious reasons. Once an attacker knows a user's password, they can now log in as that user and do whatever they want.</p>
+
+<p>You should always build your applications assuming you will get hacked or data will get leaked. By taking this approach, you will be much more likely to take precautions to secure sensitive information. User passwords are one of the most important pieces of data to secure.</p>
+
+<p>The best way to secure user passwords is with a strong hash. Encrypting a password is better than plain text but still not as secure as a hash. With encryption, all the attacker needs do is get a hold of the keys and they can determine the password.</p>
+
+<p>One way to hash and verify passwords is with the following code.</p>
+
+<p>```javascript
+var bcrypt = require('bcrypt-nodejs');</p>
+
+<p>var hashPassword = function(password, callback) {
+  bcrypt.genSalt(10, function(err, salt) {</p>
+
+<pre><code>if (err) return callback(err);
+
+bcrypt.hash(password, salt, null, function(err, hash) {
+  if (err) return callback(err);
+
+  callback(null, hash);
+});
+</code></pre>
+
+<p>  });
+};</p>
+
+<p>var verifyPassword = function(password, hash, callback) {
+  bcrypt.compare(password, hash, function(err, isMatch) {</p>
+
+<pre><code>if (err) return callback(err);
+
+callback(null, isMatch);
+</code></pre>
+
+<p>  });
+};
+```</p>
+
+<p>Just because your user's passwords are hashed doesn't mean you shouldn't worry about locking down your application. Even with hashed passwords, an attacker can eventually determine the passwords of some of your user's accounts with enough time.</p>
+
+<h3>Scenario 2: Session IDs in the URL</h3>
+
+<p>Session IDs are unique numbers web applications assign to a user for the duration of the user's visit. It is used so the web server knows the identify of the user making the request without the user having to log in again.</p>
+
+<p>Because the session ID can be used to identify a user as well as grant permissions, protecting it is very important. By passing the session ID via the URL, you are exposing your application and users to a hacker. Imagine the following request being made to your bank:</p>
+
+<p><strong>https://bank.com/account?sessionid=1234567</strong></p>
+
+<p>Passing session IDs like this can be bad for the following reasons:</p>
+
+<ul>
+<li>Sharing of link grants others full access</li>
+<li>Stored on cache servers</li>
+<li>Stored in browser history</li>
+<li>Leaked through the Referer header</li>
+<li>Leaked through logs not properly protected</li>
+<li>Much more visible and thus more dangerous</li>
+</ul>
+
+
+<p>The solution to this problem is pretty simple. Pass session IDs via cookies and not the URL. The following code is an example Express application that uses cookies for the session ID.</p>
+
+<p>```javascript
+var express = require('express');
+var session = require('express-session');</p>
+
+<p>var app = express();</p>
+
+<p>app.use(session({
+  secret: 'our super secret session secret',
+  cookie: { maxAge: 3600000 } // 2 hours in milliseconds
+}));</p>
+
+<p>app.listen(80);
+```</p>
+
+<h3>Scenario 3: Site accessed over HTTP</h3>
+
+<p>The next scenario where vulnerabilities can occur is if your site is accessed over HTTP.</p>
+
+<p>This can be bad if you are not taking the necessary precautions to protect your users. Imagine if your user is on a public unencrypted wifi network. If your site is over HTTP, it is very easy for someone else on that wifi network to monitor and obtain your session ids. Even if the user is on a secure network, there is no guarantee that a third party somewhere along the route to the web application is not monitoring traffic.</p>
+
+<h4>Solution 1</h4>
+
+<p>The first and most obvious solution here is to run your site over HTTPS. If you have user accounts, users logging in, or session sate you should not run your site over HTTP. It is very affordable and even free solutions exist. By running over HTTPS, you will reduce a significant attack vector within your application.</p>
+
+<h4>Solution 2</h4>
+
+<p>The second solution is to not allow cookies to be sent over HTTP. Even if your site runs over HTTPS, you will very likely still be listening for HTTP requests in order to redirect them to the HTTPS endpoint. Because of this, unless you take measures, a user can still send their session id via the cookie over an unsecured channel.</p>
+
+<p>In order to stop this, you need to use the <code>secure</code> flag for your cookies. This flag, when set in the response that sets the cookie, will tell the browser to only send this cookie over an HTTPS request.</p>
+
+<p>The following Express application from previous examples is updated to show how to do this.</p>
+
+<p>```javascript
+var express = require('express');
+var session = require('express-session');</p>
+
+<p>var app = express();</p>
+
+<p>app.set('trust proxy', 1);</p>
+
+<p>app.use(session({
+  secret: 'our super secret session secret',
+  cookie: {</p>
+
+<pre><code>maxAge: 3600000,
+secure: true
+</code></pre>
+
+<p>  }
+}));</p>
+
+<p>app.listen(80);
+```</p>
+
+<p>Here is an example of what the header looks like with both the <code>secure</code> and <code>httpOnly</code> flags set.</p>
+
+<p><code>http
+Set-Cookie: connect.sid=fjdskfjdsksdfjksa; Domain=favatron.com; Path=/; Expires=Sun, 28 Jun 2015 02:12:41 GMT; Secure
+</code></p>
+
+<h4>Solution 3</h4>
+
+<p>The third solution is to not allow client side scripts access to your cookies. By default, client side JavaScript is able to read your cookies. This means that any third party JavaScript you are including has the potential to read your cookies and use the session id for nefarious purposes.</p>
+
+<p>In order to stop this, you need to use the <code>httpOnly</code> flag for your cookies. This flag, when set in the response that sets the cookie, will tell the browser to not allow any client side JavaScript access to it. The cookie is only sent over requests.</p>
+
+<p>The following Express application from previous examples is updated to show how to do this.</p>
+
+<p>```javascript
+var express = require('express');
+var session = require('express-session');</p>
+
+<p>var app = express();</p>
+
+<p>app.use(session({
+  secret: 'our super secret session secret',
+  cookie: {</p>
+
+<pre><code>maxAge: 3600000,
+secure: true,
+httpOnly: true
+</code></pre>
+
+<p>  }
+}));</p>
+
+<p>app.listen(80);
+```</p>
+
+<p>Here is an example of what the header looks like with both the <code>secure</code> and <code>httpOnly</code> flags set.</p>
+
+<p><code>http
+Set-Cookie: connect.sid=fjdskfjdsksdfjksa; Domain=favatron.com; Path=/; Expires=Sun, 28 Jun 2015 02:12:41 GMT; HttpOnly; Secure
+</code></p>
+
+<h4>Solution 4</h4>
+
+<p>The fourth solution is to tell the browser to never make HTTP requests again. There is a great response header you can send back on all responses that tells the browser to only make requests over HTTPS for a certain amount of time. This response is called HTTP Strict Transport Security (HSTS).</p>
+
+<p>This is a great feature, because it negates the problem where users may still make requests over HTTP to your site. Then at the most, users would make one request over HTTP. From that point forward, they would only make requests over HTTPS.</p>
+
+<p>The following Express application from previous examples is updated to show how to do this using the <code>helmet</code> package.</p>
+
+<p>```javascript
+var express = require('express');
+var session = require('express-session');
+var helmet  = require('helmet');</p>
+
+<p>var app = express();</p>
+
+<p>app.use(helmet.hsts({
+  maxAge: 7776000000,
+  includeSubdomains: true
+}));</p>
+
+<p>app.set('trust proxy', 1);</p>
+
+<p>app.use(session({
+  secret: 'our super secret session secret',
+  cookie: {</p>
+
+<pre><code>maxAge: 3600000,
+secure: true,
+httpOnly: true
+</code></pre>
+
+<p>  }
+}));</p>
+
+<p>app.listen(80);
+```</p>
+
+<p>Here is what the response header would look like.</p>
+
+<p><code>http
+Strict-Transport-Security: max-age=7776000; includeSubDomains
+</code></p>
+
+<p>Along with using the response headers to control this, there is a registry where you can add your domain and have it automatically added to preload lists of Chrome, Firefox, Safari, and a future version of IE. This way, even that initial request over HTTP could be avoided. You can find the form <a href="https://hstspreload.appspot.com/">here</a>.</p>
+
+<h3>Wrap up</h3>
+
+<p>There are many more ways in which you can create broken authentication and session management. Hopefully this article has given you some insight into areas of your application to pay attention to.</p>
+
+<p>I have a lot more tutorials coming so be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Secure Node Apps Against OWASP Top 10 - Injection]]></title>
+    <link href="http://scottksmith.com/blog/2015/06/08/secure-node-apps-against-owasp-top-10-injection/"/>
+    <updated>2015-06-08T12:06:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2015/06/08/secure-node-apps-against-owasp-top-10-injection</id>
+    <content type="html"><![CDATA[<p>Welcome to part 1 of the OWASP security series</p>
+
+<ol>
+<li><a href="/blog/2015/06/08/secure-node-apps-against-owasp-top-10-injection/">Injection</a></li>
+<li><a href="/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/">Broken Authentication &amp; Session Management</a></li>
+<li><a href="/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/">Cross Site Scripting (XSS)</a></li>
+<li><a href="/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/">Cross Site Request Forgery (CSRF)</a></li>
+<li>Using Components with Known Vulnerabilities (Coming soon)</li>
+</ol>
+
+
+<p>In this multipart series, we will explore some of the the <a href="https://www.owasp.org/index.php/Top_10_2013">OWASP top web application security flaws</a> including how they work and best practices to protect your application from them. The focus will be on Express web applications in Node, but the principles shown can be applied to any framework or environment.</p>
+
+<p>This part of the series will cover <a href="https://www.owasp.org/index.php/Top_10_2013-A1-Injection">Injection</a>.</p>
+
+<h3>Injection</h3>
+
+<p>So what exactly is an Injection attack? An Injection attack occurs when an attacker sends text-based attacks that exploit the syntax of the targeted interpreter.</p>
+
+<p>An attacker can be anyone capable of sending untrusted data to the system such as external users, internal users, administrators, etc.</p>
+
+<p>Injection attacks can be very bad for an application. They can result in data loss, data corruption, data access, denial of access, and even complete takeover.</p>
+
+<h3>SQL Injection</h3>
+
+<p>When you hear about Injection attacks, the one you might think of first is SQL injection. SQL injection has been around for almost 20 years and is still a big issue for many web applications. A <a href="http://www.imperva.com/docs/HII_Web_Application_Attack_Report_Ed4.pdf">study</a> done in 2012 by Imperva observed that average web applications get at least 4 SQL injection attacks per month.</p>
+
+<p>Most commonly known as an attack vector for web applications, SQL injection can also be used to attack any application using SQL databases. Like Injection attacks in general, SQL injection is done by injecting code (via text) into data-driven applications. The goal of these attacks is to inject SQL statements and have them executed for the purpose of dumping the database contents, deleting data, and more.</p>
+
+<p>Some of the systems that can be affected by this attack are SQL Server, PostgreSQL, MySQL, and any SQL based database.</p>
+
+<p>Below you will see an example Express application using a MySQL database that is vulnerable to SQL injection.</p>
+
+<p>```javascript
+var express    = require('express');
+var bodyParser = require('body-parser');
+var mysql      = require('mysql');
+var connection = mysql.createConnection();</p>
+
+<p>var app = express();</p>
+
+<p>app.use(bodyParser.urlencoded());</p>
+
+<p>app.post('/login', function (req, res) {
+  var user = req.body.user;
+  var pass = req.body.pass;
+  var sql  = "SELECT * FROM users WHERE user = '" + user + "' AND pass = '" + pass + "'";</p>
+
+<p>  connection.query(sql, function(err, results) {</p>
+
+<pre><code>// ...
+</code></pre>
+
+<p>  });
+});</p>
+
+<p>app.listen(80);
+```</p>
+
+<p>The problem with this code is that we are building our SQL statement using user input. You can see this on lines 11 to 13. We are reading in user supplied input for the <code>user</code> and <code>pass</code> variables. These are then used via string concatentation to build our SQL statement.</p>
+
+<p>So why is this bad? Let me show you an example of how bad this is. Imagine someone making the following HTTP request to the <code>/login</code> endpoint.</p>
+
+<p>```text
+POST /login HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded</p>
+
+<p>user=admin'--&amp;pass=whatever
+```</p>
+
+<p>The resulting SQL statement would look like this.</p>
+
+<p><code>sql
+SELECT * FROM users WHERE user = 'admin'--' AND pass = 'whatever'
+</code></p>
+
+<p>Yeah, that is very bad. Assuming there is an account named admin, this attacker would now have access and permissions that the admin account has. But this is only a simple example. The attacker could do a multitude of things given this vulnerability.</p>
+
+<h4>Solution #1: Escape user input</h4>
+
+<p>In this example, we are using the <code>mysql</code> npm package. It offers functionality to properly escape user input which we can use to lock down our application. Many other libraries out there offer this type of functionality or you can find libraries solely for escaping user input. Here is our previous example now escaping user input.</p>
+
+<p>```javascript
+var express    = require('express');
+var bodyParser = require('body-parser');
+var mysql      = require('mysql');
+var connection = mysql.createConnection();</p>
+
+<p>var app = express();</p>
+
+<p>app.use(bodyParser.urlencoded());</p>
+
+<p>app.post('/login', function (req, res) {
+  var user = connection.escape(req.body.user);
+  var pass = connection.escape(req.body.pass);
+  var sql  = "SELECT * FROM users WHERE user = '" + user + "' AND pass = '" + pass + "'";</p>
+
+<p>  connection.query(sql, function(err, results) {</p>
+
+<pre><code>// ...
+</code></pre>
+
+<p>  });
+});</p>
+
+<p>app.listen(80);
+```</p>
+
+<p>Now, when someone sends an HTTP request like our previous example, the resulting SQL statement will look like this.</p>
+
+<p><code>sql
+SELECT * FROM users WHERE user = 'admin''--' AND pass = 'whatever'
+</code></p>
+
+<p>You can see that the resulting SQL statement no longer has the exploit in it.</p>
+
+<p>While escaping user input is better than not, it is still not full proof. Escaping algorithms can have bugs, not cover all cases, or miss newly found exploits.</p>
+
+<h4>Solution #2: Parameterized SQL queries</h4>
+
+<p>Parameterize SQL queries is an even better way to secure your application. Instead of building a SQL statement using concatenation, we let a function replace the parameters within the statement and perform sanitation. Here is what our example would look like using this method. Please note this is a bit pseudo code but helps get the point across.</p>
+
+<p>```javascript
+var express    = require('express');
+var bodyParser = require('body-parser');
+var db         = require('db');</p>
+
+<p>var app = express();</p>
+
+<p>app.use(bodyParser.urlencoded());</p>
+
+<p>app.post('/login', function (req, res) {
+  var user = req.body.user;
+  var pass = req.body.pass;
+  var sql  = "SELECT * FROM users WHERE user = $1 AND pass = $2";</p>
+
+<p>  db.query(sql, [user, pass], function(err, results) {</p>
+
+<pre><code>// ...
+</code></pre>
+
+<p>  });
+});</p>
+
+<p>app.listen(80);
+```</p>
+
+<p>What happens here is <code>$1</code> and <code>$2</code> get replaced with <code>user</code> and <code>pass</code> when we make the call to <code>db.query</code>. With our previous example, this is what the SQL statement would look like.</p>
+
+<p><code>sql
+SELECT * FROM users WHERE user = 'admin''--' AND pass = 'whatever'
+</code></p>
+
+<h3>Node Injection</h3>
+
+<p>SQL is not the only way in which an injection attack can occur. Node can also be an attack vector. This can be done by getting it to execute JavaScript submitted as user input.</p>
+
+<p>Attacks are done by taking advantage of applications that use <code>eval()</code> with user input. The following code shows an Express application vulnerable to this type of attack.</p>
+
+<p>```javascript
+var express    = require('express');
+var bodyParser = require('body-parser');</p>
+
+<p>var app = express();</p>
+
+<p>app.use(bodyParser.urlencoded());</p>
+
+<p>app.post('/run', function (req, res) {
+  eval(req.body.cmd);
+});</p>
+
+<p>app.listen(80);
+```</p>
+
+<p>If someone were to make an HTTP request like the following, things would be bad in the application. It would be stuck in an infinite loop outputting to the console.</p>
+
+<p>```text
+POST /run HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded</p>
+
+<p>cmd=while(1){console.log("HACKED")}
+```
+This is a more benign exploit example but if this hole existed in an application, an attacker could execute anything they want.</p>
+
+<p>The solution here is pretty simple. Never use <code>eval()</code> with user input. If you have to, be aware of the risks and attempt to mitigate them as much as possible.</p>
+
+<h3>MongoDB Injection</h3>
+
+<p>Another type of injection attack you need to be aware of is when working with MongoDB. These attacks usually take advantage of query selectors or the fact that they do not get explicitly set. The following Express application currently has a vulnerability to this type of attack.</p>
+
+<p>```javascript
+var express    = require('express');
+var bodyParser = require('body-parser');</p>
+
+<p>var app = express();</p>
+
+<p>app.use(bodyParser.urlencoded());
+app.use(bodyParser.json());</p>
+
+<p>app.post('/login', function (req, res) {
+  var user = req.body.user;
+  var pass = req.body.pass;</p>
+
+<p>  db.users.find({user: user, pass: pass});
+});</p>
+
+<p>app.listen(3000);
+```</p>
+
+<p>The exploit occurs because of the couple things. First, we are allowing JSON data to be posted to our application. Second, we are not specifying the query selectors to use (line 13). If an attacker were to make the following HTTP request to our application, a successful attack would occur.</p>
+
+<p>```text
+POST /login HTTP/1.1
+Host: example.com
+Content-Type: application/json</p>
+
+<p>{</p>
+
+<pre><code>"user": {"$gt": ""},
+"pass": {"$gt": ""}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>What happens here is the attacker is passing JSON objects for the <code>user</code> and <code>pass</code> parameters. When those are passed in to the <code>db.user.find()</code> call, the following occurs.</p>
+
+<p><code>javascript
+db.users.find({user: { '$gt': '' }, pass: { '$gt': '' }});
+</code></p>
+
+<p>When this executes, we will find all users with <code>user</code> greater than '' and <code>pass</code> greater than ''. This will return all users within the user table. This happened because we are not explicitly setting the query selector so the attacker was able to specify one themself.</p>
+
+<p>The solution to this exploit is simple. You need to explicity set the query selector. Here is our previous code updated to fix this issue. See line 13 for the changes.</p>
+
+<p>```javascript
+var express    = require('express');
+var bodyParser = require('body-parser');</p>
+
+<p>var app = express();</p>
+
+<p>app.use(bodyParser.urlencoded());
+app.use(bodyParser.json());</p>
+
+<p>app.post('/login', function (req, res) {
+  var user = req.body.user;
+  var pass = req.body.pass;</p>
+
+<p>  db.users.find({user: { $in: [user] }, pass: { $in: [pass] }});
+});</p>
+
+<p>app.listen(3000);
+```</p>
+
+<p>Here is what the result is now if someone were to make the same exploit HTTP request.</p>
+
+<p><code>javascript
+db.users.find({user: { $in: [{ '$gt': '' }] }, pass: { $in: [{ '$gt': '' }] }});
+</code></p>
+
+<p>Now, all users will not be returned for this attack and our code works as expected.</p>
+
+<h3>Wrap up</h3>
+
+<p>Injection attacks are one the most prevalent attacks out there, easiest to exploit, and can have a severe impact. If you can take one thing away from this article is to never trust user input. It is the trust in the input that allows these attacks to occur.</p>
+
+<p>I have a lot more tutorials coming so be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+]]></content>
+  </entry>
+  
+</feed>

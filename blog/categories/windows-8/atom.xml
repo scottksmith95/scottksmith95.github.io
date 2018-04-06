@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Windows 8 | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/windows-8/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Windows 8 Camp in a Box]]></title>
+    <link href="http://scottksmith.com/blog/2012/05/16/windows-8-camp-in-a-box/"/>
+    <updated>2012-05-16T13:52:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/05/16/windows-8-camp-in-a-box</id>
+    <content type="html"><![CDATA[<p>Microsoft provides free training events in the form of dev camps. One such dev camp is <a href="http://www.devcamps.ms/windows">Windows 8 Developer Camp</a>. Windows 8 Developer Camps are free, fun, no-fluff events for developers, by developers. You learn from experts in a low-key, interactive way and then get hands-on time to apply what you’ve learned.</p>
+
+
+<p>If you don't have the time or ability to attend these events in person, you can still benefit from them by downloading the Windows 8 Camp in a Box. There are two versions available: C# and JavaScript.</p>
+
+
+<p>You can get it here:</p>
+
+
+<p><a href="http://www.microsoft.com/en-us/download/details.aspx?id=29854">http://www.microsoft.com/en-us/download/details.aspx?id=29854</a></p>
+
+]]></content>
+  </entry>
+  
+</feed>

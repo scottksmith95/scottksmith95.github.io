@@ -1,0 +1,1182 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Beer Locker: Building a RESTful API with Node - OAuth2 Server - Scott Smith</title>
+  <meta name="author" content="Scott Smith">
+
+  
+  <meta name="description" content="In this beer locker installment we will dive into creating an OAuth2 server and allowing access to API endpoints for the authorized user or authorized applications. We will do this by integrating &hellip;">
+  <meta name="keywords" content="Node.js, JavaScript, REST, API, Express, Mongoose, MongoDB, Passport, OAuth, OAuth2, OAuth2orize, Tutorials">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server">
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@scottksmith95" />
+  <meta name="twitter:title" content="Beer Locker: Building a RESTful API with Node - OAuth2 Server - Scott Smith" />
+  <meta name="twitter:description" content="In this beer locker installment we will dive into creating an OAuth2 server and allowing access to API endpoints for the authorized user or authorized applications. We will do this by integrating &hellip;" />
+  <meta name="twitter:url" content="http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server" />
+
+  <meta property="og:title" content="Beer Locker: Building a RESTful API with Node - OAuth2 Server - Scott Smith"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:description" content="In this beer locker installment we will dive into creating an OAuth2 server and allowing access to API endpoints for the authorized user or authorized applications. We will do this by integrating &hellip;"/>
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+  <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196">
+  <link rel="icon" type="image/png" href="/favicon-160x160.png" sizes="160x160">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <style>
+  #DegreedButton.degreed-28-full,.degreed-28-full {
+    background-color: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKIAAAAcCAYAAADiMmQeAAAI3UlEQVR4Ae2c/VNTVxrH/WX/iW1lX7ad1a3udme329ruy85OuypdmaXase1s60va7tjKllFENLJaFayyWko73YJKV120pVEQhKBEJJTlhShBKBAQUaBCIIEAhpCX5H43587lmdy85IYEdJjez8wzcnPuPcm955NzznPujYtyc69/T9vY/EFNk/5eTVMLHlTIIQdzTtvQcog5uIhJ2NZ1G3a7AzIyDxLmXE1ji5o5uEjbpB+0O2QJZR4OzD3m4CLWRT5InH0dsKpP8uEwNEJGhjnIi7jltA4Zl9pRbRiG3eVGMG4ZJ3Fc24NtXzTj9eP1ePtUE39MXY8JHMchUiYKDmJo42N8jH30d8gQsojf31ZM8UR6OQ6WfoORyWl4PByKmgfwYraWyoPFn45cxdUOI6Tg7DaMpPyRRDRueRJuyzD8kZFFpPhxagmeOXiFtiOJ9KLWkL0j53LAkpfCBBTFaNYGeGz3ARlZxJQv9UjI0eKR7eFF+9X7FdhyRoc0VQteza1DXMrFgH2KbgzAF9dgD6yVp2HaEy+WULGE/h7e/ntY1SfgvNMGme+wiIz6HhOez6oKKmBCTg20XcNwuT2YdrqpgsFxG1765GvRvidqeuDLeP6ugF5wqqoA080ar4xLxb3jkTcQDTpDP85r6qGubUIkjNs4LIvfhLeU+xGK/XkqxP1uHbS6RswXXQMmVOnaUNfa7Y1b/N99RhMWMhyAdckZ3mu3hm3NTsTXcuuCCvi0d2guu3kPDE2HEX84fBW/3FeB03V3eCkZLLnZUajHz/+p5pMem9MdVsTh5GfhHjfBY5+CKf0vMYvIAVjsFSZOiAnrOKQYsjj5fX+7fgNC8fT69/h9TqpUCEZSxmdYHv8aAA+IGD63OBKhNxiwEPHQef2VbcU2R/xRagmOXu7kJRuemMam/IaAfZ7NqGSJjGTGzJZpht9bIRJuZNdKmDNfEb1mfPfXmDiXidnSaBgSNeLhvJNzIuILCiWJKHGxoxbxUeEzr0/eh8y8QrycnCE6l2KN5rsrIusd75qtmMHp9uBjTRdLXoL2mi/8qyqijHlaVwFj0m8Chmnj28sxVXUW0fK8IAxFBEOC2eqREpHqDdUjPkoXm4tZRLOFhmOMWt0+PWUiOM6FhcajsYj4i71qFDd/i1AwOV8NHMIpEr1zxabeUYTD0X0dQ5seF4loqy9BtEw5ITTYWlTrOqkBO3t7Ahr9YN55LI/f6I0NeG59EkhEEsCFlYo0Vpe3fCsrJxH961ohHM9itfeYD/LyqWxrRi6VLY//G/qNQ5IiGs0j8KXfbKc6Ltd+jRkKNdfZa3TODa2top5ok/JDKo9XbOPnnX9W7EaLoQMltd/w5643dKPU+zdNYyTqjaRco+vCMuHasrl3XLQiskVqy5QDkcCG42Xp5SGF3HCiHh2DEwjF2MfvkoSmvQmIhS81euGkV4nmda8kp8KXJXRxKEQi3ncgaHkoEanHIuHWgrE0xPsMGAcjFZF4xm+O+qmqmkRQKI8hTvylo/3jFdvxj4zPRO9/rqwM/ylrCPK57knVK1FObSCKqEWcLaNWB5IKroeUkS0DsfI+GuJBWCtPwbj1KT4mvjiEGKCGL9ZUgnFFd4uGNJfb7te7JMJksYBxs9csEvENZY7QiEng4JFMVuxu0DzI5XbxUnUOjFMDTDumwdiZ/V+h3ndmIyJ9eej9RcO4mc5VqNtnXraWGv+l5EN8+e2Bu2CIRUxAe2+fVL2S5XQOvOxqMGzOGOaI0XKtcxhPHbgcUsgf7LiI3edv8ndp5haa55FkCuVR6qlITmoAsQyD4mSFEpMWQ3tEc0QucB5EPUd6dg5msNggmrdGI2K+ShWqx6bemPMRcchsgpsDfha/ieoWi/gifRaJeiXLXRxJR3VyscwRP6/txdC4DVI4XB5UdRr55ZrVH1bjyb1qWtQOFz9JK8Xh8g5M2V2YK1Kzz9JFCX6h1lED0HAdPFkh6UiI6EWkrF0sYoKEiEa/lYBB0RA4TvUk4mzZNRSUaSnqW9tDDJHsnHeCIf5CboWAVL1S5XQd6fzmIllhwZKR5r4x+DNhcyLzUjuW7L5E+0YT7B72XCAeEi7D7nRjyuHi/y2tbRetKV7R9VCv5HA64OEXXDN9RaRh+C3lATCMFjv1ruFFTMS0w+4nzxqaFvxbdY3eJ9w5dPT28ttTDjdyVVU+Mq0KmJf2sKFWgPVI5bWNM9MNkuaCpg59RlEvSyLSZ5Gud1bljUICU6i5gbi5Wkd88/NGnPpfL79wnaXuxBN7yqgslmC3BmNHfNHFyxvUwDRM2t2hhhdqFJJVFBIiLg5SzyM+r1H2SEN+SBEDg7449qAjQLwiFasUu4XtlWC8n3cxyKiwAUWa6pAiStQrVU7TmjlLVnZ+1cIWsSOSac1HWhTU34VhaAJjUw64PRwY7EmdyWkn7pisqGgbxMuf1s6biO9knBB6sH1hy5MzsgRxR0TzyeOqSiz2G6YO5F0QLX1sVmZTxhmMSl13gIgON9hySYilDgkRqa4tqNbpEYxjZ8r9RHsdekMXu2Xpk9ke9cqSJmxTouGTZGyNtF6pckrcVggjCoucM0XCdkJ0yUq3cRI/lRh6j6g7ECn6vrGA47/S9eNh4uakh3w3x2E2cCHrwXxAdXMgaH6q1TXAl8U+yzQR1xtNeeiyqLJmloCEFfFmvwXSUGIjOvai/lvMDzIltZ3UI72pzOJvFz5HvRTLkj0L5+kbNsQuVdJckH8sbH9Jm0imCzcGohZx9L4d84eMzjCAzcpjwh2OjVitSEFFbRP12QtFRPbIP0nD7pywTJmx50Irvc6erokQ9rCESESr3QUZGUkRN+c3kjSfXO3GDKZJO364g09k+DXDexYbIoDdd6b6Ht91CTIyYUVkP+Vr7TPT09mPpZX633dm96JJqtRCPSKAJTZ0DHt4VkYm7M9J2Y+bz1W38T8DYNLsLW6DP7eGJ0lUFiUt4ROPG3dHRY+Nnay5DRmZYD+wbzPcBnNQ/i9H5HhowXpC5h5z8P+niYlTnKOTMAAAAABJRU5ErkJggg==) !important;
+    height: 28px !important;
+    width: 162px !important;
+  }
+  </style>
+  <link href="/atom.xml" rel="alternate" title="Scott Smith" type="application/atom+xml">
+
+  <script src="//load.sumome.com/" data-sumo-site-id="0d857e605c25378eb99ef0880f3d471e6d4792fd62b3c1e378fa89057293706c" async="async"></script>
+</head>
+
+<body   >
+  <header role="banner"><div class="logo">
+  <img src="/images/logo.png" alt="Site Logo">
+</div>
+<hgroup>
+  <h1><a href="/">Scott Smith</a></h1>
+  <h2>
+    <a href="/">Blog</a>
+    <a href="/blog/categories/tutorials">Tutorials</a>
+    <a href="/projects">Projects</a>
+    <a href="/speaking">Speaking</a>
+    <a href="/atom.xml" class="rss">RSS</a>
+  </h2>
+</hgroup>
+</header>
+  <div id="main">
+    <div id="content">
+      <div style="padding-top: 0;">
+<article class="hentry" role="article">
+  
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title">Beer Locker: Building a RESTful API With Node - OAuth2 Server</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-07-02T08:23:00-07:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2014</time>
+      </p>
+    
+    
+      <button style="margin-top: 20px;" onclick="var e=document.createElement('script');e.setAttribute('charset','UTF-8');e.setAttribute('src','https://az287915.vo.msecnd.net/scripts/degreed/media/bookmarklet.js?id=1&v=' + Math.random()*99999999);document.getElementsByTagName('body')[0].appendChild(e)" title="+ Degreed" id="DegreedButton" class="degreed-28-full">+ Degreed</button>
+    
+  </header>
+
+
+<div class="entry-content">
+  <p>Welcome to part 4 of the Beer Locker series</p>
+
+<ol>
+<li><a href="/blog/2014/05/02/building-restful-apis-with-node/">Getting started</a></li>
+<li><a href="/blog/2014/05/05/beer-locker-building-a-restful-api-with-node-crud/">CRUD</a></li>
+<li><a href="/blog/2014/05/29/beer-locker-building-a-restful-api-with-node-passport/">Passport</a></li>
+<li><a href="/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/">OAuth2 Server</a></li>
+<li><a href="/blog/2014/09/14/beer-locker-building-a-restful-api-with-node-digest/">Digest</a></li>
+<li><a href="/blog/2014/09/18/beer-locker-building-a-restful-api-with-node-username-and-password/">Username &amp; Password</a></li>
+</ol>
+
+
+<p>In our <a href="/blog/2014/05/29/beer-locker-building-a-restful-api-with-node-passport/">previous article</a> we ended wtih a functional API capable of creating user accounts, locking down API endpoints, and only allowing access to a user&#8217;s own beer locker.</p>
+
+<p>In this part we will dive into creating an OAuth2 server and allowing access to API endpoints for the authorized user or authorized applications. We will do this by integrating <a href="https://github.com/jaredhanson/oauth2orize">OAuth2orize</a> into our application.</p>
+
+<!-- more -->
+
+
+<h2>Security</h2>
+
+<p>I realized I wasn&#8217;t explicitly clear about what steps ones should take in regards to security. This article was meant more on how to get an OAuth2 server up and running. When implementing an OAuth2 server you MUST make sure to secure your application. This means running all OAuth2 endpoints over HTTPS and hashing the client secret, authorization code, and access token. All three of those values should be treated the same way you would a password for a user account. If you are unsure about how best to secure your applications, you should seek out the assistance of someone who does.</p>
+
+<h2>Application Client</h2>
+
+<p>The first thing we need to do is add a new model, controller, and endpoints to allow us to create new application clients. An application client is what would request access to a user account. Perhaps something like a service that wants to help manage your beer collection to notify you when you are running low.</p>
+
+<p>Create a new file called <code>client.js</code> in the <code>models</code> directory and add the following code to it.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Load required packages</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">mongoose</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;mongoose&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Define our client schema</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">ClientSchema</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">Schema</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">name</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">unique</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">required</span><span class="o">:</span> <span class="kc">true</span> <span class="p">},</span>
+</span><span class='line'>  <span class="nx">id</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">required</span><span class="o">:</span> <span class="kc">true</span> <span class="p">},</span>
+</span><span class='line'>  <span class="nx">secret</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">required</span><span class="o">:</span> <span class="kc">true</span> <span class="p">},</span>
+</span><span class='line'>  <span class="nx">userId</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">required</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Export the Mongoose model</span>
+</span><span class='line'><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="s1">&#39;Client&#39;</span><span class="p">,</span> <span class="nx">ClientSchema</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>There isn&#8217;t too much going on here that differs from what we already did in previous articles. We have a name to help identify the application client. The id and secret are used as part of the OAuth2 flow and should always be kept secret. In this post we aren&#8217;t adding any encryption, but it would be a good practice to hash the secret at the very least. Finally we have a userId field to identify which user owns this application client.</p>
+
+<p>You could also consider auto generating the client id and secret in order to enforce uniqueness, randomness, and strength.</p>
+
+<p>The next thing we will add is the controller to facilitate adding and viewing application clients. Create a new file called <code>client.js</code> in the <code>controllers</code> directory and add the following code to it.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Load required packages</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">Client</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../models/client&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Create endpoint /api/client for POST</span>
+</span><span class='line'><span class="nx">exports</span><span class="p">.</span><span class="nx">postClients</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="c1">// Create a new instance of the Client model</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Client</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// Set the client properties that came from the POST data</span>
+</span><span class='line'>  <span class="nx">client</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">name</span><span class="p">;</span>
+</span><span class='line'>  <span class="nx">client</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">id</span><span class="p">;</span>
+</span><span class='line'>  <span class="nx">client</span><span class="p">.</span><span class="nx">secret</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">secret</span><span class="p">;</span>
+</span><span class='line'>  <span class="nx">client</span><span class="p">.</span><span class="nx">userId</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">_id</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// Save the client and check for errors</span>
+</span><span class='line'>  <span class="nx">client</span><span class="p">.</span><span class="nx">save</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span><span class='line'>      <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">({</span> <span class="nx">message</span><span class="o">:</span> <span class="s1">&#39;Client added to the locker!&#39;</span><span class="p">,</span> <span class="nx">data</span><span class="o">:</span> <span class="nx">client</span> <span class="p">});</span>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Create endpoint /api/clients for GET</span>
+</span><span class='line'><span class="nx">exports</span><span class="p">.</span><span class="nx">getClients</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="c1">// Use the Client model to find all clients</span>
+</span><span class='line'>  <span class="nx">Client</span><span class="p">.</span><span class="nx">find</span><span class="p">({</span> <span class="nx">userId</span><span class="o">:</span> <span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">_id</span> <span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">clients</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span><span class='line'>      <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">clients</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'><span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>These two methods will allow us to create new application clients and get all existing ones for the authenticated user.</p>
+
+<p>Finally, in the <code>server.js</code> file we need to require the new controller and add some new routes for the two endpoints. The new route can be added just after the <code>/users</code> route.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">clientController</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./controllers/client&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Create endpoint handlers for /clients</span>
+</span><span class='line'><span class="nx">router</span><span class="p">.</span><span class="nx">route</span><span class="p">(</span><span class="s1">&#39;/clients&#39;</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="nx">authController</span><span class="p">.</span><span class="nx">isAuthenticated</span><span class="p">,</span> <span class="nx">clientController</span><span class="p">.</span><span class="nx">postClients</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">authController</span><span class="p">.</span><span class="nx">isAuthenticated</span><span class="p">,</span> <span class="nx">clientController</span><span class="p">.</span><span class="nx">getClients</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Using Postman, let&#8217;s go ahead and create a new application client. If for some reason you forgot your password for your user, you should make a new one by posting to the /users endpoint with username and password.</p>
+
+<p><img src="/images/postman10.png" alt="Postman" /></p>
+
+<h2>Authenticate our application client</h2>
+
+<p>We already created the ability to authenticate a user in our previous article using the BasicStrategy. We need to do the same here so we can lock down our token exchange endpoint which we will implement later.</p>
+
+<p>Update the <code>controllers/auth.js</code> file to require the Client model, add a new BasicStrategy to passport, and setup an export that can be used to verify the client is authenticated.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">Client</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../models/client&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">passport</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="s1">&#39;client-basic&#39;</span><span class="p">,</span> <span class="k">new</span> <span class="nx">BasicStrategy</span><span class="p">(</span>
+</span><span class='line'>  <span class="kd">function</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">password</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">Client</span><span class="p">.</span><span class="nx">findOne</span><span class="p">({</span> <span class="nx">id</span><span class="o">:</span> <span class="nx">username</span> <span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">client</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1">// No client found with that id or bad password</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">client</span> <span class="o">||</span> <span class="nx">client</span><span class="p">.</span><span class="nx">secret</span> <span class="o">!==</span> <span class="nx">password</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1">// Success</span>
+</span><span class='line'>      <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">client</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">});</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">exports</span><span class="p">.</span><span class="nx">isClientAuthenticated</span> <span class="o">=</span> <span class="nx">passport</span><span class="p">.</span><span class="nx">authenticate</span><span class="p">(</span><span class="s1">&#39;client-basic&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">session</span> <span class="o">:</span> <span class="kc">false</span> <span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The one thing to note here is that when we call <code>passport.use()</code> we are not just supplying a BasicStrategy object. Instead we are also giving it the name <code>client-basic</code>. Without this, we would not be able to have two BasicStragies running at the same time.</p>
+
+<p>The actual implementation for our new BasicStrategy is to lookup a client using the supplied client id and verify the password is correct.</p>
+
+<h2>Authorization Codes</h2>
+
+<p>We need to create another model that will store our authorization codes. These are the codes generated in the first part of the OAuth2 flow. These codes are then used in later steps by getting exchanged for access tokens.</p>
+
+<p>Create a new file called <code>code.js</code> in the <code>models</code> directory and add the following code to it.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Load required packages</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">mongoose</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;mongoose&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Define our token schema</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">CodeSchema</span>   <span class="o">=</span> <span class="k">new</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">Schema</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">value</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">required</span><span class="o">:</span> <span class="kc">true</span> <span class="p">},</span>
+</span><span class='line'>  <span class="nx">redirectUri</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">required</span><span class="o">:</span> <span class="kc">true</span> <span class="p">},</span>
+</span><span class='line'>  <span class="nx">userId</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">required</span><span class="o">:</span> <span class="kc">true</span> <span class="p">},</span>
+</span><span class='line'>  <span class="nx">clientId</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">required</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Export the Mongoose model</span>
+</span><span class='line'><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="s1">&#39;Code&#39;</span><span class="p">,</span> <span class="nx">CodeSchema</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>It is a pretty simple model with the <code>value</code> field used to store our authorization code. <code>redirectUri</code> is there to store the redirect uri supplied in the initial authorization process so we can add a bit more security later on to make sure the token exchange is legitimate. The <code>userId</code> and <code>clientId</code> fields are used to know what user and application client own this code.</p>
+
+<p>It is also worth noting, that to be extra secure, you should consider hashing the authorization code.</p>
+
+<h2>Access Tokens</h2>
+
+<p>Now we need to create the model that will store our access tokens. Access tokens are the final step in the OAuth2 process. With an access token, an application client is able to make a request on behalf of the user. We will implement the code a little later that creates and validates them.</p>
+
+<p>Create a new file called <code>token.js</code> in the <code>models</code> directory and add the following code to it.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Load required packages</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">mongoose</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;mongoose&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Define our token schema</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">TokenSchema</span>   <span class="o">=</span> <span class="k">new</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">Schema</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">value</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">required</span><span class="o">:</span> <span class="kc">true</span> <span class="p">},</span>
+</span><span class='line'>  <span class="nx">userId</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">required</span><span class="o">:</span> <span class="kc">true</span> <span class="p">},</span>
+</span><span class='line'>  <span class="nx">clientId</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">required</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Export the Mongoose model</span>
+</span><span class='line'><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="s1">&#39;Token&#39;</span><span class="p">,</span> <span class="nx">TokenSchema</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The <code>value</code> field will be of the most interest here. It is the actual token value used when accessing the API on behalf of the user. The <code>userId</code> and <code>clientId</code> fields are used to know what user and application client own this token.</p>
+
+<p>Just like we did for user passwords, you should implement a strong hashing scheme for the access token. Never store them as plain text as we are in this example.</p>
+
+<h2>Authentication using access tokens</h2>
+
+<p>Earlier, we added a second BasicStrategy so we can authenticate requests from clients. Now we need to setup  a BearerStategy which will allow us to authenticate requests made on behalf of users via an OAuth token. This is done via the <code>Authorization: Bearer &lt;access token&gt;</code> header.</p>
+
+<p>First we need to install another npm package that will provide us with the BearerStrategy for Passport.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>npm install passport-http-bearer --save
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Update the <code>controllers/auth.js</code> file to require the <code>passport-http-bearer</code> package and Token model, add a new BearerStrategy to passport, and setup an export that can be used to verify the application client request is authenticated.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">BearerStrategy</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;passport-http-bearer&#39;</span><span class="p">).</span><span class="nx">Strategy</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">Token</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../models/token&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">passport</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="k">new</span> <span class="nx">BearerStrategy</span><span class="p">(</span>
+</span><span class='line'>  <span class="kd">function</span><span class="p">(</span><span class="nx">accessToken</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">Token</span><span class="p">.</span><span class="nx">findOne</span><span class="p">({</span><span class="nx">value</span><span class="o">:</span> <span class="nx">accessToken</span> <span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">token</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1">// No token found</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">token</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="nx">User</span><span class="p">.</span><span class="nx">findOne</span><span class="p">({</span> <span class="nx">_id</span><span class="o">:</span> <span class="nx">token</span><span class="p">.</span><span class="nx">userId</span> <span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">user</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">// No user found</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">user</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">// Simple example with no scope</span>
+</span><span class='line'>        <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">user</span><span class="p">,</span> <span class="p">{</span> <span class="nx">scope</span><span class="o">:</span> <span class="s1">&#39;*&#39;</span> <span class="p">});</span>
+</span><span class='line'>      <span class="p">});</span>
+</span><span class='line'>    <span class="p">});</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">exports</span><span class="p">.</span><span class="nx">isBearerAuthenticated</span> <span class="o">=</span> <span class="nx">passport</span><span class="p">.</span><span class="nx">authenticate</span><span class="p">(</span><span class="s1">&#39;bearer&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">session</span><span class="o">:</span> <span class="kc">false</span> <span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This new strategy will allow us to accept requests from application clients using OAuth tokens and for us to validate those requests.</p>
+
+<h2>Simple UI for granting application client access</h2>
+
+<p>Up to this point in our series, we have not added any UI. We need to add a simple page with a form that will allow a user to grant or deny access to their account for any application client requesting access.</p>
+
+<p>There are a lot of template engines to pick from like jade, handlebars, ejs, and more.For this series, I went with ejs.</p>
+
+<p>First, we need to install the ejs npm package.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>npm install ejs --save
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next, we need to update our express application to tell it to use ejs as its view engine. Add the following require and app.set statements in <code>server.js</code>.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">ejs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ejs&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Create our Express application</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Set view engine to ejs</span>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;view engine&#39;</span><span class="p">,</span> <span class="s1">&#39;ejs&#39;</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally, we need to create our view that will let the user grant or deny the application client access to their account.</p>
+
+<p>Create a new directory called <code>views</code> and add a file named <code>dialog.ejs</code>.</p>
+
+<p>Add the following code to the <code>dialog.ejs</code> file.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="cp">&lt;!DOCTYPE html&gt;</span>
+</span><span class='line'><span class="nt">&lt;html&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;head&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;title&gt;</span>Beer Locker<span class="nt">&lt;/title&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/head&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;body&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;p&gt;</span>Hi <span class="err">&lt;</span>%= user.username %&gt;!<span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;p&gt;&lt;b&gt;</span><span class="err">&lt;</span>%= client.name %&gt;<span class="nt">&lt;/b&gt;</span> is requesting <span class="nt">&lt;b&gt;</span>full access<span class="nt">&lt;/b&gt;</span> to your account.<span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;p&gt;</span>Do you approve?<span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">&quot;/api/oauth2/authorize&quot;</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">&quot;transaction_id&quot;</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">value=</span><span class="s">&quot;&lt;%= transactionID %&gt;&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;div&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;submit&quot;</span> <span class="na">value=</span><span class="s">&quot;Allow&quot;</span> <span class="na">id=</span><span class="s">&quot;allow&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;submit&quot;</span> <span class="na">value=</span><span class="s">&quot;Deny&quot;</span> <span class="na">name=</span><span class="s">&quot;cancel&quot;</span> <span class="na">id=</span><span class="s">&quot;deny&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/form&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nt">&lt;/body&gt;</span>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We will come back to this page later as we do a full walkthrough of how everything works. For now, we have this in place and can move on to the next piece.</p>
+
+<h2>Enable sessions for our express application</h2>
+
+<p>OAuth2orize requires session state for the express application in order to properly complete the authorization transaction. In order to do this, we need to install the express-session package.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>npm install express-session --save
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next we need to require the package and use it in our express application.</p>
+
+<p>Update <code>server.js</code> with the following code.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">session</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express-session&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Set view engine to ejs</span>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;view engine&#39;</span><span class="p">,</span> <span class="s1">&#39;ejs&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Use the body-parser package in our application</span>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">bodyParser</span><span class="p">.</span><span class="nx">urlencoded</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">extended</span><span class="o">:</span> <span class="kc">true</span>
+</span><span class='line'><span class="p">}));</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Use express session support since OAuth2orize requires it</span>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">session</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">secret</span><span class="o">:</span> <span class="s1">&#39;Super Secret Session Key&#39;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nx">saveUninitialized</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+</span><span class='line'>  <span class="nx">resave</span><span class="o">:</span> <span class="kc">true</span>
+</span><span class='line'><span class="p">}));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Create our OAuth2 controller</h2>
+
+<p>We are finally ready to create our OAuth2 controller that will facilitate the OAuth2 flow.</p>
+
+<p>First, install the oauth2orize package.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>npm install oauth2orize --save
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next, create a new file called <code>oauth2.js</code> in the <code>controllers</code> directory. We will add the code to this file in steps.</p>
+
+<p><strong>Load required packages</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Load required packages</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">oauth2orize</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;oauth2orize&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">User</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../models/user&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">Client</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../models/client&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">Token</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../models/token&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">Code</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../models/code&#39;</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Create our OAuth2 server</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Create OAuth 2.0 server</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">server</span> <span class="o">=</span> <span class="nx">oauth2orize</span><span class="p">.</span><span class="nx">createServer</span><span class="p">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Register serialization and deserialization functions</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Register serialialization function</span>
+</span><span class='line'><span class="nx">server</span><span class="p">.</span><span class="nx">serializeClient</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">client</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">client</span><span class="p">.</span><span class="nx">_id</span><span class="p">);</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Register deserialization function</span>
+</span><span class='line'><span class="nx">server</span><span class="p">.</span><span class="nx">deserializeClient</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">Client</span><span class="p">.</span><span class="nx">findOne</span><span class="p">({</span> <span class="nx">_id</span><span class="o">:</span> <span class="nx">id</span> <span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">client</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">client</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'><span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>When a client redirects a user to user authorization endpoint, an authorization transaction is initiated.  To complete the transaction, the user must authenticate and approve the authorization request.  Because this may involve multiple HTTP request/response exchanges, the transaction is stored in the session.</p>
+
+<p><strong>Register authorization code grant type</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Register authorization code grant type</span>
+</span><span class='line'><span class="nx">server</span><span class="p">.</span><span class="nx">grant</span><span class="p">(</span><span class="nx">oauth2orize</span><span class="p">.</span><span class="nx">grant</span><span class="p">.</span><span class="nx">code</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">client</span><span class="p">,</span> <span class="nx">redirectUri</span><span class="p">,</span> <span class="nx">user</span><span class="p">,</span> <span class="nx">ares</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="c1">// Create a new authorization code</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">code</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Code</span><span class="p">({</span>
+</span><span class='line'>    <span class="nx">value</span><span class="o">:</span> <span class="nx">uid</span><span class="p">(</span><span class="mi">16</span><span class="p">),</span>
+</span><span class='line'>    <span class="nx">clientId</span><span class="o">:</span> <span class="nx">client</span><span class="p">.</span><span class="nx">_id</span><span class="p">,</span>
+</span><span class='line'>    <span class="nx">redirectUri</span><span class="o">:</span> <span class="nx">redirectUri</span><span class="p">,</span>
+</span><span class='line'>    <span class="nx">userId</span><span class="o">:</span> <span class="nx">user</span><span class="p">.</span><span class="nx">_id</span>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// Save the auth code and check for errors</span>
+</span><span class='line'>  <span class="nx">code</span><span class="p">.</span><span class="nx">save</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">code</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'><span class="p">}));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>OAuth 2.0 specifies a framework that allows users to grant client applications limited access to their protected resources.  It does this through a process of the user granting access, and the client exchanging the grant for an access token.</p>
+
+<p>We are registering here for an authorization code grant type. We create a new authorization code model for the user and application client. It is then stored in MongoDB so we can access it later when exchanging for an access token.</p>
+
+<p><strong>Exchange authorization codes for access tokens</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Exchange authorization codes for access tokens</span>
+</span><span class='line'><span class="nx">server</span><span class="p">.</span><span class="nx">exchange</span><span class="p">(</span><span class="nx">oauth2orize</span><span class="p">.</span><span class="nx">exchange</span><span class="p">.</span><span class="nx">code</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">client</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">redirectUri</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">Code</span><span class="p">.</span><span class="nx">findOne</span><span class="p">({</span> <span class="nx">value</span><span class="o">:</span> <span class="nx">code</span> <span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">authCode</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nx">authCode</span> <span class="o">===</span> <span class="kc">undefined</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nx">client</span><span class="p">.</span><span class="nx">_id</span><span class="p">.</span><span class="nx">toString</span><span class="p">()</span> <span class="o">!==</span> <span class="nx">authCode</span><span class="p">.</span><span class="nx">clientId</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nx">redirectUri</span> <span class="o">!==</span> <span class="nx">authCode</span><span class="p">.</span><span class="nx">redirectUri</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Delete auth code now that it has been used</span>
+</span><span class='line'>    <span class="nx">authCode</span><span class="p">.</span><span class="nx">remove</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1">// Create a new access token</span>
+</span><span class='line'>      <span class="kd">var</span> <span class="nx">token</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Token</span><span class="p">({</span>
+</span><span class='line'>        <span class="nx">value</span><span class="o">:</span> <span class="nx">uid</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span>
+</span><span class='line'>        <span class="nx">clientId</span><span class="o">:</span> <span class="nx">authCode</span><span class="p">.</span><span class="nx">clientId</span><span class="p">,</span>
+</span><span class='line'>        <span class="nx">userId</span><span class="o">:</span> <span class="nx">authCode</span><span class="p">.</span><span class="nx">userId</span>
+</span><span class='line'>      <span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1">// Save the access token and check for errors</span>
+</span><span class='line'>      <span class="nx">token</span><span class="p">.</span><span class="nx">save</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">token</span><span class="p">);</span>
+</span><span class='line'>      <span class="p">});</span>
+</span><span class='line'>    <span class="p">});</span>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'><span class="p">}));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What we are doing here is registering for the exchange of authorization codes for access tokens. We first look up to see if we have an authorization code for the one supplied. If we do we perform validation to make sure everything is as it should be. If all is well, we remove the existing authorization code so it cannot be used again and create a new access token. This token is tied to the application client and user. It is finally saved to MongoDB.</p>
+
+<p><strong>User authorization endpoint</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// User authorization endpoint</span>
+</span><span class='line'><span class="nx">exports</span><span class="p">.</span><span class="nx">authorization</span> <span class="o">=</span> <span class="p">[</span>
+</span><span class='line'>  <span class="nx">server</span><span class="p">.</span><span class="nx">authorization</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">clientId</span><span class="p">,</span> <span class="nx">redirectUri</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nx">Client</span><span class="p">.</span><span class="nx">findOne</span><span class="p">({</span> <span class="nx">id</span><span class="o">:</span> <span class="nx">clientId</span> <span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">client</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">client</span><span class="p">,</span> <span class="nx">redirectUri</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">});</span>
+</span><span class='line'>  <span class="p">}),</span>
+</span><span class='line'>  <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">){</span>
+</span><span class='line'>    <span class="nx">res</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="s1">&#39;dialog&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">transactionID</span><span class="o">:</span> <span class="nx">req</span><span class="p">.</span><span class="nx">oauth2</span><span class="p">.</span><span class="nx">transactionID</span><span class="p">,</span> <span class="nx">user</span><span class="o">:</span> <span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">,</span> <span class="nx">client</span><span class="o">:</span> <span class="nx">req</span><span class="p">.</span><span class="nx">oauth2</span><span class="p">.</span><span class="nx">client</span> <span class="p">});</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This endpoint, initializes a new authorization transaction. It finds the client requesting access to the user&#8217;s account and then renders the <code>dialog</code> ejs view we created eariler.</p>
+
+<p><strong>User decision endpoint</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// User decision endpoint</span>
+</span><span class='line'><span class="nx">exports</span><span class="p">.</span><span class="nx">decision</span> <span class="o">=</span> <span class="p">[</span>
+</span><span class='line'>  <span class="nx">server</span><span class="p">.</span><span class="nx">decision</span><span class="p">()</span>
+</span><span class='line'><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This endpoint is setup to handle when the user either grants or denies access to their account to the requesting application client. The <code>server.decision()</code> function handles the data submitted by the post and will call the <code>server.grant()</code> function we created earlier if the user granted access.</p>
+
+<p><strong>Application client token exchange endpoint</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Application client token exchange endpoint</span>
+</span><span class='line'><span class="nx">exports</span><span class="p">.</span><span class="nx">token</span> <span class="o">=</span> <span class="p">[</span>
+</span><span class='line'>  <span class="nx">server</span><span class="p">.</span><span class="nx">token</span><span class="p">(),</span>
+</span><span class='line'>  <span class="nx">server</span><span class="p">.</span><span class="nx">errorHandler</span><span class="p">()</span>
+</span><span class='line'><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This endpoint is setup to handle the request made by the application client after they have been granted an authorization code by the user. The <code>server.token()</code> function will initiate a call to the <code>server.exchange()</code> function we created earlier.</p>
+
+<p><strong>Utility functions to generate unique identifiers</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">function</span> <span class="nx">uid</span> <span class="p">(</span><span class="nx">len</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">buf</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span class='line'>    <span class="p">,</span> <span class="nx">chars</span> <span class="o">=</span> <span class="s1">&#39;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&#39;</span>
+</span><span class='line'>    <span class="p">,</span> <span class="nx">charlen</span> <span class="o">=</span> <span class="nx">chars</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">len</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">buf</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">chars</span><span class="p">[</span><span class="nx">getRandomInt</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">charlen</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">return</span> <span class="nx">buf</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">function</span> <span class="nx">getRandomInt</span><span class="p">(</span><span class="nx">min</span><span class="p">,</span> <span class="nx">max</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">return</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="nx">max</span> <span class="o">-</span> <span class="nx">min</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="nx">min</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Add routes to OAuth2 endpoints</h2>
+
+<p>Now that we have the controller made for our OAuth2 endpoints, we need to update our express application to add the necessary routes to those endpoints.</p>
+
+<p>In <code>server.js</code> require the new oauth2 controller and add a few new routes.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">oauth2Controller</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./controllers/oauth2&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Create endpoint handlers for oauth2 authorize</span>
+</span><span class='line'><span class="nx">router</span><span class="p">.</span><span class="nx">route</span><span class="p">(</span><span class="s1">&#39;/oauth2/authorize&#39;</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">authController</span><span class="p">.</span><span class="nx">isAuthenticated</span><span class="p">,</span> <span class="nx">oauth2Controller</span><span class="p">.</span><span class="nx">authorization</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="nx">authController</span><span class="p">.</span><span class="nx">isAuthenticated</span><span class="p">,</span> <span class="nx">oauth2Controller</span><span class="p">.</span><span class="nx">decision</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Create endpoint handlers for oauth2 token</span>
+</span><span class='line'><span class="nx">router</span><span class="p">.</span><span class="nx">route</span><span class="p">(</span><span class="s1">&#39;/oauth2/token&#39;</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="nx">authController</span><span class="p">.</span><span class="nx">isClientAuthenticated</span><span class="p">,</span> <span class="nx">oauth2Controller</span><span class="p">.</span><span class="nx">token</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Access token authorization on API endpoints</h2>
+
+<p>At this point we have everything in place for a fully functioal OAuth2 server. The last piece we need is to update our endpoints that require authorization. Currently, we are authorizing with the BasicStrategy which uses username/password. We need to update that to also allow it to use the BearerStrategy which will allow the use of the access token.</p>
+
+<p>Change the <code>exports.isAuthenticated</code> call in <code>controllers/auth.js</code> to use either basic or bearer strategies.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">exports</span><span class="p">.</span><span class="nx">isAuthenticated</span> <span class="o">=</span> <span class="nx">passport</span><span class="p">.</span><span class="nx">authenticate</span><span class="p">([</span><span class="s1">&#39;basic&#39;</span><span class="p">,</span> <span class="s1">&#39;bearer&#39;</span><span class="p">],</span> <span class="p">{</span> <span class="nx">session</span> <span class="o">:</span> <span class="kc">false</span> <span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We are already using the <code>isAuthenticated</code> function on our endpoints so this change will allow authorization with usernamne/password and access tokens.</p>
+
+<h2>Let&#8217;s use our OAuth2 server!</h2>
+
+<p>That was a lot of code! Still far less than it would have been had we not used OAuth2orize.</p>
+
+<p>Now it is time to actually try it out.</p>
+
+<p>Open up your favorite web browser and browse to: <a href="http://localhost:3000/api/oauth2/authorize?client_id=this_is_my_id&amp;response_type=code&amp;redirect_uri=http://localhost:3000">http://localhost:3000/api/oauth2/authorize?client_id=this_is_my_id&amp;response_type=code&amp;redirect_uri=http://localhost:3000</a>. If you used a different client id, then change it in the query string. Also, if you are running on a different port, be sure to change that in both places. When prompted, enter your username and password.</p>
+
+<p><img src="/images/browser1.png" alt="Browser" /></p>
+
+<p>You can test it out by clicking <code>Deny</code> if you want and should see it not continue the OAuth2 flow. Go ahead and click <code>Allow</code> to continue to the next step.</p>
+
+<p><img src="/images/browser2.png" alt="Browser" /></p>
+
+<p>So why did we get a 404? This is part of the tutorial where we are hacking things together a bit. Normally with OAuth2 you would have an endpoint in the application requesting access to a user&#8217;s account. That is the query string <code>redirect_uri</code> that we supplied. So when a user grants access, that URI is requested and passed the authorization code. This then allows the requesting application to exchange that code for an access token.</p>
+
+<p>To continue this tutorial, we will fake an application server using Postman. Go ahead and copy the authorization code from the query string <code>code</code>. Mine in this example would be <code>S7VlbvRQW1aIC5X5</code>.</p>
+
+<p>In Postman, we will want to POST to http://localhost:3000/api/oauth2/token, set the Basic Auth username and password to the client id and client secret for your application client, add set post data values code, grant_type, and redirect_uri. Code needs to be set the code you copied from the browser request. Grant_type needs to be set to authorization_code because that is the type we are using. Redirect_uri needs to be set to the same redirect_uri you used in the authorization code request.</p>
+
+<p><img src="/images/postman11.png" alt="Postman" /></p>
+
+<p>See that <code>value</code> field in the response <code>access_token</code> object? That is our access token which we can now use to make API requests on behalf of the user!</p>
+
+<p>Let&#8217;s test our access token by making a request to our API endpoints.</p>
+
+<p>All you have to do is make GET, POST, PUT, or DELETE requests to the API endpoints we made in earlier tutorials. The only difference is you don&#8217;t have to supply a username or password. Instead, you will add an Authorization header with the value set to <code>Bearer &lt;access token&gt;</code></p>
+
+<p><strong>Add beer to the user&#8217;s locker</strong>
+<img src="/images/postman12.png" alt="Postman" /></p>
+
+<p><strong>Get beer from the user&#8217;s locker</strong>
+<img src="/images/postman13.png" alt="Postman" /></p>
+
+<p>Feel free to play around a bit. You should be able to alter the access token and find you are unauthorized. Switch back to username and password to verify the user still has access.</p>
+
+<h2>Wrap up</h2>
+
+<p>You now have a fully functional OAuth2 server done with just a little bit of work. <a href="https://github.com/jaredhanson/oauth2orize">OAuth2orize</a> is an amazing library that makes building our server very straightfoward.</p>
+
+<p>I have a lot more tutorials coming so be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+
+<p>Source code for this part can be found <a href="https://github.com/scottksmith95/beerlocker/tree/master/beerlocker-4">here on GitHub</a>.</p>
+
+</div>
+
+
+  <button onclick="var e=document.createElement('script');e.setAttribute('charset','UTF-8');e.setAttribute('src','https://az287915.vo.msecnd.net/scripts/degreed/media/bookmarklet.js?id=1&v=' + Math.random()*99999999);document.getElementsByTagName('body')[0].appendChild(e)
+  " title="+ Degreed" id="DegreedButton" class="degreed-28-full">+ Degreed</button>
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Scott Smith</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-07-02T08:23:00-07:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/beer/'>Beer</a>, <a class='category' href='/blog/categories/javascript/'>JavaScript</a>, <a class='category' href='/blog/categories/node-dot-js/'>Node.js</a>, <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>
+  
+</span>
+
+
+    </p>
+    
+      <!-- <div class="sharing">
+  <h4>Share On:</h4>
+  <a href="https://twitter.com/intent/tweet?text=Beer Locker: Building a RESTful API with Node - OAuth2 Server&url=http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/&via=scottksmith95" target="_blank">
+    <img src="/images/icons/twitter/twitter-128.png" alt="Share on Twitter" class="twitter">
+  </a>
+  <a href="https://plus.google.com/share?url=http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/" target="_blank">
+    <img src="/images/icons/googleplus/googleplus-128.png" alt="Share on Google+" class="googleplus">
+  </a>
+  <a href="https://www.facebook.com/sharer/sharer.php?u=http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/" target="_blank">
+    <img src="/images/icons/facebook/facebook-128.png" alt="Share on Facebook" class="facebook">
+  </a>
+  <a href="https://www.linkedin.com/shareArticle?mini=true&title=Beer Locker: Building a RESTful API with Node - OAuth2 Server&url=http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/" target="_blank">
+    <img src="/images/icons/linkedin/linkedin-128.png" alt="Share on LinkedIn" class="linkedin">
+  </a>
+  <a href="mailto:?body=http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/&subject=Beer Locker: Building a RESTful API with Node - OAuth2 Server">
+    <img src="/images/icons/email/email-128.png" alt="Share via Email" class="email">
+  </a>
+</div> -->
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/06/25/8-npm-tips-for-better-node-development/" title="Previous Post: 8 NPM tips for better Node development">&laquo; 8 NPM tips for better Node development</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/08/22/using-secure-cookies-in-node-on-azure/" title="Next Post: Using secure cookies in Node on Azure">Using secure cookies in Node on Azure &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section id="links">
+  <div>
+    <a href="https://twitter.com/scottksmith95" target="_blank">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter" alt="Scott Smith on Twitter">
+    </a>
+  </div>
+  <div>
+    <a href="https://github.com/scottksmith95" target="_blank">
+      <img src="/images/icons/github/github-128.png" class="github" alt="Scott Smith on GitHub">
+    </a>
+  </div>
+  <div>
+    <a href="https://www.linkedin.com/profile/view?id=15073485" target="_blank">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin" alt="Scott Smith on LinkedIn">
+    </a>
+  </div>
+  <div>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email" alt="Scott Smith's Email">
+    </a>
+  </div>
+  <div>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss" "Site RSS Feed">
+    </a>
+  </div>
+</section>
+
+<section id="about">
+  <p>Software developer, learner, writer, & speaker.</p>
+  <p>Currently jailbreaking the degree at Degreed and promoting lifelong learning.</p>
+  <p>Past projects incude coderbits which was sold to Appirio in 2014 and Favatron.</p>
+</section><section id="newsletter">
+  <img src="/images/icons/email/email-128.png">
+  <h2>Get My Latest Articles</h2>
+  <form action="//favatron.us5.list-manage.com/subscribe/post?u=e8909f2779b99d9865361d28e&amp;id=1d7e590a16" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Email address" required>
+    <div style="position: absolute; left: -5000px;">
+      <input type="text" name="b_e8909f2779b99d9865361d28e_1d7e590a16" tabindex="-1" value="">
+    </div>
+    <div class="clear">
+      <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+    </div>
+  </form>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><span style="text-align: center">
+  Copyright &copy; 2017 <a rel="author" href="https://plus.google.com/107452035819962532888?rel=author">Scott Smith</a>
+</span>
+
+<div class="icons">
+  <span>
+    <a href="https://twitter.com/scottksmith95">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter">
+    </a>
+  </span>
+  <span>
+    <a href="https://github.com/scottksmith95">
+      <img src="/images/icons/github/github-128.png" class="github">
+    </a>
+  </span>
+  <span>
+    <a href="https://www.linkedin.com/profile/view?id=15073485">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin">
+    </a>
+  </span>
+  <span>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email">
+    </a>
+  </span>
+  <span>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss">
+    </a>
+  </span>
+</div></footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'scottksmithblog';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/';
+        var disqus_url = 'http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+<script src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-40783302-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+</body>
+</html>

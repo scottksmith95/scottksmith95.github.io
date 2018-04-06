@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[git | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/git/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[A Visual Git Reference]]></title>
+    <link href="http://scottksmith.com/blog/2012/06/27/a-visual-git-reference/"/>
+    <updated>2012-06-27T14:44:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/06/27/a-visual-git-reference</id>
+    <content type="html"><![CDATA[<p>I just stumbled upon this helpful nugget of visualization. The page provides a visual reference of the most command git commands.</p>
+
+
+<p><a href="http://marklodato.github.com/visual-git-guide/index-en.html">http://marklodato.github.com/visual-git-guide/index-en.html</a></p>
+
+]]></content>
+  </entry>
+  
+</feed>

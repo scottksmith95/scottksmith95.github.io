@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[F# | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/f-number/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Try F#]]></title>
+    <link href="http://scottksmith.com/blog/2012/05/29/try-f-number/"/>
+    <updated>2012-05-29T13:54:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/05/29/try-f-number</id>
+    <content type="html"><![CDATA[<p>The goal of the Try F# site and application is to make it simple, fast, and easy for people to try out the F# language.</p>
+
+
+<p>Check it out here:</p>
+
+
+<p><a href="http://www.tryfsharp.org/Tutorials.aspx">http://www.tryfsharp.org/Tutorials.aspx</a></p>
+
+]]></content>
+  </entry>
+  
+</feed>

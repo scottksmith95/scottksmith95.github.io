@@ -1,0 +1,634 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Secure Node Apps Against OWASP Top 10 - Cross Site Request Forgery - Scott Smith</title>
+  <meta name="author" content="Scott Smith">
+
+  
+  <meta name="description" content="In this multipart series, we will explore some of the the OWASP top web application security flaws including how they work and best practices to protect your application from them. The focus will be &hellip;">
+  <meta name="keywords" content="Node.js, JavaScript, Security, OWASP">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://scottksmith.com/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery">
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@scottksmith95" />
+  <meta name="twitter:title" content="Secure Node Apps Against OWASP Top 10 - Cross Site Request Forgery - Scott Smith" />
+  <meta name="twitter:description" content="In this multipart series, we will explore some of the the OWASP top web application security flaws including how they work and best practices to protect your application from them. The focus will be &hellip;" />
+  <meta name="twitter:url" content="http://scottksmith.com/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery" />
+
+  <meta property="og:title" content="Secure Node Apps Against OWASP Top 10 - Cross Site Request Forgery - Scott Smith"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:description" content="In this multipart series, we will explore some of the the OWASP top web application security flaws including how they work and best practices to protect your application from them. The focus will be &hellip;"/>
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+  <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196">
+  <link rel="icon" type="image/png" href="/favicon-160x160.png" sizes="160x160">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <style>
+  #DegreedButton.degreed-28-full,.degreed-28-full {
+    background-color: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+    background-image: url(data:image/png;base64,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) !important;
+    height: 28px !important;
+    width: 162px !important;
+  }
+  </style>
+  <link href="/atom.xml" rel="alternate" title="Scott Smith" type="application/atom+xml">
+
+  <script src="//load.sumome.com/" data-sumo-site-id="0d857e605c25378eb99ef0880f3d471e6d4792fd62b3c1e378fa89057293706c" async="async"></script>
+</head>
+
+<body   >
+  <header role="banner"><div class="logo">
+  <img src="/images/logo.png" alt="Site Logo">
+</div>
+<hgroup>
+  <h1><a href="/">Scott Smith</a></h1>
+  <h2>
+    <a href="/">Blog</a>
+    <a href="/blog/categories/tutorials">Tutorials</a>
+    <a href="/projects">Projects</a>
+    <a href="/speaking">Speaking</a>
+    <a href="/atom.xml" class="rss">RSS</a>
+  </h2>
+</hgroup>
+</header>
+  <div id="main">
+    <div id="content">
+      <div style="padding-top: 0;">
+<article class="hentry" role="article">
+  
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title">Secure Node Apps Against OWASP Top 10 - Cross Site Request Forgery</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-06-29T10:09:00-07:00" pubdate data-updated="true">Jun 29<span>th</span>, 2015</time>
+      </p>
+    
+    
+      <button style="margin-top: 20px;" onclick="var e=document.createElement('script');e.setAttribute('charset','UTF-8');e.setAttribute('src','https://az287915.vo.msecnd.net/scripts/degreed/media/bookmarklet.js?id=1&v=' + Math.random()*99999999);document.getElementsByTagName('body')[0].appendChild(e)" title="+ Degreed" id="DegreedButton" class="degreed-28-full">+ Degreed</button>
+    
+  </header>
+
+
+<div class="entry-content">
+  <p>Welcome to part 4 of the OWASP security series</p>
+
+<ol>
+<li><a href="/blog/2015/06/08/secure-node-apps-against-owasp-top-10-injection/">Injection</a></li>
+<li><a href="/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/">Broken Authentication &amp; Session Management</a></li>
+<li><a href="/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/">Cross Site Scripting (XSS)</a></li>
+<li><a href="/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/">Cross Site Request Forgery (CSRF)</a></li>
+<li>Using Components with Known Vulnerabilities (Coming soon)</li>
+</ol>
+
+
+<p>In this multipart series, we will explore some of the the <a href="https://www.owasp.org/index.php/Top_10_2013">OWASP top web application security flaws</a> including how they work and best practices to protect your application from them. The focus will be on Express web applications in Node, but the principles shown can be applied to any framework or environment.</p>
+
+<p>This part will cover <a href="https://www.owasp.org/index.php/Top_10_2013-A8-Cross-Site_Request_Forgery_(CSRF%29">cross site request forgery (CSRF)</a>.</p>
+
+<h3>Cross Site Request Forgery (CSRF)</h3>
+
+<p>So what exactly is a cross site request forgery vulnerability?</p>
+
+<p>A CSRF attack occurs when an attacker is able to create forged HTTP requests and trick the victim into making those requests via image tags, XSS, and many other ways. When the user makes these malicious requests and is authenticated with the application, the attack can be even more devastating. The attacker is able to get the user to perform state changing operations that the user is authorized to do in the application such as updating account details, making purchases, transferring money, and even deleting the account. Essentially, the attacker takes advantage of the website&#8217;s trust in the user.</p>
+
+<p>We will go over a few different scenarios and show how to protect against them.</p>
+
+<h3>Scenario 1: Changes allowed via GET requests</h3>
+
+<p>This first scenario occurs when a website allows changes to be done via GET requests.</p>
+
+<p><img src="/images/csrf1.png" alt="CSRF Scenario 1" /></p>
+
+<h4>Login</h4>
+
+<p>The first two steps show the victim logging into their bank. This is important because the user must be logged in for the CSRF attack to work.</p>
+
+<h4>GET /index.html</h4>
+
+<p>The attacker has a page on a site they control and shares a link on social media. Our user clicks the link to see what it is and their browser makes a request to <code>/index.html</code> on the attacker&#8217;s site.</p>
+
+<h4>HTTP/1.1 200 OK</h4>
+
+<p>Requests to <code>/index.html</code> returns the following HTML content. If you look at the image tag, you will see it will make a request directly to the bank&#8217;s transfer page along with some query string parameters specifying an account to transfer an amount of money to.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;html&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">&quot;https://bank.com/transfer?to=12345&amp;dollars=1000000&quot;</span> <span class="na">width=</span><span class="s">&quot;0&quot;</span> <span class="na">height=</span><span class="s">&quot;0&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>GET /transfer?to&#8230;</h4>
+
+<p>This is where things get bad. Because the bank supports changes via GET requests, the user browsing to the attackers site will automatically make a GET request to https://bank.com/transfer?to=12345&amp;dollars=1000000. Because the user has already logged in, their session cookie is passed along in the request and the attack will succeed.</p>
+
+<h4>Solution</h4>
+
+<p>The solution here is very simple. Never allow changes to occur on GET requests. Only allow changes to be made when the HTTP method is POST, PUT, or DELETE.</p>
+
+<h3>Scenario 2: Posting exploited data to sites</h3>
+
+<p>We have now locked our applications down to no longer allow changes via GET requests. This next attack occurs by getting the user to automatically submit a malicious POST request to the web application.</p>
+
+<p><img src="/images/csrf2.png" alt="CSRF Scenario 2" /></p>
+
+<h4>Login</h4>
+
+<p>The first two steps show the victim logging into their bank.</p>
+
+<h4>GET /index.html</h4>
+
+<p>The attacker has a page on a site they control and shares a link on social media. Our user clicks the link to see what it is and their browser makes a request to <code>/index.html</code> on the attacker&#8217;s site.</p>
+
+<h4>HTTP/1.1 200 OK</h4>
+
+<p>Requests to <code>/index.html</code> returns the following HTML content. What is going on here is the attacker is creating a form that when submitted will POST to our transfer endpoint on our web application. The content then adds a script that will automatically trigger that POST.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;html&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nt">&lt;form</span> <span class="na">name=</span><span class="s">&quot;bad&quot;</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;https://bank.com/transfer&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;to&quot;</span> <span class="na">value=</span><span class="s">&quot;12345&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;dollars&quot;</span> <span class="na">value=</span><span class="s">&quot;1000000&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/form&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nt">&lt;script&gt;</span><span class="nb">document</span><span class="p">.</span><span class="nx">bad</span><span class="p">.</span><span class="nx">submit</span><span class="p">()</span><span class="nt">&lt;/script&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>POST /transfer?to&#8230;</h4>
+
+<p>This is where things get bad, again. Because the user is logged in and the attacker was able to get the user&#8217;s browser to automatically POST a malicious request to our web application, the user&#8217;s bank account will have been successfully hacked.</p>
+
+<h4>Solution</h4>
+
+<p>The solution here is to implement the synchronizer token pattern.</p>
+
+<p>The following sample Express application shows how to implement this using the <code>csurf</code> npm package.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">csrf</span>    <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;csurf&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">csrf</span><span class="p">());</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">res</span><span class="p">.</span><span class="nx">locals</span><span class="p">.</span><span class="nx">_csrf</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">csrfToken</span><span class="p">();</span>
+</span><span class='line'>  <span class="nx">next</span><span class="p">();</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//Add _csrf to rendered HTML forms as hidden field (see HTML below)</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;html&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;transfer&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;_csrf&quot;</span> <span class="na">value=</span><span class="s">&quot;_csrf&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;text&quot;</span> <span class="na">name=</span><span class="s">&quot;to&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;test&quot;</span> <span class="na">name=</span><span class="s">&quot;dollars&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/form&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What this code does is makes it so that all POSTs made to our application MUST include a CSRF token or nonce. This token is set when the user makes a request to our page that contains the form and expects that same token when a POST is made. If the token is not there, the POST is not allowed. This will defeat the scenario we just went over because the attacker will not be able to generate a token that our application is aware of.</p>
+
+<h3>Scenario 3: Bypassing CSRF protections</h3>
+
+<p>Now that we do not make changes via GET requests as well as implementing CSRF protection via nonce tokens, we are still vulnerable to some attacks that can get around CSRF protection.</p>
+
+<p><img src="/images/csrf3.png" alt="CSRF Scenario 3" /></p>
+
+<h4>Login</h4>
+
+<p>The first two steps show the victim logging into their bank.</p>
+
+<h4>GET /index.html</h4>
+
+<p>The attacker has a page on a site they control and shares a link on social media. Our user clicks the link to see what it is and their browser makes a request to <code>/index.html</code> on the attacker&#8217;s site.</p>
+
+<h4>HTTP/1.1 200 OK</h4>
+
+<p>Requests to <code>/index.html</code> returns the following HTML content. What is going on here is the attacker is creating an iframe that loads up our page along with our form that includes the fields and the CSRF nonce token.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;html&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nt">&lt;iframe</span> <span class="na">src=</span><span class="s">&quot;https://bank.com/transfer?to=12345&amp;dollars=1000000&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>For the sake of this scenario, the resulting form that would be loaded will look like the following.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'> <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;text&quot;</span> <span class="na">name=</span><span class="s">&quot;to&quot;</span> <span class="na">value=</span><span class="s">&quot;&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'> <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;text&quot;</span> <span class="na">name=</span><span class="s">&quot;dollars&quot;</span> <span class="na">value=</span><span class="s">&quot;&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'> <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;csrf&quot;</span> <span class="na">value=</span><span class="s">&quot;a0d73b12&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'><span class="nt">&lt;/form&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And finally, here is our code on our server handling POSTs to the transfer endpoint.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/transfer&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="nx">isValid</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">csrfToken</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">to</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">to</span> <span class="o">||</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">to</span><span class="p">;</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">dollars</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">dollars</span> <span class="o">||</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">dollars</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//Transfer money</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>POST /transfer?to&#8230;</h4>
+
+<p>This is where things get bad, yet again. Like before, our user is logged in. The content from our page including the form is now loaded within an attackers site. Through <a href="https://www.owasp.org/index.php/Clickjacking">clickjacking</a> techniques the attack could potentially get the user to submit the form.</p>
+
+<h4>Solution 1</h4>
+
+<p>Before we discuss the solution, we need to understand what is wrong with our current setup. Even if the page loads up our form, the user would have to manually enter a bank account along with money for the form submission to work, right? Well, not exactly. Because we are not explicitly setting the form action, the default URL that will be POSTed to will be the Url the page was loaded from. In our case this will be the Url the attacker entered which contains query string parameters for the account to send money to and the amount.</p>
+
+<p>If you look at how we coded our handling of the POST, we are using parameters from either the query string or the POSTed data. In this example and attack, the query string parameters would get used and the attack would succeed.</p>
+
+<p>The first solution to this problem is to always set the form action. Instead of leaving it blank, you should always set it to the endpoint you want to submit to.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;https://bank.com/transfer&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'> <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;text&quot;</span> <span class="na">name=</span><span class="s">&quot;to&quot;</span> <span class="na">value=</span><span class="s">&quot;&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'> <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;text&quot;</span> <span class="na">name=</span><span class="s">&quot;dollars&quot;</span> <span class="na">value=</span><span class="s">&quot;&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'> <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;csrf&quot;</span> <span class="na">value=</span><span class="s">&quot;a0d73b12&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'><span class="nt">&lt;/form&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This will make it so the attacker cannot get the user to submit the form to an endpoint along with query string parameters.</p>
+
+<h4>Solution 2</h4>
+
+<p>The second solution goes along with the first. This one is to never use query string parameters for user input. This will force our code to only use parameters sent via the POSTed form data.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/transfer&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="nx">isValid</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">csrfToken</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">to</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">to</span><span class="p">;</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">dollars</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">dollars</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//Transfer money</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>Solution 3</h4>
+
+<p>The final solution is one that is good to implement on all your applications in order to control how your application behaves and to help avoid this type of attack. The solution is to use the X-Frame-Options header.</p>
+
+<p>By taking advantage of this header, you can tell web browsers (that support it) to never allow your application within frames. With this in place, the attacker will not be able to load your page within theirs.</p>
+
+<p>Here is an example Express application using the helmet npm package to do this.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">helmet</span>  <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;helmet&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">helmet</span><span class="p">.</span><span class="nx">xframe</span><span class="p">(</span><span class="s1">&#39;deny&#39;</span><span class="p">));</span>       <span class="c1">//never allow in frames</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This code will send back a response header that will tell the browser to never allow it to be within a frame. Here is what the header looks like.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='http'><span class='line'><span class="err">X-Frame-Options: DENY</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Wrap up</h3>
+
+<p>I hope that by learning how CSRF attacks are performed you have a better understanding of how to protect your applications. I have shown a few ways in which you can protect yourself but it is important to learn more on this subject using the links I shared above. Also, these solutions are not exclusive. You should implement many layers of protection for your application.</p>
+
+<p>I have a lot more tutorials coming so be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+
+</div>
+
+
+  <button onclick="var e=document.createElement('script');e.setAttribute('charset','UTF-8');e.setAttribute('src','https://az287915.vo.msecnd.net/scripts/degreed/media/bookmarklet.js?id=1&v=' + Math.random()*99999999);document.getElementsByTagName('body')[0].appendChild(e)
+  " title="+ Degreed" id="DegreedButton" class="degreed-28-full">+ Degreed</button>
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Scott Smith</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-06-29T10:09:00-07:00" pubdate data-updated="true">Jun 29<span>th</span>, 2015</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/javascript/'>JavaScript</a>, <a class='category' href='/blog/categories/node-dot-js/'>Node.js</a>, <a class='category' href='/blog/categories/owasp/'>OWASP</a>, <a class='category' href='/blog/categories/security/'>Security</a>
+  
+</span>
+
+
+    </p>
+    
+      <!-- <div class="sharing">
+  <h4>Share On:</h4>
+  <a href="https://twitter.com/intent/tweet?text=Secure Node Apps Against OWASP Top 10 - Cross Site Request Forgery&url=http://scottksmith.com/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/&via=scottksmith95" target="_blank">
+    <img src="/images/icons/twitter/twitter-128.png" alt="Share on Twitter" class="twitter">
+  </a>
+  <a href="https://plus.google.com/share?url=http://scottksmith.com/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/" target="_blank">
+    <img src="/images/icons/googleplus/googleplus-128.png" alt="Share on Google+" class="googleplus">
+  </a>
+  <a href="https://www.facebook.com/sharer/sharer.php?u=http://scottksmith.com/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/" target="_blank">
+    <img src="/images/icons/facebook/facebook-128.png" alt="Share on Facebook" class="facebook">
+  </a>
+  <a href="https://www.linkedin.com/shareArticle?mini=true&title=Secure Node Apps Against OWASP Top 10 - Cross Site Request Forgery&url=http://scottksmith.com/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/" target="_blank">
+    <img src="/images/icons/linkedin/linkedin-128.png" alt="Share on LinkedIn" class="linkedin">
+  </a>
+  <a href="mailto:?body=http://scottksmith.com/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/&subject=Secure Node Apps Against OWASP Top 10 - Cross Site Request Forgery">
+    <img src="/images/icons/email/email-128.png" alt="Share via Email" class="email">
+  </a>
+</div> -->
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/" title="Previous Post: Secure Node Apps Against OWASP Top 10 - Cross Site Scripting">&laquo; Secure Node Apps Against OWASP Top 10 - Cross Site Scripting</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section id="links">
+  <div>
+    <a href="https://twitter.com/scottksmith95" target="_blank">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter" alt="Scott Smith on Twitter">
+    </a>
+  </div>
+  <div>
+    <a href="https://github.com/scottksmith95" target="_blank">
+      <img src="/images/icons/github/github-128.png" class="github" alt="Scott Smith on GitHub">
+    </a>
+  </div>
+  <div>
+    <a href="https://www.linkedin.com/profile/view?id=15073485" target="_blank">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin" alt="Scott Smith on LinkedIn">
+    </a>
+  </div>
+  <div>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email" alt="Scott Smith's Email">
+    </a>
+  </div>
+  <div>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss" "Site RSS Feed">
+    </a>
+  </div>
+</section>
+
+<section id="about">
+  <p>Software developer, learner, writer, & speaker.</p>
+  <p>Currently jailbreaking the degree at Degreed and promoting lifelong learning.</p>
+  <p>Past projects incude coderbits which was sold to Appirio in 2014 and Favatron.</p>
+</section><section id="newsletter">
+  <img src="/images/icons/email/email-128.png">
+  <h2>Get My Latest Articles</h2>
+  <form action="//favatron.us5.list-manage.com/subscribe/post?u=e8909f2779b99d9865361d28e&amp;id=1d7e590a16" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Email address" required>
+    <div style="position: absolute; left: -5000px;">
+      <input type="text" name="b_e8909f2779b99d9865361d28e_1d7e590a16" tabindex="-1" value="">
+    </div>
+    <div class="clear">
+      <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+    </div>
+  </form>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><span style="text-align: center">
+  Copyright &copy; 2017 <a rel="author" href="https://plus.google.com/107452035819962532888?rel=author">Scott Smith</a>
+</span>
+
+<div class="icons">
+  <span>
+    <a href="https://twitter.com/scottksmith95">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter">
+    </a>
+  </span>
+  <span>
+    <a href="https://github.com/scottksmith95">
+      <img src="/images/icons/github/github-128.png" class="github">
+    </a>
+  </span>
+  <span>
+    <a href="https://www.linkedin.com/profile/view?id=15073485">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin">
+    </a>
+  </span>
+  <span>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email">
+    </a>
+  </span>
+  <span>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss">
+    </a>
+  </span>
+</div></footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'scottksmithblog';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://scottksmith.com/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/';
+        var disqus_url = 'http://scottksmith.com/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+<script src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-40783302-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Tools | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/tools/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Chocolatey NuGet]]></title>
+    <link href="http://scottksmith.com/blog/2012/10/31/chocolatey-nuget/"/>
+    <updated>2012-10-31T14:58:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/10/31/chocolatey-nuget</id>
+    <content type="html"><![CDATA[<p>Chocolatey NuGet?!</p>
+
+<p>From the site:</p>
+
+<blockquote><strong>Let's get Chocolatey!</strong>
+Chocolatey NuGet is a Machine Package Manager, somewhat like apt-get, but built with Windows in mind.
+
+<strong>Easy Install!</strong>
+To install chocolatey now, open a command prompt and paste some text</blockquote>
+
+
+<p>To install simply paste the following into a command prompt:</p>
+
+<p>@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('http://bit.ly/psChocInstall'))" &amp;&amp; SET PATH=%PATH%;%systemdrive%\chocolatey\bin</p>
+
+<p>Don't feel comfortable running commands you found on some random blog? I don't blame you. Head over to their site to learn more about <a href="http://chocolatey.org/">Chocolatey NuGet</a>.</p>
+]]></content>
+  </entry>
+  
+</feed>

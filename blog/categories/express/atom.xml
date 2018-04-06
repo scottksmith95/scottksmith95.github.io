@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Express | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/express/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Protect Your Node App's Noggin With Helmet]]></title>
+    <link href="http://scottksmith.com/blog/2014/09/21/protect-your-node-apps-noggin-with-helmet/"/>
+    <updated>2014-09-21T20:48:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2014/09/21/protect-your-node-apps-noggin-with-helmet</id>
+    <content type="html"><![CDATA[<p>There are many ways in which attackers will attempt to exploit your applications and users. Some of the more famous are cross-site scripting (XSS), script injection, clickjacking, insecure requests, and identifying web application frameworks to name a few.</p>
+
+<p>In my previous article, <a href="/blog/2014/09/04/simple-steps-to-secure-your-express-node-application/">4 Simple Steps to Secure Your Express Node Application</a>, we learned how to use HTTPS to avoid man in the middle attacks, secure our cookies from being read by client side JavaScript, prevent our cookies from being sent on an HTTP request, and how to prevent cross-site request forgery attacks.</p>
+
+<p>This article will focus more on middleware we can add to Express to further lock down our application.</p>
+
+<!-- more -->
+
+
+<h3>Helmet</h3>
+
+<p>We will be using <a href="https://github.com/evilpacket/helmet">Helmet</a>, a set of Express middleware, to help lock down and secure our web applications.</p>
+
+<p>To install Helmet, simply run the following command in your application.</p>
+
+<p><code>tcsh
+npm install helmet --save
+</code></p>
+
+<p>Here is a simple sample Express application to get us started using Helmet. You will notice the main addition is requiring the Helmet module.</p>
+
+<p>```javascript
+// Load required modules
+var express = require('express');
+var helmet = require('helmet');</p>
+
+<p>// Create our Express application
+var app = express();</p>
+
+<p>// Simple endpoint
+app.get('/', function(req, res) {
+  res.send('Time to secure your application...');
+});</p>
+
+<p>// Start the server
+app.listen(3000);
+```</p>
+
+<p>The following sections will dive into each of the security features provided by Helmet.</p>
+
+<h3>Content Security Policy (CSP)</h3>
+
+<p><a href="http://content-security-policy.com/">Content Security Policy (CSP)</a> is a promising defense against the risk and impact of <a href="https://developer.mozilla.org/en-US/docs/Glossary/Cross-site_scripting">XSS</a> attacks. Its main goal is to prevent anything unintended being injected into our page. This can include frames, images, tracking scripts, and opening the door to XSS vulnerabilities.</p>
+
+<p>CSP works by setting whitelists in the <code>Content-Security-Policy</code> response header to define sources of trusted content. The browser is then only allowed to execute or render resources from those trusted sources. This means that if someone were to successfully inject their script into your page, the browser would not execute it as the source would not be in the whitelist.</p>
+
+<p>The main types of resources that can be controlled with CSP are:</p>
+
+<ul>
+<li>JavaScript</li>
+<li>Stylesheets</li>
+<li>Images</li>
+<li>AJAX, WebSockets, etc.</li>
+<li>Fonts</li>
+<li>Plugins</li>
+<li>HTML5 Media Elements</li>
+<li>Frames</li>
+</ul>
+
+
+<p>So enough about what CSP is and what it provides. You are here to learn how to protect your web application. If you want to learn more, I would suggest a great article on <a href="http://www.html5rocks.com/en/tutorials/security/content-security-policy">HTML5 Rocks</a>. Let's dive into how we can implement CSP with Helmet.</p>
+
+<p>```javascript
+// Load required modules
+var express = require('express');
+var helmet = require('helmet');</p>
+
+<p>// Create our Express application
+var app = express();</p>
+
+<p>// Implement CSP with Helmet
+app.use(helmet.csp({
+  defaultSrc: ["'self'"],
+  scriptSrc: ['<em>.google-analytics.com'],
+  styleSrc: ["'unsafe-inline'"],
+  imgSrc: ['</em>.google-analytics.com'],
+  connectSrc: ["'none'"],
+  fontSrc: [],
+  objectSrc: [],
+  mediaSrc: [],
+  frameSrc: []
+}));</p>
+
+<p>// Simple endpoint
+app.get('/', function(req, res) {
+  res.send('Time to secure your application...');
+});</p>
+
+<p>// Start the server
+app.listen(3000);
+```</p>
+
+<p>So what I have done here is told our Express application to use helmet.csp() and passed in some optional parameters. Helmet does have a way to use it with defaults, but I would suggest being explicit so you know exactly what it is being done. If you do want to use the defaults, you can do it with <code>app.use(helmet());</code>.</p>
+
+<p><strong>defaultSrc</strong></p>
+
+<p>This is the default policy for loading all content. Whatever is defined here applies to all the other type unless you set them to <code>'none'</code>. In our case we are saying that any content coming from the same origin is allowed.</p>
+
+<p><strong>scriptSrc</strong></p>
+
+<p>This is the policy for controlling the valid sources of JavaScript. In our case we are setting <code>*.google-analytics.com</code> as an allowed source for scripts. This is in addition to the same origin rule we defined in <code>defaultSrc</code>.</p>
+
+<p><strong>styleSrc</strong></p>
+
+<p>This is the policy for controlling the valid sources of stylesheets. What we are doing here is using the <code>'unsafe-inline'</code> keyword to allow inline stylesheets. If this was not set, any inline stylesheets would not work.</p>
+
+<p><strong>imgSrc</strong></p>
+
+<p>This is the policy for controlling the valid sources of images. Just like <code>scriptSrc</code>, we are setting the allowed domain for images.</p>
+
+<p><strong>connectSrc</strong></p>
+
+<p>This is the policy for controlling the valid sources of AJAX, WebSockets, or EventSource. In this case, we are using the <code>'none'</code> keyword to state that no content of this type should be allowed. This overrides the <code>defaultSrc</code> directive.</p>
+
+<p><strong>fontSrc</strong></p>
+
+<p>This is the policy for controlling the valid sources of fonts. It is blank to state the only whitelist to use is the one defined in <code>defaultSrc</code>.</p>
+
+<p><strong>objectSrc</strong></p>
+
+<p>This is the policy for controlling the valid sources of plugins like <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>, or <code>&lt;applet&gt;</code>. It is blank to state the only whitelist to use is the one defined in <code>defaultSrc</code>.</p>
+
+<p><strong>mediaSrc</strong></p>
+
+<p>This is the policy for controlling the valid sources of HTML5 media types like <code>&lt;audio&gt;</code> or <code>&lt;video&gt;</code>. It is blank to state the only whitelist to use is the one defined in <code>defaultSrc</code>.</p>
+
+<p><strong>frameSrc</strong></p>
+
+<p>This is the policy for controlling the valid sources of frames. It is blank to state the only whitelist to use is the one defined in <code>defaultSrc</code>.</p>
+
+<p>There are four special keywords you can use when defining whitelists:</p>
+
+<ol>
+<li><code>'none'</code> will match nothing</li>
+<li><code>'self'</code> will match the current origin but not subdomains</li>
+<li><code>'unsafe-inline'</code> allows inline JavaScript and CSS</li>
+<li><code>'unsafe-eval'</code> allows things like eval() to work</li>
+</ol>
+
+
+<p>There are also 5 other directives you can use. If interested, you can read more about them <a href="http://content-security-policy.com/">here</a>.</p>
+
+<ol>
+<li><code>sandbox</code></li>
+<li><code>eportUri</code></li>
+<li><code>reportOnly</code></li>
+<li><code>setAllHeaders</code></li>
+<li><code>safari5</code></li>
+</ol>
+
+
+<p>And finally here is what the response header looks like for our example (newlines added for better reading).</p>
+
+<p><code>http
+Content-Security-Policy:
+  default-src 'self';
+  script-src *.google-analytics.com;
+  object-src ;
+  img-src *.google-analytics.com;
+  media-src ;
+  frame-src ;
+  font-src ;
+  connect-src 'none';
+  style-src 'unsafe-inline'
+</code></p>
+
+<h3>XSS Filter</h3>
+
+<p>The XSS Filter was created to help protect against XSS attack. Ironically, it actually helps attackers perform XSS attacks against older versions of Internet Explorer! You can read more about it <a href="http://hackademix.net/2009/11/21/ies-xss-filter-creates-xss-vulnerabilities/">here</a>.</p>
+
+<p>What we need to do is have the <code>X-XSS-Protection</code> header set to <code>0</code> in order to disable it for older versions of IE. Helmet provides a piece of middleware to do just that. It will detect the web browser and either set it to <code>1; mode=block</code> or <code>0</code>.</p>
+
+<p>```javascript
+// Load required modules
+var express = require('express');
+var helmet = require('helmet');</p>
+
+<p>// Create our Express application
+var app = express();</p>
+
+<p>// Implement X-XSS-Protection
+app.use(helmet.xssFilter());</p>
+
+<p>// Simple endpoint
+app.get('/', function(req, res) {
+  res.send('Time to secure your application...');
+});</p>
+
+<p>// Start the server
+app.listen(3000);
+```</p>
+
+<p>Here is what the response header looks like when using a modern web browser without the exploit.</p>
+
+<p><code>http
+X-XSS-Protection: 1; mode=block
+</code></p>
+
+<p>And here is what it would look like on an older version of Internet Explorer with the exploit.</p>
+
+<p><code>http
+X-XSS-Protection: 0
+</code></p>
+
+<h3>Frame Options</h3>
+
+<p>To help mitigate the risk of <a href="https://en.wikipedia.org/wiki/Clickjacking">clickjacking attacks</a>, Helmet offers a piece of middleware to help control the <code>X-Frame</code> response header. What this does is allow you to control if and where your page can be put into a <code>&lt;frame&gt;</code> or <code>&lt;iframe&gt;</code>. This is also nice even from a non security point of view. You may not want your site to be loaded within anyone else's frames from a purely aesthetic point of view.</p>
+
+<p>There are three options with the <code>X-Frame</code> response header:</p>
+
+<ol>
+<li>Deny - Does not allow your page to be served inside any frames.</li>
+<li>SameOrigin - Allows your page to be served inside a frame with the same origin.</li>
+<li>Allow-From - Allows your page to be served inside a frame from a specific URL.</li>
+</ol>
+
+
+<p><strong>Deny</strong></p>
+
+<p>```javascript
+// Load required modules
+var express = require('express');
+var helmet = require('helmet');</p>
+
+<p>// Create our Express application
+var app = express();</p>
+
+<p>// Implement X-Frame: Deny
+app.use(helmet.xframe());
+//app.use(helmet.xframe('deny')); //Same thing</p>
+
+<p>// Simple endpoint
+app.get('/', function(req, res) {
+  res.send('Time to secure your application...');
+});</p>
+
+<p>// Start the server
+app.listen(3000);
+```</p>
+
+<p>Here are the response headers.</p>
+
+<p><code>http
+X-Frame-Options: DENY
+</code></p>
+
+<p><strong>SameOrigin</strong></p>
+
+<p>```javascript
+// Load required modules
+var express = require('express');
+var helmet = require('helmet');</p>
+
+<p>// Create our Express application
+var app = express();</p>
+
+<p>// Implement X-Frame: SameOrigin
+app.use(helmet.xframe('sameorigin'));</p>
+
+<p>// Simple endpoint
+app.get('/', function(req, res) {
+  res.send('Time to secure your application...');
+});</p>
+
+<p>// Start the server
+app.listen(3000);
+```</p>
+
+<p>Here are the response headers.</p>
+
+<p><code>http
+X-Frame-Options: SAMEORIGIN
+</code></p>
+
+<p><strong>Allow-From</strong></p>
+
+<p>```javascript
+// Load required modules
+var express = require('express');
+var helmet = require('helmet');</p>
+
+<p>// Create our Express application
+var app = express();</p>
+
+<p>// Implement X-Frame: Allow-From
+app.use(helmet.xframe('allow-from', 'http://example.com'));</p>
+
+<p>// Simple endpoint
+app.get('/', function(req, res) {
+  res.send('Time to secure your application...');
+});</p>
+
+<p>// Start the server
+app.listen(3000);
+```</p>
+
+<p>Here are the response headers.</p>
+
+<p><code>http
+X-Frame-Options: ALLOW-FROM http://example.com
+</code></p>
+
+<h3>HTTP Strict Transport Security (HSTS)</h3>
+
+<p><a href="http://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security">HTTP Strict Transport Security (HSTS)</a> allows a web server to tell user agents to interact with it in the future only over HTTPS. It controls it by defining a period of time with the <code>Strict-Transport-Security</code> response header. This is great if you are running an HTTPS site but still have an HTTP endpoint in order to provide redirection to the HTTPS endpoint. This can help reduce the chance of Man-In-The-Middle (MITM) attacks by reducing the frequency of requests being made over insecure channels.</p>
+
+<p>Helmet provides middleware to help control setting and configuring the HSTS headers. You can specify how long the user agent should make requests over HTTPS and whether or not to include subdomains.</p>
+
+<p>Here it is in action. We are telling it to set the maximum age to 90 days (value is in milliseconds). While the code uses milliseconds, the response header will be in seconds.</p>
+
+<p>```javascript
+// Load required modules
+var express = require('express');
+var helmet = require('helmet');</p>
+
+<p>// Create our Express application
+var app = express();</p>
+
+<p>// Implement Strict-Transport-Security
+app.use(helmet.hsts({
+  maxAge: 7776000000,
+  includeSubdomains: true
+}));</p>
+
+<p>// Simple endpoint
+app.get('/', function(req, res) {
+  res.send('Time to secure your application...');
+});</p>
+
+<p>// Start the server
+app.listen(3000);
+```</p>
+
+<p>Here are the response headers.</p>
+
+<p><code>http
+Strict-Transport-Security: max-age=7776000; includeSubDomains
+</code></p>
+
+<p>You should be aware that this only works if your site is running over HTTPS. The middleware will check to see if <code>req.secure</code> is set to true which is automatically populate by Express.</p>
+
+<h3>Hide X-Powered-By</h3>
+
+<p>By default, Express will add the <code>X-Powered-By</code> header to each response. The actual response header will look like this:</p>
+
+<p><code>http
+X-Powered-By: Express
+</code></p>
+
+<p>While by itself it doesn't cause any security holes, it does give potential attacker useful information. With this information they can focus their attack to exploit known vulnerabilities in Express and Node.</p>
+
+<p>Helmet provides middleware to either strip out the <code>X-Powered-By</code> header or set it to anything else you want.</p>
+
+<p>```javascript
+// Load required modules
+var express = require('express');
+var helmet = require('helmet');</p>
+
+<p>// Create our Express application
+var app = express();</p>
+
+<p>// Hide X-Powered-By
+app.use(helmet.hidePoweredBy());</p>
+
+<p>// Simple endpoint
+app.get('/', function(req, res) {
+  res.send('Time to secure your application...');
+});</p>
+
+<p>// Start the server
+app.listen(3000);
+```</p>
+
+<p>If you don't want to remove the header, you can set it to anything else using.</p>
+
+<p><code>javascript
+app.use(helmet.hidePoweredBy({ setTo: 'all your base are belong to us' }));
+</code></p>
+
+<p>Which results in the following response header.</p>
+
+<p><code>http
+X-Powered-By: all your base are belong to us
+</code></p>
+
+<h3>Other</h3>
+
+<p>There are a few more things Helmet provides. The documentation on the GitHub repository does a good job of explaining them. If you want to learn more, I would suggest checking each of them out.</p>
+
+<ol>
+<li><a href="https://github.com/evilpacket/helmet#ie-restrict-untrusted-html-ienoopen">IE, Restrict Untrusted HTML</a></li>
+<li><a href="https://github.com/evilpacket/helmet#dont-infer-the-mime-type-nosniff">Don't Infer The MIME Type</a></li>
+<li><a href="https://github.com/evilpacket/helmet#turn-off-caching-nocache">Turn Off Caching</a> (I would highly advise against this. Caching is very good for web performance.)</li>
+<li><a href="https://github.com/evilpacket/helmet#a-restrictive-crossdomainxml-crossdomain">Restrictive Crossdomain.xml</a></li>
+</ol>
+
+
+<h3>Wrap Up</h3>
+
+<p>Helmet is an amazing piece of Express middleware that can help you easily lock down your web application. I would suggest you take the time to better understand the types of attacks and fixes talked about so you can better secure your applications.</p>
+
+<p>I have a lot more tutorials coming so be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+]]></content>
+  </entry>
+  
+</feed>

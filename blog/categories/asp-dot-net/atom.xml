@@ -1,0 +1,1534 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[ASP.NET | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/asp-dot-net/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Algolia Real Time Search With ASP.NET MVC &amp; Windows Phone 8.1]]></title>
+    <link href="http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1/"/>
+    <updated>2015-04-04T20:11:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1</id>
+    <content type="html"><![CDATA[<p>In this article, we are going to explore how to easily add Algolia search to a Windows Phone 8.1 application with an ASP.NET MVC backend. To do this, we will take advantage of Algolia's <a href="https://github.com/algolia/algoliasearch-client-csharp">C# client</a> to add indexing capabilities to the ASP.NET MVC application and search capabilities to the Windows Phone application.</p>
+
+<p>The application we will be building is called PackageTrack. It is a simple web application where a user can create, read, update, and delete packages they like and use. The web application will be capable of managing the package information, indexing that data with Algolia, and providing a simple REST API for the data. We will also create a Windows Phone application with an auto suggest search box hooked into the Algolia search service to provide search results. Users will then be able to select one of the search results and have that information shown by requesting the data from the web application API.</p>
+
+<h2>Prerequisites</h2>
+
+<p>In order to follow along well, it will be helpful to share versions of tooling, operating system, and technology used for the tutorial. You will need to use (at the very least) Visual Studio 2013 with update 4. Also, in order to develop Windows Phone 8.1 applications, you will need to be developing on Windows 8 or greater. Finally, the application is being built using .NET framework 4.5.</p>
+
+<h2>Create a new ASP.NET Web Application</h2>
+
+<p>With Visual Studio running, create a new solution and choose an ASP.NET Web Application for your initial project. If you want to follow along exactly, name your solution <code>PackageTrack</code> and your project <code>PackageTrack.Web</code>.</p>
+
+<p><img src="/images/algolia_csharp_01.png" alt="Screenshot 01" /></p>
+
+<p>To keep this tutorial simple, change the authentication to <code>No Authentication</code>.</p>
+
+<p><img src="/images/algolia_csharp_02.png" alt="Screenshot 02" /></p>
+
+<p>You will also want to make sure MVC and Web API are selected.</p>
+
+<p><img src="/images/algolia_csharp_03.png" alt="Screenshot 03" /></p>
+
+<h2>Install necessary NuGet packages</h2>
+
+<p>This application requires two new packages in order to work.</p>
+
+<p><strong>Entity Framework</strong></p>
+
+<p>Install the Entity Framework package. The version used in this tutorial is 6.1.3.</p>
+
+<p><code>tcsh
+PM&gt; Install-Package EntityFramework
+</code></p>
+
+<p><strong>Algolia Search</strong></p>
+
+<p>Install the Algolia Search package. The version used in this tutorial is 3.0.5.</p>
+
+<p><code>tcsh
+PM&gt; Install-Package Algolia.Search
+</code></p>
+
+<p>Finally, we need to update all installed packages to make sure we are using the latest libraries and scripts. You can do this by right clicking the web project in Solution Explore and choosing <code>Manage NuGet Packages...</code>.</p>
+
+<h2>Cleanup</h2>
+
+<p>Now that we have our packages installed and updated, we need to perform a little cleanup in our project.</p>
+
+<p>First, let's delete the Home Controller, <code>HomeController.cs</code>, and the <code>Home</code> directory within <code>Views</code>. We are removing the controller and its views because we will be creating our own later.</p>
+
+<h2>Update our layout</h2>
+
+<p>Our layout needs a little updating to improve the look and feel a bit. Update <code>\Vieews\Shared\_Layout.cshtml</code> with the following.</p>
+
+<p>```html
+&lt;!DOCTYPE html>
+<html>
+<head></p>
+
+<pre><code>&lt;meta charset="utf-8" /&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+&lt;title&gt;Package Track&lt;/title&gt;
+@Styles.Render("~/Content/css")
+@Scripts.Render("~/bundles/modernizr")
+</code></pre>
+
+<p></head>
+<body></p>
+
+<pre><code>&lt;div class="navbar navbar-inverse navbar-fixed-top"&gt;
+    &lt;div class="container"&gt;
+        &lt;div class="navbar-header"&gt;
+            @Html.ActionLink("Package Track", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="container body-content"&gt;
+    @RenderBody()
+    &lt;hr /&gt;
+    &lt;footer&gt;
+        &lt;p&gt;&amp;copy; @DateTime.Now.Year - &lt;a href="https://www.algolia.com/" target="_blank"&gt;Algolia&lt;/a&gt;&lt;/p&gt;
+    &lt;/footer&gt;
+&lt;/div&gt;
+
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/bootstrap")
+@RenderSection("scripts", required: false)
+</code></pre>
+
+<p></body>
+</html>
+```</p>
+
+<h2>Entity Framework and Database</h2>
+
+<p>We are now ready to create our model and DbContext in order to take advantage of Entity Framework. What we will do is a create a simple model to represent our package that we want to store in the database. After that, we will create our DbContext which will allow us to easily add, remove, update, and more on our packages stored in the database.</p>
+
+<p>By default, the project is setup to use a local MDF database. You are welcome to change it but for simplicity this tutorial will not.</p>
+
+<p>To create our package model, create a new file named <code>Package.cs</code> inside the <code>Models</code> directory. Update the created class to look like the following.</p>
+
+<p>```c#
+public class Package
+{</p>
+
+<pre><code>public int Id { get; set; }
+public string Name { get; set; }
+public string Link { get; set; }
+public int Count { get; set; }
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Next, we need to create our DbContext. To do this, create a new directory called <code>Data</code> at the root of the project. Then create a new file named <code>PackageTrackContext.cs</code> inside this new directory. Update the code to the following.</p>
+
+<p>```c#
+using PackageTrack.Web.Models;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Web;</p>
+
+<p>namespace PackageTrack.Web.Data
+{</p>
+
+<pre><code>public class PackageTrackDbContext : DbContext
+{
+    public DbSet&lt;Package&gt; Packages { get; set; }
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Before moving on, be sure to build your solution. This will be necessary for the next steps where we use Visual Studio tooling to scaffold our CRUD controller and views for us.</p>
+
+<h2>Package CRUD</h2>
+
+<p>We now need to create the controller, actions, and views in order to create, read, update, and delete packages. To do this we will use Visual Studio tooling. This will make it super simple. The following 3 screenshots show what to do.</p>
+
+<p>First, right click the <code>Controller</code> directory and choose <code>Add</code> followed by <code>Controller</code>.</p>
+
+<p><img src="/images/algolia_csharp_04.png" alt="Screenshot 04" /></p>
+
+<p>Next, choose <code>MVC 5 Controller with views, using Entity Framework</code>.</p>
+
+<p><img src="/images/algolia_csharp_05.png" alt="Screenshot 05" /></p>
+
+<p>Finally, be sure to choose the Package model we created for the <code>Model class</code>, the PackageTrackDbContext we created for the <code>Data context class</code>, check <code>Use async controller actions</code>, and set the <code>Controller name</code> to HomeController.</p>
+
+<p><img src="/images/algolia_csharp_06.png" alt="Screenshot 06" /></p>
+
+<p>Visual Studio should create a new HomeController along with a set of views. You can now build and run your project. You should be able to create, read, update, and delete packages. Go head and do this now and create a few packages. We will need them later.</p>
+
+<h2>Build an Admin controller</h2>
+
+<p>We now need to create an Admin controller that will provide us the ability to issue index, re-index, and delete commands to our Algolia index.</p>
+
+<p>Inside the <code>Controllers</code> directory, create a file named <code>AdminController.cs</code>. Update it to contain the following code.</p>
+
+<p>```c#
+using Algolia.Search;
+using PackageTrack.Web.Data;
+using PackageTrack.Web.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.Mvc;</p>
+
+<p>namespace PackageTrack.Web.Controllers
+{</p>
+
+<pre><code>public class AdminController : Controller
+{
+    private PackageTrackDbContext db = new PackageTrackDbContext();
+
+    public ActionResult Index()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;ActionResult&gt; ReIndexData()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;ActionResult&gt; IndexData()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;ActionResult&gt; DeleteData()
+    {
+        return View();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            db.Dispose();
+        }
+        base.Dispose(disposing);
+    }
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Inside the <code>Views</code> directory, create a new directory named <code>Admin</code>. Now that we have a new place for our admin views, create a new view there named <code>Index.cshml</code>. This is where we will setup our ability to issue index commands. Update the view with the following code.</p>
+
+<p>```html</p>
+
+<h2>Admin</h2>
+
+
+
+
+<div>
+    <hr />
+
+    <div class="form-actions no-color">
+        @using (Html.BeginForm("reindexdata", "admin"))
+        {
+            @Html.AntiForgeryToken()
+            <input type="submit" value="Re-Index Data" class="btn btn-default" />
+        }
+        <br />
+        @using (Html.BeginForm("indexdata", "admin"))
+        {
+            @Html.AntiForgeryToken()
+            <input type="submit" value="Index Data" class="btn btn-default" />
+        }
+        <br />
+        @using (Html.BeginForm("deletedata", "admin"))
+        {
+            @Html.AntiForgeryToken()
+            <input type="submit" value="Delete Data" class="btn btn-default" />
+        }
+    </div>
+</div>
+
+
+<p>```</p>
+
+<p>Now we need to create 3 views that can be used to show when our index commands have completed. Create the following views with their markup inside the <code>Views\Admin</code> directory.</p>
+
+<p><strong>ReIndexData.cshtml</strong></p>
+
+<p>```html</p>
+
+<h2>Data Re-Indexed</h2>
+
+
+<p>```</p>
+
+<p><strong>IndexData.cshtml</strong></p>
+
+<p>```html</p>
+
+<h2>Data Indexed</h2>
+
+
+<p>```</p>
+
+<p><strong>DeleteData.cshtml</strong></p>
+
+<p>```html</p>
+
+<h2>Data Deleted</h2>
+
+
+<p>```</p>
+
+<h2>Algolia time</h2>
+
+<p>Up to this point, we have been doing standard .NET development and nothing with Algolia (except adding the NuGet package). We are now ready to start.</p>
+
+<p>Since our web application allows our users to create, update, and delete packages, we need to be able to do the same things to our Algolia index. On top of that, there are cases where we need to perform an index on all of our data, do a full re-index where data is removed and then added, and also remove all data from our index. We do all this from our web application rather than the Windows Phone application because it is much more secure to have our server talking to Algolia rather than each client. We don't want our credentials that allow changing index data to fall into a user's hand.</p>
+
+<h3>Create reusable Algolia client</h3>
+
+<p>The AlgoliaClient allows our application to easily interact with our Algolia index. In order to keep performance optimal, we don't want to create an instance of this client each time we need it. To address this, we will create one AlgoliaClient and store it in an Application Variable.</p>
+
+<p>Let's go ahead and do this now.</p>
+
+<p>Open up your <code>Global.asax.cs</code> file and update it as follows.</p>
+
+<p>```c#
+using Algolia.Search;
+using PackageTrack.Web.Data;
+using PackageTrack.Web.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Http;
+using System.Web.Mvc;
+using System.Web.Optimization;
+using System.Web.Routing;</p>
+
+<p>namespace PackageTrack.Web
+{</p>
+
+<pre><code>public class MvcApplication : System.Web.HttpApplication
+{
+    protected void Application_Start()
+    {
+        AreaRegistration.RegisterAllAreas();
+        GlobalConfiguration.Configure(WebApiConfig.Register);
+        FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+        RouteConfig.RegisterRoutes(RouteTable.Routes);
+        BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+        // Create our Algolia client
+        var algoliaClient = new AlgoliaClient("&lt;APPLICATION_ID&gt;", "&lt;ADMIN_API_KEY&gt;");
+
+        // Create our index helper
+        var indexHelper = new IndexHelper&lt;Package&gt;(algoliaClient, "packages", "Id");
+
+        // Store our index helper in an application variable.
+        // We don't want to create a new one each time
+        // because it will impact performance.
+        Application.Add("PackageIndexHelper", indexHelper);
+    }
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>What we are doing here is first creating an AlgoliaClient using our application id and key. You will need to update these two values using your own credentials. You can either use the Admin key already created for you or create your own key and choose the permissions allowed.</p>
+
+<p>Next, we create an IndexHelper and inject our AlgoliaClient into it along with the name of the index and the value of our Package model identifier that should be mapped to the Algolia index object Id. The reason we want to specify the identifier in our model is because the IndexHelper will automatically build and  map our model to the Algolia index object.</p>
+
+<p>Finally, we add our IndexHlper to the application variable so we can use it elsewhere in our application.</p>
+
+<p>One thing to note is the index we are using in Algolia is called <code>packages</code>. You can either create it ahead of time or it will be automatically created when you issue index commands.</p>
+
+<h3>Update our Admin controller to work with Algolia</h3>
+
+<p>Now that we have an Algolia IndexHelper to use, we need to update our Admin controller to talk to Algolia when someone issues an indexing command.</p>
+
+<p>Update each of the 3 following actions inside <code>AdminController.cs</code>. Make sure and add a using statement for Algolia.Search.</p>
+
+<p>```c#
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<ActionResult> ReIndexData()
+{</p>
+
+<pre><code>// Get the package index helper from Application variable
+var packageIndexHelper = HttpContext.Application.Get("PackageIndexHelper") as IndexHelper&lt;Package&gt;;
+await packageIndexHelper.OverwriteIndexAsync(db.Packages, 1000);
+
+return View();
+</code></pre>
+
+<p>}</p>
+
+<p>[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<ActionResult> IndexData()
+{</p>
+
+<pre><code>// Get the package index helper from Application variable
+var packageIndexHelper = HttpContext.Application.Get("PackageIndexHelper") as IndexHelper&lt;Package&gt;;
+await packageIndexHelper.SaveObjectsAsync(db.Packages, 1000);
+
+return View();
+</code></pre>
+
+<p>}</p>
+
+<p>[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<ActionResult> DeleteData()
+{</p>
+
+<pre><code>// Get the package index helper from Application variable
+var packageIndexHelper = HttpContext.Application.Get("PackageIndexHelper") as IndexHelper&lt;Package&gt;;
+await packageIndexHelper.DeleteObjectsAsync(db.Packages, 1000);
+
+return View();
+</code></pre>
+
+<p>}
+```</p>
+
+<p>The IndexHelper is very nice. It will automatically handle the steps needed to perform indexing, re-indexing, and deleting of data. The way it works is it already knows the identifier to look for in your model so when you make an OverwriteIndex, SaveObjects, or DeleteObjects call it automatically converts your model to JSON, adds an objectId field, sets the objectId field to the identifier you told it to use, and makes the necessary calls to Algolia.</p>
+
+<p>Now is a great time to test things out. You should already have packages in your database that are not in your Algolia index. Try out the different functions under the <code>/admin</code> path. You should see your index get populated, re-populated, and cleared out depending on which function you use.</p>
+
+<h3>Update our CRUD to work with Algolia</h3>
+
+<p>Having administrative ability to manage our index is great, but we really need to have our index kept up to date as users create, update, and delete packages from our database.</p>
+
+<p>We will do this by updating the actions inside our Home controller we created earlier to support our CRUD operations on packages.</p>
+
+<p>Update each of the 3 following actions inside <code>HomeController.cs</code>. Make sure and add a using statement for Algolia.Search.</p>
+
+<p>```c#
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<ActionResult> Create([Bind(Include = "Id,Name,Link,Count")] Package package)
+{</p>
+
+<pre><code>if (ModelState.IsValid)
+{
+    db.Packages.Add(package);
+    await db.SaveChangesAsync();
+
+    // Get the package index helper from Application variable
+    var packageIndexHelper = HttpContext.Application.Get("PackageIndexHelper") as IndexHelper&lt;Package&gt;;
+    await packageIndexHelper.SaveObjectAsync(package);
+
+    return RedirectToAction("Index");
+}
+
+return View(package);
+</code></pre>
+
+<p>}</p>
+
+<p>[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<ActionResult> Edit([Bind(Include = "Id,Name,Link,Count")] Package package)
+{</p>
+
+<pre><code>if (ModelState.IsValid)
+{
+    db.Entry(package).State = EntityState.Modified;
+    await db.SaveChangesAsync();
+
+    // Get the package index helper from Application variable
+    var packageIndexHelper = HttpContext.Application.Get("PackageIndexHelper") as IndexHelper&lt;Package&gt;;
+    await packageIndexHelper.SaveObjectAsync(package);
+
+    return RedirectToAction("Index");
+}
+return View(package);
+</code></pre>
+
+<p>}</p>
+
+<p>[HttpPost, ActionName("Delete")]
+[ValidateAntiForgeryToken]
+public async Task<ActionResult> DeleteConfirmed(int id)
+{</p>
+
+<pre><code>Package package = await db.Packages.FindAsync(id);
+db.Packages.Remove(package);
+await db.SaveChangesAsync();
+
+// Get the package index helper from Application variable
+var packageIndexHelper = HttpContext.Application.Get("PackageIndexHelper") as IndexHelper&lt;Package&gt;;
+await packageIndexHelper.DeleteObjectAsync(package);
+
+return RedirectToAction("Index");
+</code></pre>
+
+<p>}
+```</p>
+
+<p>What we did here was whenever a package is created, updated, or deleted, we use the IndexHelper to add, update, or remove the data within our index.</p>
+
+<p>Go ahead and try it out.</p>
+
+<h2>Implement real time search</h2>
+
+<p>With all of our indexing in place, we are ready to add a real time search experience to our web application.</p>
+
+<h3>Download JavaScript libraries</h3>
+
+<p>We will need some JavaScript libraries in order to create the search feature. Download each of the following and save them in the <code>Scripts</code> directory with the names I indicate.</p>
+
+<p><strong>typeahead.jquery.js</strong><br/>
+<a href="https://cdn.jsdelivr.net/typeahead.js/0.10.5/typeahead.jquery.min.js">https://cdn.jsdelivr.net/typeahead.js/0.10.5/typeahead.jquery.min.js</a></p>
+
+<p><strong>hogan.common.js</strong><br/>
+<a href="https://cdn.jsdelivr.net/hogan.js/3.0.2/hogan.common.js">https://cdn.jsdelivr.net/hogan.js/3.0.2/hogan.common.js</a></p>
+
+<p><strong>algoliasearch.min.js</strong><br/>
+<a href="https://cdn.jsdelivr.net/algoliasearch/2.9/algoliasearch.min.js">https://cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js</a></p>
+
+<h3>Bundle new JavaScript</h3>
+
+<p>With the new scripts added to our project, we need to update our bundles to include them. Open up <code>\App_Start\BundleConfig.cs</code> and add the following new bundle.</p>
+
+<p>```c#
+bundles.Add(new ScriptBundle("~/bundles/main").Include(</p>
+
+<pre><code>      "~/Scripts/typeahead.jquery.min.js",
+      "~/Scripts/hogan.common.js",
+      "~/Scripts/algoliasearch.min.js",
+      "~/Scripts/main.js"));
+</code></pre>
+
+<p>```</p>
+
+<h3>Update our layout</h3>
+
+<p>Now we need to update our layout to include a search box and the new script bundle we created.</p>
+
+<p>Open up <code>_Layout.cshtml</code> and modify the code as follows.</p>
+
+<p>```html
+....</p>
+
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            @Html.ActionLink("Package Track", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+        </div>
+        <div class="typeahead-container">
+            <input id="typeahead-algolia" class="typeahead" type="text" placeholder="Search...">
+        </div>
+    </div>
+</div>
+
+
+<p>...</p>
+
+<p>@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/bootstrap")
+@Scripts.Render("~/bundles/main")
+@RenderSection("scripts", required: false)
+```</p>
+
+<h3>Create JavaScript to tie UI with Algolia</h3>
+
+<p>The following code needs to be added to a new file named <code>main.js</code> within the <code>Scripts</code> directory. This sets us up to perform searches with our packages index on Algolia. Be sure to update the application id and key using your search only key.</p>
+
+<p>```javascript
+$(document).ready(function () {</p>
+
+<pre><code>var client = algoliasearch('&lt;APPLICATION ID&gt;', '&lt;SEARCH-ONLY API KEY&gt;');
+var index = client.initIndex('&lt;INDEX NAME&gt;');
+
+var template = Hogan.compile(
+    '&lt;a href="http://scottksmith.com/home/details/}"&gt;' +
+        '&lt;div class="hit"&gt;' +
+            '&lt;div class="name"&gt;' +
+                '} ' +
+            '&lt;/div&gt;' +
+            '' +
+            '&lt;div class="attribute"&gt;: }&lt;/div&gt;' +
+            '' +
+        '&lt;/div&gt;' +
+    '&lt;/a&gt;');
+
+$('#typeahead-algolia').typeahead({
+    highlight: false,
+    hint: true,
+    minLength: 1
+},
+{
+    source: index.ttAdapter({ "hitsPerPage": 10 }),
+    displayKey: 'Name',
+    templates: {
+        suggestion: function (hit) {
+            // select matching attributes only
+            hit.attributes = [];
+            for (var attribute in hit._highlightResult) {
+                if (attribute === 'Name') {
+                    // already handled by the template
+                    continue;
+                }
+                // all others attributes that are matching should be added in the attributes array
+                // so we can display them in the dropdown menu. Non-matching attributes are skipped.
+                if (hit._highlightResult[attribute].matchLevel !== 'none') {
+                    hit.attributes.push({ attribute: attribute, value: hit._highlightResult[attribute].value });
+                }
+            }
+
+            // render the hit using Hogan.js
+            return template.render(hit);
+        }
+    }
+});
+</code></pre>
+
+<p>});
+```</p>
+
+<h3>Style the search</h3>
+
+<p>Finally, we want to style our search. Add the following CSS to <code>\Content\Site.css</code>.</p>
+
+<p>```css
+.typeahead-container {</p>
+
+<pre><code>float: right;
+</code></pre>
+
+<p>}</p>
+
+<p>.typeahead {</p>
+
+<pre><code>padding: 0 5px;
+margin-top: 10px;
+width: 300px;
+height: 30px;
+font-size: 14px;
+line-height: 30px;
+max-width: none;
+</code></pre>
+
+<p>}</p>
+
+<p>.tt-input,
+.tt-hint {</p>
+
+<pre><code>width: 396px;
+height: 30px;
+padding: 8px 12px;
+font-size: 14px;
+line-height: 30px;
+border: 2px solid #ccc;
+border-radius: 8px;
+outline: none;
+</code></pre>
+
+<p>}</p>
+
+<p>.tt-input {</p>
+
+<pre><code>box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+</code></pre>
+
+<p>}</p>
+
+<p>.tt-hint {</p>
+
+<pre><code>color: #999;
+</code></pre>
+
+<p>}</p>
+
+<p>.tt-dropdown-menu {</p>
+
+<pre><code>width: 422px;
+margin-top: 12px;
+padding: 8px 0;
+background-color: #fff;
+border: 1px solid #ccc;
+border: 1px solid rgba(0, 0, 0, 0.2);
+border-radius: 8px;
+box-shadow: 0 5px 10px rgba(0,0,0,.2);
+</code></pre>
+
+<p>}</p>
+
+<p>.tt-suggestion {</p>
+
+<pre><code>padding: 3px 20px;
+font-size: 14px;
+line-height: 24px;
+</code></pre>
+
+<p>}</p>
+
+<pre><code>.tt-suggestion.tt-cursor {
+    color: #fff;
+    background-color: #0097cf;
+}
+
+.tt-suggestion p {
+    margin: 0;
+}
+
+.tt-suggestion em {
+    font-weight: bold;
+    font-style: normal;
+}
+</code></pre>
+
+<p>.name {</p>
+
+<pre><code>font-weight: bold;
+</code></pre>
+
+<p>}</p>
+
+<p>.attribute {</p>
+
+<pre><code>margin-left: 10px;
+</code></pre>
+
+<p>}
+```</p>
+
+<p>If you would like to get a more in depth tutorial on the real time search piece we just added, you can read other articles I wrote here.</p>
+
+<p><a href="http://scottksmith.com/blog/2014/10/21/getting-started-with-algolia-real-time-search/">http://scottksmith.com/blog/2014/10/21/getting-started-with-algolia-real-time-search/</a></p>
+
+<p><a href="http://scottksmith.com/blog/2014/10/29/algolia-real-time-search-with-twitters-typeaheadjs/">http://scottksmith.com/blog/2014/10/29/algolia-real-time-search-with-twitters-typeaheadjs/</a></p>
+
+<h2>Create REST API for packages</h2>
+
+<p>The last thing we need to do in our web application is to build a REST based API for our package information. This will be used by our Windows Phone application.</p>
+
+<p>First, create a new directory within the <code>Controllers</code> directory and name it <code>Api</code>.</p>
+
+<p>Right click on the Api folder and choose <code>Add</code> followed by <code>Controller</code>. Follow the next few screenshots to see what settings to use and values to set.</p>
+
+<p><img src="/images/algolia_csharp_07.png" alt="Screenshot 07" /></p>
+
+<p><img src="/images/algolia_csharp_08.png" alt="Screenshot 08" /></p>
+
+<p><img src="/images/algolia_csharp_09.png" alt="Screenshot 09" /></p>
+
+<p>Because we want to only return JSON even when the request header is not <code>application/json</code> we need to update our <code>WebApiConfig.cs</code> file in the <code>App_Start</code> directory.</p>
+
+<p>```c#
+using System.Net.Http.Headers;</p>
+
+<p>  ...</p>
+
+<p>  config.Formatters.JsonFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/html"));
+```</p>
+
+<p>We are now ready to create our Windows Phone application that will perform searches using Algolia and show data from our web application.</p>
+
+<h2>Create a new Windows Phone Application</h2>
+
+<p>In our current solution, create a new project and choose <code>Blank App (Windows Phone)</code>. You can name it whatever you like, but I went with PackageTrack.Phone.</p>
+
+<p><img src="/images/algolia_csharp_10.png" alt="Screenshot 10" /></p>
+
+<h2>Install necessary NuGet package</h2>
+
+<p>This application requires one new package in order to work.</p>
+
+<p><strong>Algolia Search</strong></p>
+
+<p>Install the Algolia Search package. The version used in this tutorial is 3.0.5.</p>
+
+<p><code>tcsh
+PM&gt; Install-Package Algolia.Search
+</code></p>
+
+<h2>Configure startup projects</h2>
+
+<p>In order for both applications to work, we need to configure our solution to start the web and phone application when we build and run. The following screenshots show how to do this.</p>
+
+<p><img src="/images/algolia_csharp_11.png" alt="Screenshot 11" /></p>
+
+<p><img src="/images/algolia_csharp_12.png" alt="Screenshot 12" /></p>
+
+<p>Debug or run your applications now to make sure both projects start.</p>
+
+<h2>Build our application UI</h2>
+
+<p>Now that our project and solution are ready to go, we can add some components to our application to build out our UI.</p>
+
+<p>If <code>MainPage.xaml</code> is not open, you will want to open it now. This will load the designer view. The next two steps and screenshots show the two components we want to add to our view. Just drag each of the components from the Toolbox within Visual Studio into your UI as shown below.</p>
+
+<h3>Add AutoSuggestBox</h3>
+
+<p><img src="/images/algolia_csharp_13.png" alt="Screenshot 13" /></p>
+
+<h3>Add WebView</h3>
+
+<p><img src="/images/algolia_csharp_14.png" alt="Screenshot 14" /></p>
+
+<p><img src="/images/algolia_csharp_15.png" alt="Screenshot 15" /></p>
+
+<h3>Configure WebView</h3>
+
+<p>We need to give our WebView a name so we can reference it within our code. You will need to name it <code>SearchWebView</code>. The following code shows the updated XAML for this change.</p>
+
+<p><code>xml
+&lt;WebView Name="SearchWebView" HorizontalAlignment="Left" Height="576" Margin="10,54,0,0" VerticalAlignment="Top" Width="380"/&gt;
+</code></p>
+
+<h3>Configure AutoSuggestBox events</h3>
+
+<p>Our AutoSuggestBox is where the user will start typing a search query and will be responsible for searching our index on Algolia. We need to setup two events to handle when the text changes and when a suggestion is selected.</p>
+
+<p>Update the MainPage XAML to the following for the AutoSuggestBox.</p>
+
+<p><code>xml
+&lt;AutoSuggestBox HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="380" TextChanged="AutoSuggestBox_TextChanged" SuggestionChosen="AutoSuggestBox_SuggestionChosen"/&gt;
+</code></p>
+
+<p>When adding new event handlers in this fashion, the code behind is automatically created in <code>MainPage.xaml.cs</code>. If they are not there, be sure to add them as follows.</p>
+
+<p>```c#
+private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+{</p>
+
+<p>}</p>
+
+<p>private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+{</p>
+
+<p>}
+```</p>
+
+<h2>Add Algolia to our application</h2>
+
+<p>If you don't have <code>MainPage.xaml.cs</code> open, open it now.</p>
+
+<p>We are going to add the necessary code to add Algolia search capabilities to our application.</p>
+
+<p>The first thing we need is to add two private members to our MainPage class. These will be an AlgoliaClient and Index.</p>
+
+<p><code>c#
+private AlgoliaClient algoliaClient = null;
+private Index algoliaIndex = null;
+</code></p>
+
+<p>Next, we need to instantiate these objects within the constructor. Be sure to change the application id and search only key to the ones you used in the web project.</p>
+
+<p>```c#
+public MainPage()
+{</p>
+
+<pre><code>this.InitializeComponent();
+
+this.NavigationCacheMode = NavigationCacheMode.Required;
+
+algoliaClient = new AlgoliaClient("&lt;APPLICATION_ID&gt;", "&lt;SEARCH_ONLY_API_KEY&gt;");
+algoliaIndex = algoliaClient.InitIndex("packages");
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Finally, be sure to add the necessary using statement.</p>
+
+<p><code>c#
+using Algolia.Search;
+</code></p>
+
+<h2>Tie it all together</h2>
+
+<p>We now need to create a class that can be used to deserialize the Algolia search responses. Inside <code>MainPage.xaml.cs</code> create the following class. You will notice it defines Name, Link, Count, and objectID. The first 3 are fields we defined in our web application. The last one is the ID that Algolia uses in its indexed data. This is the field we mapped our models ID field to.</p>
+
+<p>Also, you will see we are overriding <code>ToString()</code>. This is because we will be adding each <code>Hit</code> object to our AutoSuggestBox and want to control how the data is shown.</p>
+
+<p>```c#
+private class PackagesResult
+{</p>
+
+<pre><code>public class Hit
+{
+    public string Name { get; set; }
+    public string Link { get; set; }
+    public string Count { get; set; }
+    public string objectID { get; set; }
+
+    public override string ToString()
+    {
+        return Name + Environment.NewLine +
+            "  Link:\t" + Link + Environment.NewLine +
+            "  Count:\t" + Count;
+    }
+}
+
+public List&lt;Hit&gt; hits { get; set; }
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Next we need to implement our search code each time a user enters a character in our AutoSuggestBox. Update the AutoSuggestBox event handler for TextChanged as follows.</p>
+
+<p>```c#
+private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+{</p>
+
+<pre><code>if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+{
+    var searchTerm = sender.Text;
+    var query = new Query(searchTerm);
+    var result = algoliaIndex.SearchAsync(query).Result;
+    var packagesResult = result.ToObject&lt;PackagesResult&gt;();
+
+    sender.ItemsSource = packagesResult.hits;
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>What we are doing here is creating a new Algolia Query using the entered text. We then issue a search, get back the results as JSON, and convert it to a PackagesResult object. The last thing we do is add the list of Hits as the ItemsSource of our AutoSuggestBox. This will automatically show the results to the user.</p>
+
+<p>Finally, we need to update the SuggestionChosen event for our AutoSuggestBox when a user selects one of the results we showed them. Update it as follows.</p>
+
+<p>```c#
+private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+{</p>
+
+<pre><code>var hit = (PackagesResult.Hit)args.SelectedItem;
+SearchWebView.Navigate(new Uri("http://localhost:8671/api/packages/" + hit.objectID));
+</code></pre>
+
+<p>}
+```</p>
+
+<p>All we are doing here is taking the selected item, reference that items object ID, and then navigating our WebView to that page. The page we are showing is the API endpoint we created in our web application. This is just a simple example of how to tie the two applications together. A more robust approach would be to process the data from the API and build a UI capable of viewing, editing, and deleting the data.</p>
+
+<p><img src="/images/algolia_csharp_16.png" alt="Screenshot 16" /></p>
+
+<h3>Wrap up</h3>
+
+<p>That wraps up this tutorial on adding Algolia to an ASP.NET MVC application along with a Windows Phone 8.1 application. There was a lot going on here, but if you take out the standard stuff for our web and phone application, the Algolia part is very simple and straightforward.</p>
+
+<p>If you found this article or others useful be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+
+<p>Source code for tutorial can be found <a href="https://github.com/algolia/tutorials/tree/master/csharp/src/PackageTrack">here on GitHub</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Using @ and _ with HTML Helpers in Razor Views]]></title>
+    <link href="http://scottksmith.com/blog/2013/05/07/using-at-and-with-html-helpers-in-razor-views/"/>
+    <updated>2013-05-07T11:38:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2013/05/07/using-at-and-with-html-helpers-in-razor-views</id>
+    <content type="html"><![CDATA[<p>Here is a tip for you .NET developers.</p>
+
+
+
+
+<p>When you are using HTML helpers there are times when you need to add extra attributes to the HTML element being produced by the helper. Two attributes that are commonly added are the class and data- attribute. HTML helpers support the ability to pass in an anonymous object for setting these attributes. The helper will take each item out of the anonymous object and add them to the html element as attributes.</p>
+
+
+
+
+<!-- more -->
+
+
+
+
+<p>Here is simple example that sets the id of the checkbox element:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="n">@Html</span><span class="p">.</span><span class="n">CheckBox</span><span class="p">(</span><span class="s">&quot;ignore&quot;</span><span class="p">,</span> <span class="k">new</span> <span class="p">{</span> <span class="n">id</span> <span class="p">=</span> <span class="s">&quot;1&quot;</span> <span class="p">})</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>This works just fine when things are simple, but what if you want to set the class attribute? If you were to try the following, it would fail:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="err">@</span><span class="n">@Html</span><span class="p">.</span><span class="n">CheckBox</span><span class="p">(</span><span class="s">&quot;ignore&quot;</span><span class="p">,</span> <span class="k">new</span> <span class="p">{</span> <span class="k">class</span> <span class="err">= &quot;</span><span class="nc">bananas</span><span class="s">&quot; })</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>The reason this fails is because class is a reserved keyword in C#. The way to get around this to preface the keyword with @ which tells the C# compiler to treat the word as a symbol.</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="err">@</span><span class="n">@Html</span><span class="p">.</span><span class="n">CheckBox</span><span class="p">(</span><span class="s">&quot;ignore&quot;</span><span class="p">,</span> <span class="k">new</span> <span class="p">{</span> <span class="n">@class</span> <span class="p">=</span> <span class="s">&quot;bananas&quot;</span> <span class="p">})</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Now, say you want to add a data-name attribute to the element. If you were to create like the following, it would fail:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="err">@</span><span class="n">@Html</span><span class="p">.</span><span class="n">CheckBox</span><span class="p">(</span><span class="s">&quot;ignore&quot;</span><span class="p">,</span> <span class="k">new</span> <span class="p">{</span> <span class="n">@class</span> <span class="p">=</span> <span class="s">&quot;bananas&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">-</span><span class="n">name</span> <span class="p">=</span> <span class="s">&quot;bit&quot;</span> <span class="p">})</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>The reason this fails is because the C# compiler does not allow dashes (-) in variable names. Not to worry though, this is easily handled by using the underscore (_) character in place of the dash. The underscore will be automatically replaced with a dash at run time.</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="err">@</span><span class="n">@Html</span><span class="p">.</span><span class="n">CheckBox</span><span class="p">(</span><span class="s">&quot;ignore&quot;</span><span class="p">,</span> <span class="k">new</span> <span class="p">{</span> <span class="n">@class</span> <span class="p">=</span> <span class="s">&quot;bananas&quot;</span><span class="p">,</span> <span class="n">data_name</span> <span class="p">=</span> <span class="s">&quot;bit&quot;</span> <span class="p">})</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>So the final output would look like this:</p>
+
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;input</span> <span class="na">class=</span><span class="s">&quot;bananas&quot;</span> <span class="na">data-name=</span><span class="s">&quot;bit&quot;</span> <span class="na">id=</span><span class="s">&quot;ignore&quot;</span> <span class="na">name=</span><span class="s">&quot;ignore&quot;</span> <span class="na">type=</span><span class="s">&quot;checkbox&quot;</span> <span class="na">value=</span><span class="s">&quot;true&quot;</span><span class="nt">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[SignalR: Awesome Real-Time with .NET - Part 2]]></title>
+    <link href="http://scottksmith.com/blog/2012/10/31/signalr-awesome-real-time-with-net-part-2/"/>
+    <updated>2012-10-31T14:59:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/10/31/signalr-awesome-real-time-with-net-part-2</id>
+    <content type="html"><![CDATA[<p>Welcome to part two of the series SignalR: Awesome Real-Time with .NET.</p>
+
+<p>Part 1 - <a href="http://scottksmith95.wordpress.com/2012/10/30/signalr-awesome-real-time-with-net/">SignalR: Awesome Real-Time with .NET</a></p>
+
+<p>Part 2 - SignalR: Awesome Real-Time with .NET - Part 2</p>
+
+<p>For this post, we will start where we left off from part one. If you don't want to follow part one and create the solution, project, code, etc, you can get the source on <a href="https://github.com/scottksmith95/SignalRTutorial">GitHub</a>.</p>
+
+<p><strong>Step 1 - Specifying the route for the Hub</strong></p>
+
+<p>Because Hubs are at a higher level than PersistentConnections, there is no need to manually set the route for the Hub. Some of the magic I talked about before does this for us automatically by creating the route /SignalR. To change the route for the Hub you need to register the route in the Global.asax file and update any client side references to the Hub.</p>
+
+<!-- more -->
+
+
+<p>Update Global.asax to change the route to /SignalR2</p>
+
+<pre>using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Http;
+using System.Web.Mvc;
+using System.Web.Routing;
+using SignalR;
+
+namespace SignalRTutorial
+{
+    // Note: For instructions on enabling IIS6 or IIS7 classic mode, 
+    // visit http://go.microsoft.com/?LinkId=9394801
+    public class MvcApplication : System.Web.HttpApplication
+    {
+        protected void Application_Start()
+        {
+            RouteTable.Routes.MapHubs("~/SignalR2");
+
+            AreaRegistration.RegisterAllAreas();
+
+            WebApiConfig.Register(GlobalConfiguration.Configuration);
+            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+        }
+    }
+}</pre>
+
+
+<p>Update your client side code in Index.cshtml to use the new route</p>
+
+<pre>&lt;script src="http://scottksmith.com/SignalR2/Hubs"&gt;&lt;/script&gt;</pre>
+
+
+<p><strong>Step 2 - Specifying the name of the Hub</strong></p>
+
+<p>Another thing that is done automatically is the name of the Hub itself. By default, the name we use client side to reference the Hub is the same as the Type of the Hub. In our code, this is TagHub which we reference with</p>
+
+<pre>$.connection.tagHub;</pre>
+
+
+<p>If we want to change it to something else, we only have to decorate our TagHub class with the HubName attribute.</p>
+
+<p>Decorate the TagHub class in TagHub.cs with the HubName attribute using tagHub as our name.</p>
+
+<pre>[HubName("ourTagHub")]
+public class TagHub : Hub</pre>
+
+
+<p>Because we changed the name of our Hub, we also need to update our reference to this Hub client side.</p>
+
+<p>Update your client side code in Index.cshtml to reference the new Hub name</p>
+
+<pre>var tagHub = $.connection.ourTagHub;</pre>
+
+
+<p><strong>Step 3 - Detecting connects and reconnects</strong></p>
+
+<p>It is pretty straightforward to detect connects and reconnects in your Hub. All you have to do is implement IConnected on your Hub. There are two functions that need to be implemented, Connect and Reconnect. Update your TagHub class by implementing IConnected.</p>
+
+<pre>using System.Collections.Generic;
+using System.Threading.Tasks;
+using SignalR.Hubs;
+
+namespace SignalRTutorial.Hubs
+{
+    [HubName("ourTagHub")]
+    public class TagHub : Hub, IConnected
+    {
+        static List _tags = new List();
+
+        static TagHub()
+        {
+            _tags.Add("c#");
+            _tags.Add(".NET");
+            _tags.Add("SignalR");
+        }
+
+        public void getTags()
+        {
+            //Call the initTags method on the calling client
+            Caller.initTags(_tags);
+        }
+
+        public void setTag(string tag)
+        {
+            //Add the new tag to the list of tags
+            _tags.Add(tag);
+
+            //Call the addTag method on all connected clients
+            Clients.addTag(tag);
+        }
+
+        public Task Connect()
+        {
+            return Clients.joined(Context.ConnectionId);
+        }
+
+        public Task Reconnect(IEnumerable groups)
+        {
+            return Clients.rejoined(Context.ConnectionId);
+        }
+    }
+}</pre>
+
+
+<p>As you can see, the Connect and Reconnect methods are making calls to all of our connected clients. Before we implement the client side code to support these calls, I want to point out Context.ConnectionId. Context.ConnectionId is the unique id assigned to the current connection and caller. The Caller property we used before to access the caller is the same thing as Clients[Context.ConnectionId]. The Context.ConnectionId is something that can be stored and used to access connections later.</p>
+
+<p>Here is the client side code needed to support the two new calls being made by our Hub. First add the following markup as the first element inside the &lt;body&gt; tag.</p>
+
+<pre>&lt;div style="float: right"&gt;
+    &lt;ul id="connections"&gt;&lt;/ul&gt;
+&lt;/div&gt;</pre>
+
+
+<p>Next add these two methods just below the tagHub.addTag method.</p>
+
+<pre>tagHub.joined = function (connectionId) {
+    $('#connections').append('&lt;li&gt;Connect: ' + connectionId + '&lt;/li&gt;');
+}
+
+tagHub.rejoined = function (connectionId) {
+    $('#connections').append('&lt;li&gt;Reconnect: ' + connectionId + '&lt;/li&gt;');
+}</pre>
+
+
+<p><strong>Step 4 - Detecting disconnects</strong></p>
+
+<p>Detecting disconnects is very similar to how we detected connects. This time we need to implement IDisconnect on our Hub and the method Disconnect.</p>
+
+<p>First implement IDisconnect on your TagHub class and then add the following method.</p>
+
+<pre>public class TagHub : Hub, IConnected, IDisconnect
+{
+
+    public Task Disconnect()
+    {
+        return Clients.leave(Context.ConnectionId);
+    }
+
+}</pre>
+
+
+<p>Next you will need to update the client side code and add the following method.</p>
+
+<pre>tagHub.leave = function (connectionId) {
+    $('#connections').append('&lt;li&gt;Disconnect: ' + connectionId + '&lt;/li&gt;');
+}</pre>
+
+
+<p><strong>Step 5 - State between client and server</strong></p>
+
+<p>It is very easy to  maintain state between the client and server. Any state sent by the client can be accessed by the server Hub via the Caller property. The server Hub can also set state that will be accessible by the client by setting any property on Caller. In our application you would do this by setting any property you want client side on the tagHub variable such as tagHub.name = 'scott';. You would then be able to access this server side in our Hub with Caller.name. You can also create a new property server side by using the  Caller property doing something like Caller.isCool = 'true';.</p>
+
+<p><strong>Step 6 - Broadcasting over a Hub outside of a Hub</strong></p>
+
+<p>There may be cases where you want to broadcast over a Hub from outside of the Hub itself. One example would be an action on a controller you want to be able to broadcast to all connected clients when it is called.</p>
+
+<p>Update the HomeController with the following code.</p>
+
+<pre>using SignalR;
+using SignalRTutorial.Hubs;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace SignalRTutorial.Controllers
+{
+    public class HomeController : Controller
+    {
+        //
+        // GET: /Home/
+
+        public ActionResult Index()
+        {
+            return View();
+        }
+
+        public void Notify()
+        {
+            var context = GlobalHost.ConnectionManager.GetHubContext&lt;TagHub&gt;();
+            context.Clients.addTag("notify called");
+        }
+    }
+}</pre>
+
+
+<p>The newly created Notify action on the Home controller gets the context to our TagHub. With this context we can now make calls to the clients via the Caller or Clients property.</p>
+
+<p><strong>Conclusion</strong></p>
+
+<p>That is it for now! Stayed tuned for part 3.</p>
+
+<p>The final source code can be found <a href="https://github.com/scottksmith95/SignalRTutorial-Part2">GitHub</a>.</p>
+
+<p><strong>Further reading</strong></p>
+
+<p><a href="https://github.com/SignalR/SignalR/wiki">SignalR official documentation
+</a></p>
+
+<p><a href="http://www.codeproject.com/Articles/322154/ASP-NET-MVC-SIngalR-and-Knockout-based-Real-time-U">ASP.NET MVC, SignalR and Knockout...</a></p>
+
+<p><a href="http://www.d80.co.uk/post/2011/10/21/SignalR.aspx">signalr tutorial with knockoutjs</a></p>
+
+<p><a href="http://www.bradygaster.com/testing-signalr-connections-with-nunit">Testing SignalR Connections with NUnit</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[SignalR: Awesome Real-Time with .NET]]></title>
+    <link href="http://scottksmith.com/blog/2012/10/30/signalr-awesome-real-time-with-net/"/>
+    <updated>2012-10-30T14:53:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/10/30/signalr-awesome-real-time-with-net</id>
+    <content type="html"><![CDATA[<p>Welcome to part one of the series SignalR: Awesome Real-Time with .NET</p>
+
+<p>Part 1 - SignalR: Awesome Real-Time with .NET</p>
+
+<p>Part 2 - <a href="http://scottksmith95.wordpress.com/2012/10/31/signalr-awesome-real-time-with-net-part-2/">SignalR: Awesome Real-Time with .NET - Part 2</a></p>
+
+<p><strong>What is SignalR?</strong></p>
+
+<p>SignalR is an async signaling library for .NET to help build real-time, multi-user interactive web applications</p>
+
+<p>Or...</p>
+
+<p>A real cool .NET framework hosted in ASP.NET and a JavaScript library (on the client side that helps build collaborative web apps quickly and painlessly. It is open source and freely available on <a href="https://github.com/SignalR/SignalR">GitHub</a>.</p>
+
+<p>And...</p>
+
+<p>It doesn't have to be hosted in ASP.NET. It can also be hosted using OWIN (Open Web Interface for .NET) or self host (console, windows service, azure, etc.).</p>
+
+<p>A JavaScript library isn't the only client side implementation as well. As of today, there are jQuery, Native .NET, WP7, iOS, Silverlight, WinRT, and Android (via Mono) implementations.</p>
+
+<!-- more -->
+
+
+<p><strong>What does it solve?</strong></p>
+
+<p>Pushing data from the server to the client (not just browser clients) has always been a tough problem. SignalR makes it dead easy and handles all the heavy lifting for you.</p>
+
+<p>SignalR abstracts the raw technique of keeping connections open between a client and a server. SignalR uses a fallback mechanism to connect the browser to the server. After an initial negotiation request the following transports are tried in order until a successful connection can be made: WebSockets, Server Sent Events (EventSource), Forever Frame, or Ajax long polling.</p>
+
+<p><strong>Implementations</strong></p>
+
+<p>There are two choices when developing with SignalR, PersistentConnections and Hubs.</p>
+
+<p>PersistentConnections - A PersistentConnection is the base class that has an api for exposing a SignalR service over http.</p>
+
+<p>Hubs - Hubs provide a higher level RPC framework over a PersistentConnection. If you have different types of messages that you want to send between server and client then hubs is recommended so you don't have to do your own dispatching.</p>
+
+<p>For this article and tutorial, we will be focusing on Hubs.</p>
+
+<p><strong>Time to Code</strong></p>
+
+<p>For this tutorial, we will be using <a title="Visual Studio 2012" href="http://www.microsoft.com/en-us/download/details.aspx?id=34673">Visual Studio 2012</a> with <a title="MVC 4" href="http://www.asp.net/mvc/mvc4">ASP.NET MVC 4</a>.</p>
+
+<p><strong>Step 1 - Create an empty ASP.NET MVC 4 web application</strong></p>
+
+<p>File -&gt; New Project -&gt; Web -&gt; ASP.NET MVC 4 Web Application. Call your project anything you like. I used SignalRTutorial .</p>
+
+<p><a href="http://scottksmith95.files.wordpress.com/2012/10/01.png"><img class="alignnone size-full wp-image-125" title="01" alt="" src="http://scottksmith95.files.wordpress.com/2012/10/01.png" height="409" width="593" /></a></p>
+
+<p><a href="http://scottksmith95.files.wordpress.com/2012/10/02.png"><img class="alignnone size-full wp-image-126" title="02" alt="" src="http://scottksmith95.files.wordpress.com/2012/10/02.png" height="598" width="593" /></a></p>
+
+<p><strong>Step 2 - Add the SignalR package via NuGet</strong></p>
+
+<p>Right click on the newly created project (in my case it is called SignalRTutorial) and click Manage NuGet Packages. Search online for SignalR and click install for the package named SignalR. It will automatically add all needed dependencies for you.</p>
+
+<p><a href="http://scottksmith95.files.wordpress.com/2012/10/03.png"><img class="alignnone size-full wp-image-127" title="03" alt="" src="http://scottksmith95.files.wordpress.com/2012/10/03.png" height="486" width="593" /></a></p>
+
+<p><strong>Step 3 - Create the Home Controller</strong></p>
+
+<p>Right click on the folder labeled Controllers and select Add -&gt; Controller. Name it HomeController and make sure the "Empty MVC controller" template is selected.</p>
+
+<p><a href="http://scottksmith95.files.wordpress.com/2012/10/04.png"><img class="alignnone size-full wp-image-128" title="04" alt="" src="http://scottksmith95.files.wordpress.com/2012/10/04.png" height="385" width="593" /></a></p>
+
+<p><strong>Step 4 - Create the Index view for the Home Controller</strong></p>
+
+<p>In the newly created HomeController.cs class, right click the Index method and select "Add View". Be sure to uncheck "Use a layout or master page" but leave everything else alone.</p>
+
+<p><a href="http://scottksmith95.files.wordpress.com/2012/10/05.png"><img class="alignnone size-full wp-image-129" title="05" alt="" src="http://scottksmith95.files.wordpress.com/2012/10/05.png" height="504" width="511" /></a></p>
+
+<p><strong>Step 5 - Make sure everything is working</strong></p>
+
+<p>Take a moment to make sure your project builds and run it using Ctrl-F5. You should see the web page open with nothing on the page. This is a good thing.</p>
+
+<p><strong>Step 6 - Create a simple SignalR Hub</strong></p>
+
+<p>Create a folder in your MVC 4 project called Hubs. This is just for organization and clarity. You are not required to have your hubs inside a folder called Hubs.</p>
+
+<p>Create a class called TagHub inside the Hubs folder. Make sure to have your class inherit from SignalR.Hubs.Hub. This will allow SignalR to work its magic.</p>
+
+<pre>using System.Collections.Generic;
+using SignalR.Hubs;
+
+namespace SignalRTutorial.Hubs
+{
+    public class TagHub : Hub
+    {
+        static List _tags = new List();
+
+        static TagHub()
+        {
+            _tags.Add("c#");
+            _tags.Add(".NET");
+            _tags.Add("SignalR");
+        }
+
+        public void getTags()
+        {
+            //Call the initTags method on the calling client
+            Caller.initTags(_tags);
+        }
+    }
+}</pre>
+
+
+<p><strong>Step 7 - Update your Index view for the Home Controller</strong></p>
+
+<p>Open Index.cshtml that was created earlier and modify it to the following code.</p>
+
+<pre>@{
+Layout = null;
+}
+
+&lt;!DOCTYPE html&gt;
+
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta name="viewport" content="width=device-width" /&gt;
+    &lt;title&gt;Index&lt;/title&gt;
+    &lt;script src="~/Scripts/jquery-1.6.4.js"&gt;&lt;/script&gt;
+    &lt;script src="~/Scripts/jquery.signalR-0.5.3.js"&gt;&lt;/script&gt;
+    &lt;script src="http://scottksmith.com/SignalR/Hubs"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;ul id="tags"&gt;&lt;/ul&gt;
+
+    &lt;script type="text/javascript"&gt;
+        $(function () {
+            var tagHub = $.connection.tagHub;
+
+            tagHub.initTags = function (tags) {
+                $.each(tags, function (index, value) {
+                    $('#tags').append('&lt;li&gt;' + value + '&lt;/li&gt;');
+                });
+            };
+
+            $.connection.hub.start()
+                .done(function () {
+                    tagHub.getTags();
+                })
+                .fail(function () {
+                    alert("Could not Connect!");
+                });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+
+
+<p><strong>Step 8 - Run the project and see what happens</strong></p>
+
+<p>So what exactly is going on here?</p>
+
+<p>The Caller property in our Hub is provided by SignalR as part of the Hub class definition. This is a  dynamic object that you can use to invoke a client side method written in JavaScript on the connection making the call to getTags. SignalR does the plumbing using web sockets, long polling, or what ever, and we don’t care. SignalR also generates a client side proxy hub to invoke methods in our TagHub. For example, using the client side proxy hub our client invokes the getTags method in the above Hub during initialization, the client invoking the getTags method (Caller) will get a callback to it’s initTags JavaScript method, with all the existing tags.</p>
+
+<p>So the order of events are:</p>
+
+<ol>
+    <li>Page loads</li>
+    <li>Client side
+<ol>
+    <li>var tagHub = $.connection.tagHub;
+<ol>
+    <li>Generates a client side proxy hub to our TagHub object</li>
+</ol>
+</li>
+    <li>$.connection.hub.start();
+<ol>
+    <li>Starts our connection to the hubs</li>
+</ol>
+</li>
+    <li>tagHub.getTags();
+<ol>
+    <li>Calls the getTags() method on the server side TabHub object</li>
+</ol>
+</li>
+</ol>
+</li>
+    <li>Server side
+<ol>
+    <li>Caller.initTags(_tags);
+<ol>
+    <li>Calls the initTags(tags) method on the client side</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+
+
+<p><strong>Step 9 - Supporting Clients on our Hub</strong></p>
+
+<p>We will now add support to our Tag web application to allow adding new tags. The one thing we want though is for all connected clients to have their list of tags updated when new ones are added.</p>
+
+<p>Add the following method to your TagHub class:</p>
+
+<pre>public void setTag(string tag)
+{
+    //Add the new tag to the list of tags
+    _tags.Add(tag);
+
+    //Call the addTag method on all connected clients
+    Clients.addTag(tag);
+}</pre>
+
+
+<p>Add the following HTML just above the unordered list showing the list of tags:</p>
+
+<pre>&lt;div&gt;
+    &lt;input id="newTagText" type="text" placeholder="Enter a new tag" /&gt;
+    &lt;input id="newTagSubmit" type="submit" value="Add new tag" /&gt;
+&lt;/div&gt;</pre>
+
+
+<p>Finally add the following methods to your JavaScript:</p>
+
+<pre>tagHub.addTag = function (tag) {
+    $('#tags').append('&lt;li&gt;' + tag + '&lt;/li&gt;');
+};
+
+$('#newTagSubmit').click(function () {
+    var tag = $('#newTagText').attr('value');
+    tagHub.setTag(tag);
+});</pre>
+
+
+<p><strong>Step 10 - Run the project again, open the page in more than one window, and add tags</strong></p>
+
+<p>So what exactly is going on here?</p>
+
+<p>The Clients property in our Hub is provided by SignalR as part of the Hub class definition. This is a  dynamic object that you can use to invoke a client side method written in JavaScript on all connected clients. Using the client side proxy hub our client invokes the setTags method in the TagHub, all connected clients will get a callback to it’s addTags JavaScript method, with the new tag.</p>
+
+<p>So the order of events are:</p>
+
+<ol>
+    <li>Page loads</li>
+    <li>Client side
+<ol>
+    <li>var tagHub = $.connection.tagHub;
+<ol>
+    <li>Generates a client side proxy hub to our TagHub object</li>
+</ol>
+</li>
+    <li>$.connection.hub.start();
+<ol>
+    <li>Starts our connection to the hubs</li>
+</ol>
+</li>
+    <li>tagHub.setTag(tag);
+<ol>
+    <li>Calls the setTag() method on the server side TagHub object</li>
+</ol>
+</li>
+</ol>
+</li>
+    <li>Server side
+<ol>
+    <li>Clients.addTag(tag);
+<ol>
+    <li>Calls the addTags(tag) method on all connected clients (client side)</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+
+
+<p><strong>Conclusion</strong></p>
+
+<p>That is it for now! With very little code, effort, and complexity we were able to implement a collaborative web application.</p>
+
+<p>The final source code can be found <a href="https://github.com/scottksmith95/SignalRTutorial">GitHub</a>.</p>
+
+<p><strong>Further reading</strong></p>
+
+<p><a href="https://github.com/SignalR/SignalR/wiki">SignalR official documentation
+</a></p>
+
+<p><a href="http://www.codeproject.com/Articles/322154/ASP-NET-MVC-SIngalR-and-Knockout-based-Real-time-U">ASP.NET MVC, SignalR and Knockout...</a></p>
+
+<p><a href="http://www.d80.co.uk/post/2011/10/21/SignalR.aspx">signalr tutorial with knockoutjs</a></p>
+
+<p><a href="http://www.bradygaster.com/testing-signalr-connections-with-nunit">Testing SignalR Connections with NUnit</a></p>
+]]></content>
+  </entry>
+  
+</feed>

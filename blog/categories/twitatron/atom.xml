@@ -1,0 +1,1090 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Twitatron | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/twitatron/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Twitatron: Building a production web app with Node - User Accounts]]></title>
+    <link href="http://scottksmith.com/blog/2015/05/26/twitatron-building-a-production-web-app-with-node-user-accounts/"/>
+    <updated>2015-05-26T07:55:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2015/05/26/twitatron-building-a-production-web-app-with-node-user-accounts</id>
+    <content type="html"><![CDATA[<p>Welcome to part 3 of the Twitaron series</p>
+
+<ol>
+<li><a href="/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/">Getting started</a></li>
+<li><a href="/blog/2015/03/23/twitatron-building-a-production-web-app-with-node-views-and-controllers/">Views &amp; Controllers</a></li>
+<li><a href="/blog/2015/05/26/twitatron-building-a-production-web-app-with-node-user-accounts/">User Accounts</a></li>
+<li>Under development...</li>
+</ol>
+
+
+<p>In our <a href="/blog/2015/03/23/twitatron-building-a-production-web-app-with-node-views-and-controllers/">previous article</a> we leared how to add views, layouts, partials, controllers, and more.</p>
+
+<p>In this installment of the Twitatron series, we will be diving into how to implement user accounts. By the end of this article you will have learned how to connect to MongoDB, used Mongoose for object modeling, implemented Passport for user authentication, allow users to login with their Twitter account, and have full support for user accounts.</p>
+
+<h3>Secrets</h3>
+
+<p>Before we go further into setting up support for logging in with Twitter, we need to add a way to easily develop locally and run in production. There are going to be settings that are different locally versus production and we don't want these production values in our source code. There are many ways to handle this, but one way I like is to use a secrets module.</p>
+
+<p>If you don't already have a <code>config</code> directory in the root of your application, create one now. Inside this directory, create a new filed named <code>secrets.js</code>. Update this file to contain the following. We will be using many of these items in this and future tutorials.</p>
+
+<p>```javascript
+module.exports = {
+  db: process.env.MONGODB || 'mongodb://localhost:27017/twitatron',</p>
+
+<p>  cryptos: {</p>
+
+<pre><code>algorithm: 'aes256',
+key: process.env.CRYPTO_KEY || 'Your crypto key goes here' 
+</code></pre>
+
+<p>  },</p>
+
+<p>  sessionSecret: process.env.SESSION_SECRET || 'Your session secret goes here',</p>
+
+<p>  twitter: {</p>
+
+<pre><code>consumerKey: process.env.TWITTER_KEY || 'Your Twitter consumer key',
+consumerSecret: process.env.TWITTER_SECRET  || 'Your Twitter consumer secret',
+callbackURL: process.env.TWITTER_CALLBACK || 'http://localhost:3000/auth/twitter/callback',
+passReqToCallback: true
+</code></pre>
+
+<p>  }
+};
+```</p>
+
+<p>When your application runs in production, you can setup all the necessary environment variables so they are used within your application. When you run locally, it will use the values specified within this module.</p>
+
+<p>The last thing we need to do is use this module within our application. Update the code in <code>server.js</code> from our previous article to look like the following.</p>
+
+<p><code>javascript
+// Load required packages
+var path = require('path');
+var express = require('express');
+var compression = require('compression');
+var secrets = require('./config/secrets');
+</code></p>
+
+<h3>Connecting to MongoDB</h3>
+
+<p>If you don't already have MondgoDB installed and running, you will want to go their <a href="https://www.mongodb.org/">official site</a> and follow their installation instructions.</p>
+
+<p>There are three things we need to do to connect to MongoDB.</p>
+
+<ol>
+<li>Install the Mongoose package</li>
+<li>Load the Mongoose package</li>
+<li>Connect to it using our connection string</li>
+</ol>
+
+
+<p>Install the package manually using the following command:</p>
+
+<p><code>tcsh
+npm install mongoose --save
+</code></p>
+
+<p>Update the code in <code>server.js</code> from our previous article to look like the following.</p>
+
+<p><code>javascript
+// Load required packages
+var path = require('path');
+var express = require('express');
+var compression = require('compression');
+var secrets = require('./config/secrets');
+var mongoose = require('mongoose');
+</code></p>
+
+<p>Connect to MongoDB</p>
+
+<p>```javascript
+// Load required packages
+var path = require('path');
+var express = require('express');
+var compression = require('compression');
+var secrets = require('./config/secrets');
+var mongoose = require('mongoose');</p>
+
+<p>// Connect to the twitatron MongoDB
+mongoose.connect(secrets.db);
+```</p>
+
+<p>If all goes well, your application should start up just fine. You will notice we are already using our secrets module for the MongoDB connection string.</p>
+
+<h3>User Model</h3>
+
+<p>We now need a model to store our user. Inside the <code>models</code> directory, create a file named <code>user.js</code> and add the following code to it. If you don't have a <code>models</code> directory, go ahead and create one in the root of your application.</p>
+
+<p>```javascript
+// Load required packages
+var mongoose = require('mongoose');
+var crypto = require('crypto');
+var secrets = require('../config/secrets');</p>
+
+<p>// Define our user schema
+var UserSchema = new mongoose.Schema({
+  twitterId: { type: String, unique: true, required: true },
+  username: { type: String, unique: true, lowercase: true, required: true },
+  email: { type: String, lowercase: true },
+  name: { type: String, default: '' },
+  created: { type: Date, default: new Date() },
+  accessToken: { type: String, required: true },
+  tokenSecret: { type: String, required: true }
+});</p>
+
+<p>UserSchema.methods.encrypt = function(text) {
+  var algorithm = secrets.cryptos.algorithm;
+  var key = secrets.cryptos.key;</p>
+
+<p>  var cipher = crypto.createCipher(algorithm, key);<br/>
+  return cipher.update(text, 'utf8', 'hex') + cipher.final('hex');
+};</p>
+
+<p>UserSchema.methods.decrypt = function(text) {
+  var algorithm = secrets.cryptos.algorithm;
+  var key = secrets.cryptos.key;</p>
+
+<p>  var decipher = crypto.createDecipher(algorithm, key);
+  return decipher.update(text, 'hex', 'utf8') + decipher.final('utf8');
+};</p>
+
+<p>// Export the Mongoose model
+module.exports = mongoose.model('User', UserSchema);
+```</p>
+
+<p>So what is going on here?</p>
+
+<ol>
+<li>We loaded the Mongoose package</li>
+<li>Created a Mongoose schema which maps to a MongoDB collection and defines the shape of the documents within that collection.</li>
+<li>We defined our schema to contain twitterId, username, email, name, created date, access token, and token secret.</li>
+<li>We exported the Mongoose user model for use within our application.</li>
+<li>We created two methods on our schema that we will use to encrypt and decrypt the access token and token secret.</li>
+</ol>
+
+
+<h3>Auth Controller</h3>
+
+<p><code>tcsh
+npm install passport --save
+npm install passport-twitter --save
+</code></p>
+
+<p>This will install the standard passport package along with passport-twitter. Passport-twitter will provide our application with Twitter authentication strategies. It will allow us to easily add Twitter login to our app.</p>
+
+<p>In the <code>controllers</code> directory, add a file named <code>auth.js</code> with the following contents.</p>
+
+<p>```javascript
+// Load required packages
+var passport = require('passport');
+var TwitterStrategy = require('passport-twitter').Strategy;
+var User = require('../models/user');
+var secrets = require('../config/secrets');</p>
+
+<p>passport.serializeUser(function(user, done) {
+  done(null, user);
+});</p>
+
+<p>passport.deserializeUser(function(user, done) {
+  done(null, user);
+});</p>
+
+<p>passport.use(new TwitterStrategy(secrets.twitter, function(req, accessToken, tokenSecret, profile, done) {
+  User.findOne({ twitterId: profile.id }, function(err, existingUser) {</p>
+
+<pre><code>if (existingUser) return done(null, existingUser);
+
+var user = new User();
+
+user.twitterId = profile.id;
+user.username = profile.id;
+user.email = '';
+user.name = profile.displayName;
+user.created = new Date();
+user.accessToken = user.encrypt(accessToken);
+user.tokenSecret = user.encrypt(tokenSecret);
+
+user.save(function(err) {
+  done(err, user);
+});
+</code></pre>
+
+<p>  });
+}));</p>
+
+<p>exports.twitter = passport.authenticate('twitter');
+exports.twitterCallback = passport.authenticate('twitter', { failureRedirect: '/' });
+```</p>
+
+<p>What we are doing here is setting up passport to use the Twitter authentication strategy provided by the passport-twitter package. For our TwitterStrategy, we are defining a callback that will attempt to look up the user using the Twitter profile id and if found not found, create a new user. If all works well, it will return an existing user or create a new user.</p>
+
+<p>The final piece of this is exporting the <code>auth</code> and <code>authCallback</code> functions which will be used within our application as route endpoints responsible for creating and logging users in via Twitter. Open up <code>server.js</code> and set it to the following code.</p>
+
+<p>Also, because Passport Twitter strategy requires sessions, be sure to install the <code>express-session</code> package.</p>
+
+<p><code>tcsh
+npm install express-session --save
+</code></p>
+
+<p>```javascript
+// Load required packages
+var path = require('path');
+var express = require('express');
+var compression = require('compression');
+var secrets = require('./config/secrets');
+var mongoose = require('mongoose');
+var passport = require('passport');
+var session = require('express-session');</p>
+
+<p>// Connect to the twitatron MongoDB
+mongoose.connect(secrets.db);</p>
+
+<p>// Load controllers
+var homeController = require('./controllers/home');
+var authController = require('./controllers/auth');</p>
+
+<p>// Create our Express application
+var app = express();</p>
+
+<p>// Tell Express to use sessions
+app.use(session({
+  secret: secrets.sessionSecret,
+  resave: false,
+  saveUninitialized: false,
+}));</p>
+
+<p>// Use the passport package in our application
+app.use(passport.initialize());
+app.use(passport.session());</p>
+
+<p>// Add content compression middleware
+app.use(compression());</p>
+
+<p>// Add static middleware
+var oneDay = 86400000;
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: oneDay }));</p>
+
+<p>// Add jade view engine
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');</p>
+
+<p>// Create our Express router
+var router = express.Router();</p>
+
+<p>// Landing page route
+router.get('/', homeController.index);</p>
+
+<p>// Auth routes
+router.get('/auth/twitter', authController.twitter);
+router.get('/auth/twitter/callback', authController.twitterCallback, function(req, res) {
+  res.redirect(req.session.returnTo || '/');});</p>
+
+<p>// Register all our routes
+app.use(router);</p>
+
+<p>// Start the server
+app.listen(3000);
+```</p>
+
+<p>What we did here was to include the passport, express-session, and authController modules. After that we setup our Express application to use passport and passport session as middleware. Finally, we create two new endpoints responsible for logging users in via Twitter.</p>
+
+<p>In order to test this, you will need to head to Twitter and register an application. You can do that here: <a href="https://apps.twitter.com/">https://apps.twitter.com/</a>. Once you have an application, update the consumer key and secret inside <code>secrets.js</code>.</p>
+
+<p>You can now test things out by making a request to <a href="http://localhost:3000/auth/twitter">http://localhost:3000/auth/twitter</a></p>
+
+<h3>Clean up our views</h3>
+
+<p>Before we update our views to support logging in and out, we need to clean up our views and some of the code behind it first.</p>
+
+<p>Open up <code>homeController.js</code> and delete this line from the index action: <code>res.locals.ip = req.ip;</code>.</p>
+
+<p>Open up <code>home.jade</code> and delete this line from the view: <code>h2 You are visiting from #{ip}</code>.</p>
+
+<h3>Allow users to login and logout</h3>
+
+<p>To know whether or not a user is currently logged in, we need to add a little code to our Express application. One of the nice things Passport provides is that it automatically adds a user object to the Express request object when someone is logged in. We can take advantage of this by passing it to our views. Open up <code>server.js</code> and update the code as follows right after we use passport.session.</p>
+
+<p><code>javascript
+// Setup objects needed by views
+app.use(function(req, res, next) {
+  res.locals.user = req.user;
+  next();
+});
+</code></p>
+
+<p>What we are doing is adding the user object to the locals object in order to make it available in our views.</p>
+
+<p>Next, we will want to update <code>navigation.jade</code> to show login or logout depending on the user's state.</p>
+
+<p>```jade
+header
+  div</p>
+
+<pre><code>a(href='/') Twitatron
+if !user
+  a(href="/auth/twitter") Login with Twitter
+else
+  a(href="/auth/logout") Logout
+</code></pre>
+
+<p>```</p>
+
+<p>The last thing we need to implement is a controller action for the route <code>/auth/logout</code>. Open up <code>authController.js</code> and add the following to the very end.</p>
+
+<p><code>javascript
+exports.logout = function(req, res) {
+  req.logout();
+  req.session.destroy();
+  res.redirect('/');
+};
+</code></p>
+
+<p>Now, just define your route within <code>server.js</code> as follows.</p>
+
+<p><code>javascript
+// Auth routes
+router.get('/auth/twitter', authController.twitter);
+router.get('/auth/twitter/callback', authController.twitterCallback, function(req, res) {
+  res.redirect(req.session.returnTo || '/');});
+router.get('/auth/logout', authController.logout);
+</code></p>
+
+<p>Go ahead and try things out. You should be able to click <code>Login with Twitter</code>, get redirected to Twitter, authorize access to your Twitter account, and have a User created or get logged in as an existing user.</p>
+
+<h3>Wrap up</h3>
+
+<p>We covered a lot of areas in this tutorial. First, we added a configuration module which allows easy configuration between development and production. Second, we learned about Mongoose and connected to MongoDB. Third, we created a Mongoose User model and created helper methods that allow us to encrypt and decrypt sensitive information such as access tokens and token secrets. Finally, we added the ability to log in with Twitter, have a user account created, and then log out.</p>
+
+<p>If you found this article or others useful be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+
+<p>Source code for this part can be found <a href="https://github.com/scottksmith95/twitatron/tree/master/03">here on GitHub</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Twitatron: Building a production web app with Node - Views &amp; Controllers]]></title>
+    <link href="http://scottksmith.com/blog/2015/03/23/twitatron-building-a-production-web-app-with-node-views-and-controllers/"/>
+    <updated>2015-03-23T14:59:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2015/03/23/twitatron-building-a-production-web-app-with-node-views-and-controllers</id>
+    <content type="html"><![CDATA[<p>Welcome to part 2 of the Twitaron series</p>
+
+<ol>
+<li><a href="/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/">Getting started</a></li>
+<li><a href="/blog/2015/03/23/twitatron-building-a-production-web-app-with-node-views-and-controllers/">Views &amp; Controllers</a></li>
+<li><a href="/blog/2015/05/26/twitatron-building-a-production-web-app-with-node-user-accounts/">User Accounts</a></li>
+<li>Under development...</li>
+</ol>
+
+
+<p>In our <a href="/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/">previous article</a> we started with the basics and built a web application capable of serving static content, compressing that content, and implementing cache headers.</p>
+
+<p>In this installment of the Twitatron series, we will be diving into Views and Controllers.</p>
+
+<h3>Getting setup</h3>
+
+<p>Our view engine of choice will be <a href="http://jade-lang.com/reference/">Jade</a>. Jade is a terse language for writing HTML templates. It is capable of producing HTML, supports dynamic code, and supports reusability. You can find a <a href="http://jade-lang.com/tutorial/">tutorial here</a> to learn more about Jade.</p>
+
+<p>First thing we need to do is create a directory to store our views. If you don't already have a directory named <code>views</code> you will need to create one now.</p>
+
+<p>We will now need to tell Express about the view engine we wish to use.</p>
+
+<p>Open up <code>server.js</code> and update it with the following code after the static middleware code.</p>
+
+<p>```javascript
+...</p>
+
+<p>// Add static middleware
+var oneDay = 86400000;
+app.use(express.static(__dirname + '/public', { maxAge: oneDay }));</p>
+
+<p>// Add jade view engine
+app.set('views', __dirname + '/views');
+app.set('view engine', 'jade');</p>
+
+<p>// Create our Express router
+var router = express.Router();</p>
+
+<p>...
+```</p>
+
+<p>Next, we need to install the <a href="https://www.npmjs.org/package/jade">Jade</a> npm package.</p>
+
+<p><code>tcsh
+npm install jade --save
+</code></p>
+
+<p>What we did was add two pieces of middleware to our Express application. First, we told it to set the directory for our views to <code>/views</code>. Second, we told it to use Jade as our view engine.</p>
+
+<p>We are now ready to create our first view.</p>
+
+<h3>Our first view</h3>
+
+<p>In the <code>views</code> directory create a new file named <code>home.jade</code> and add the following code to it.</p>
+
+<p>```jade
+doctype html
+html
+  head</p>
+
+<pre><code>title Twitatron
+</code></pre>
+
+<p>  body</p>
+
+<pre><code>h1 A Twitatron view has been born!
+img(src="/img/birdatron-small.jpg")
+</code></pre>
+
+<p>```</p>
+
+<p>Next, we need to create a route at the root of our application to render this view. Open up <code>server.js</code> and update it with the following code. Be sure to remove the "dummy" route we made in the first tutorial that just returned the text "Twitatron".</p>
+
+<p>```javascript
+...</p>
+
+<p>// Create our Express router
+var router = express.Router();</p>
+
+<p>// Landing page route
+router.get('/', function(req, res) {
+  res.render('home');
+});</p>
+
+<p>// Register all our routes
+app.use(router);</p>
+
+<p>...
+```</p>
+
+<p>Finally, because we now have a view, we do not need the <code>index.html</code> file inside our <code>public</code> directory. Go ahead and delete it.</p>
+
+<p>What we have done is setup a new route to handle GET requests to /. When a browser requests <code>http://localhost:3000/</code> it will execute the anonymous function we defined to render the view named <code>home</code>. Because we already defined the directory for our views to be <code>views</code>, Express will look for a view named <code>home.jade</code>, render it into html, and return it back to the requesting client.</p>
+
+<p>Go ahead and test out your code to make sure everything is working. You should get back a response with the text "A Twitatron view has been born!" along with the Twitatron bird image.</p>
+
+<h3>Layout and partials</h3>
+
+<p>The next thing to update in our application is to implement a layout view and some partial views. This will help us reduce a significant amount of view code through reuse.</p>
+
+<p>The first thing we will create is our layout view. This will define the general layout of our application and will be used in most of our other views. Inside the <code>views</code> directory, create a filed named <code>layout.jade</code>. Update it with the following code.</p>
+
+<p>```jade
+doctype html
+html
+  head</p>
+
+<pre><code>title Twitatron
+include partials/head
+</code></pre>
+
+<p>  body</p>
+
+<pre><code>include partials/navigation
+block content
+include partials/footer
+</code></pre>
+
+<p>```</p>
+
+<p>You will notice that our layout contains references to 3 partial views. Let's go ahead and create these now. First, create a sub-directory inside the <code>views</code> directory named <code>partials</code>. Next, create three new views named: <code>head.jade</code>, <code>navigation.jade</code>, and <code>footer.jade</code>. Update each one as follows.</p>
+
+<p><strong>Head</strong></p>
+
+<p><code>jade
+meta(charset='utf-8')
+meta(http-equiv='X-UA-Compatible', content='IE=edge')
+meta(name='viewport', content='width=device-width, initial-scale=1.0')
+meta(name='description', content='Automatically monitor your Twitter account for mentions.')
+meta(name='keywords' content='twitter, mentions, api, rss, email, storage, bookmark')
+meta(name='csrf-token', content=_csrf)
+link(rel='apple-touch-icon', sizes='57x57', href='http://scottksmith.com/apple-touch-icon-57x57.png')
+link(rel='apple-touch-icon', sizes='114x114', href='http://scottksmith.com/apple-touch-icon-114x114.png')
+link(rel='apple-touch-icon', sizes='72x72', href='http://scottksmith.com/apple-touch-icon-72x72.png')
+link(rel='apple-touch-icon', sizes='144x144', href='http://scottksmith.com/apple-touch-icon-144x144.png')
+link(rel='apple-touch-icon', sizes='60x60', href='http://scottksmith.com/apple-touch-icon-60x60.png')
+link(rel='apple-touch-icon', sizes='120x120', href='http://scottksmith.com/apple-touch-icon-120x120.png')
+link(rel='apple-touch-icon', sizes='76x76', href='http://scottksmith.com/apple-touch-icon-76x76.png')
+link(rel='apple-touch-icon', sizes='152x152', href='http://scottksmith.com/apple-touch-icon-152x152.png')
+link(rel='icon' type='image/png', href='http://scottksmith.com/favicon-196x196.png', sizes='196x196')
+link(rel='icon' type='image/png', href='http://scottksmith.com/favicon-160x160.png', sizes='160x160')
+link(rel='icon' type='image/png', href='http://scottksmith.com/favicon-96x96.png', sizes='96x96')
+link(rel='icon' type='image/png', href='http://scottksmith.com/favicon-16x16.png', sizes='16x16')
+link(rel='icon' type='image/png', href='http://scottksmith.com/favicon-32x32.png', sizes='32x32')
+meta(name='msapplication-TileColor' content='#9f00a7')
+meta(name='msapplication-TileImage' content='/mstile-144x144.png')
+</code></p>
+
+<p>This view contains all our information for the head section of our HTML. Right now there are references to many icons for our application that do not yet exist. Don't worry about that for now as we will be making these in future tutorials.</p>
+
+<p><strong>Navigation</strong></p>
+
+<p>```jade
+header
+  div</p>
+
+<pre><code>a(href='/') Twitatron
+</code></pre>
+
+<p>```</p>
+
+<p>Pretty simple navigation piece for now. This will become more robust as we progress through the series.</p>
+
+<p><strong>Footer</strong></p>
+
+<p>```jade
+footer
+  div</p>
+
+<pre><code>small &amp;copy; Twitatron 2015 
+small Created by 
+  a(href="http://scottksmith.com", target="_blank") Scott Smith
+</code></pre>
+
+<p>```</p>
+
+<p>The last thing we need to do is update our current view for the homepage to use the new layout view. Update <code>home.jade</code> with the following.</p>
+
+<p>```jade
+extends layout</p>
+
+<p>block content
+  h1 A Twitatron view has been born!
+  img(src="/img/birdatron-small.jpg")
+```</p>
+
+<p>Our view now says to extend our layout view and use the content defined within the content block within the block content section in the layout.</p>
+
+<p>Now, all future views we create can extend the layout view and thus provide a head section, navigation, and footer. Later we will update our layout to add things like CSS, JavaScript, and more.</p>
+
+<h3>Adding some dynamic code</h3>
+
+<p>By themselves, views are helpful but they are much more powerful when you support dynamic code. This can be done easily taking advantage of Express. Let's go ahead and add a new element to our view that shows the IP address of the person making the request to our page.</p>
+
+<p>Open up <code>server.js</code> and update our route handler as follows.</p>
+
+<p>```javascript
+...</p>
+
+<p>// Landing page route
+router.get('/', function(req, res) {
+  res.locals.ip = req.ip;
+  res.render('home');
+});</p>
+
+<p>...
+```</p>
+
+<p>What this does is add the IP address of the client making the request to the <code>res.locals.ip</code> object which makes it available to our views. The <code>res.locals</code> object is where you can add anything you want available in views.</p>
+
+<p>Next, update <code>home.jade</code> as follows with a new element.</p>
+
+<p>```jade
+extends layout</p>
+
+<p>block content
+  h1 A Twitatron view has been born!
+  h2 You are visiting from #{ip}
+  img(src="/img/birdatron-small.jpg")
+```</p>
+
+<p>This example is more to illustrate how to add dynamic code to your view from within your application. In future articles, we will dive more deeply into how to take advantage of this.</p>
+
+<h3>Controllers</h3>
+
+<p>The next thing we need to help make our application easier to understand and maintain are controllers. As our application grows, our route handlers will increase in quantity and complexity. We will do this by pulling out most functionality and placing them within separate modules.</p>
+
+<p>Let's start by updating the current route handler for we have the the root of our application.</p>
+
+<p>If you don't already have a directory named <code>controllers</code> you will need to create one now. Inside this folder, create a new file named <code>home.js</code> and update it with the following code.</p>
+
+<p><code>javascript
+exports.index = function(req, res) {
+  res.locals.ip = req.ip;
+  res.render('home');
+};
+</code></p>
+
+<p>What we have done is put our route handler code into a separate home controller module. Now we just need to update <code>server.js</code> to import the module and use it. Update <code>server.js</code>with the following code.</p>
+
+<p>```javascript
+// Load required packages
+var path = require('path');
+var express = require('express');
+var compression = require('compression');</p>
+
+<p>// Load controllers
+var homeController = require('./controllers/home');</p>
+
+<p>...</p>
+
+<p>// Landing page route
+router.get('/', homeController.index);</p>
+
+<p>...
+```</p>
+
+<p>It may not seem like much now, but this type of pattern will help our application as we add a lot more functionality.</p>
+
+<h3>Using path to normalize paths</h3>
+
+<p>In two places, we have referenced the local file system using the <code>__dirname</code> global and a directory. To make our code more robust, we will take advantage of the core Node module <code>path</code>. The <code>path</code> module provides the function <code>join</code> that will join all the arguments into a normalized path.</p>
+
+<p>For example, the following code would result in the path <code>/Users/scott/Projects/twitatron/public</code></p>
+
+<p><code>javascript
+path.join(__dirname, 'public')
+</code></p>
+
+<p>Update the two places within <code>server.js</code> where we are using the <code>dirname</code> global to use the <code>path</code> module.</p>
+
+<p>```javascript
+//Old
+app.use(express.static(__dirname + '/public', { maxAge: oneDay }));</p>
+
+<p>//New
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: oneDay }));</p>
+
+<p>//Old
+app.set('views', __dirname + '/views');</p>
+
+<p>//New
+app.set('views', path.join(__dirname, 'views'));
+```</p>
+
+<h3>Wrap up</h3>
+
+<p>While our application may not yet be pretty, we have a solid base to build and grow from. We have views, layouts, partials, controllers, and more. Stay tuned for more articles on this tutorial series on building production ready Node web applications.</p>
+
+<p>If you found this article or others useful be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+
+<p>Source code for this part can be found <a href="https://github.com/scottksmith95/twitatron/tree/master/02">here on GitHub</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Twitatron: Building a production web app with Node]]></title>
+    <link href="http://scottksmith.com/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/"/>
+    <updated>2014-10-05T09:30:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2014/10/05/twitatron-building-a-production-web-app-with-node</id>
+    <content type="html"><![CDATA[<p>Welcome to part 1 of the Twitaron series</p>
+
+<ol>
+<li><a href="/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/">Getting started</a></li>
+<li><a href="/blog/2015/03/23/twitatron-building-a-production-web-app-with-node-views-and-controllers/">Views &amp; Controllers</a></li>
+<li><a href="/blog/2015/05/26/twitatron-building-a-production-web-app-with-node-user-accounts/">User Accounts</a></li>
+<li>Under development...</li>
+</ol>
+
+
+<p>While writing the <a href="/blog/2014/05/02/building-restful-apis-with-node/">Beer Locker tutorials</a> many readers commented on how helpful it was to have a full walk through on creating RESTful APIs. I am going to continue this trend and start a multi part tutorial series on how to create a production ready Node web application.</p>
+
+<p>Some of you may know about my latest project <a href="https://favatron.com">Favatron</a>. It is a Node web application that integrates with Twitter to provide an automated bookmark and read later service for Twitter favorites. Using <a href="https://favatron.com">Favatron</a> as a guide, I will take you through the entire process of creating a fully functional production ready Node web application. Some of the many parts we will touch on include authorization, user accounts, data storage, background workers, security, email, APIs, RSS, third party service integrations, and much more.</p>
+
+<p>I am proud to introduce Twitatron, the web application we will be making. Twitatron will automatically monitor your Twitter account for mentions. When it finds those mentions, it will process them, store them, show them in the UI, expose them via an API endpoint and RSS feed, send an email digest, and share weekly stats with integrated social networks.</p>
+
+<p>Enough talking, let's get started!</p>
+
+<h3>Prerequisites</h3>
+
+<p>Before starting the tutorial, you will need to make sure and have Node.js and MongoDB installed.</p>
+
+<ol>
+<li>Install the latest version of <a href="http://nodejs.org/download/">Node</a>. This will also automatically install <a href="https://www.npmjs.org/">npm</a> which will be used to manage packages.</li>
+<li>Install and run <a href="http://docs.mongodb.org/manual/installation/">MongoDB</a>. If you would prefer to not install MongoDB locally, you can always sign up for a <a href="https://mongolab.com/">free MongoLab account</a> and use it instead.</li>
+</ol>
+
+
+<h3>Initialize our Node application</h3>
+
+<p>First thing we need to do is create a directory for our application. I went ahead and named mine <code>twitatron</code>. Feel free to name yours whatever you want.</p>
+
+<p>In your console, navigate into your newly create folder and run the following command:</p>
+
+<p><code>tcsh
+npm init
+</code></p>
+
+<p>You will be asked a few questions in order to have npm automatically create a <code>package.json</code> file for you. The only one that matters at this time is the entry point. You will want to specify <code>server.js</code>. For reference, here is what mine looked like.</p>
+
+<p>```tcsh
+npm init
+This utility will walk you through creating a package.json file.
+It only covers the most common items, and tries to guess sane defaults.</p>
+
+<p>See <code>npm help json</code> for definitive documentation on these fields
+and exactly what they do.</p>
+
+<p>Use <code>npm install &lt;pkg&gt; --save</code> afterwards to install a package and
+save it as a dependency in the package.json file.</p>
+
+<p>Press ^C at any time to quit.
+name: (twitatron)
+version: (1.0.0)
+description: Twitter mention tracker
+entry point: (index.js) server.js
+test command:
+git repository:
+keywords:
+author: Scott Smith
+license: (ISC)
+About to write to /Users/scott/Projects/twitatron/package.json:</p>
+
+<p>{
+  "name": "twitatron",
+  "version": "1.0.0",
+  "description": "Twitter mention tracker",
+  "main": "server.js",
+  "scripts": {</p>
+
+<pre><code>"test": "echo \"Error: no test specified\" &amp;&amp; exit 1"
+</code></pre>
+
+<p>  },
+  "author": "Scott Smith",
+  "license": "ISC"
+}</p>
+
+<p>Is this ok? (yes)
+```</p>
+
+<h3>Directory structure</h3>
+
+<p>As we progress through this tutorial series, we will be adding many directories to our application. Here is what the final structure will be.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>twitatron/
+</span><span class='line'>  config/         // hold our configuration values
+</span><span class='line'>  controllers/    // hold our controllers
+</span><span class='line'>  models/         // holds our models
+</span><span class='line'>  node_modules/   // npm packages (auto created by npm)
+</span><span class='line'>  public/         // hold our static html, images, css, javascript, etc
+</span><span class='line'>  views/          // hold our jade views
+</span><span class='line'>  package.json    // defines our node app and dependencies
+</span><span class='line'>  server.js       // main application logic</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Don't worry too much now about creating all those directories. We will be creating them as we progress through the tutorial.</p>
+
+<h3>Simple HTTP server</h3>
+
+<p>Now it is time to start building our application. Within the application directory, create a file named <code>server.js</code>. This is the main entry point for our application. It is what will be run by Node. Let's start our application as a super simple HTTP listener that just returns back 'Twitatron' for all HTTP requests.</p>
+
+<p>```javascript
+var http = require('http');</p>
+
+<p>http.createServer(function (req, res) {
+  res.end('Twitatron!');
+}).listen(3000);
+```</p>
+
+<p>What we are doing here is using the built in Node <code>http</code> module to start an HTTP server on port 3000. We then respond back to all requests with with the string 'Twitatron!'. Start your application with the command <code>node server.js</code> and browse to it at <a href="http://localhost:3000">http://localhost:3000</a>.</p>
+
+<h3>Replace HTTP with Express</h3>
+
+<p>Our basic application is cool, but using the <code>http</code> module will get very difficult as the complexity increases. That is where <a href="http://expressjs.com/">Express</a> comes in! Express is a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.</p>
+
+<p>We will use <code>npm</code> to install the Express module. Execute the following command and make sure to include the <code>--save</code> flag. This flag will add Express to the list of Node dependencies for your application. This is useful because in most cases you won't add the <code>node_modules</code> directory to source control which means for other people that use your application, they will need to know which packages to install. This is done by executing the <code>npm install</code> command which will download and install any packages not in the local <code>node_modules</code> directory.</p>
+
+<p><code>tcsh
+npm install express --save
+</code></p>
+
+<p>You should now have Express added to the <code>node_modules</code> directory and the <code>package.json</code> file should have it added to the dependencies object as well. Here is what my <code>package.json</code> file now has.</p>
+
+<p>```javascript
+{
+  "name": "twitatron",
+  "version": "1.0.0",
+  "description": "Twitter mention tracker",
+  "main": "server.js",
+  "scripts": {</p>
+
+<pre><code>"test": "echo \"Error: no test specified\" &amp;&amp; exit 1"
+</code></pre>
+
+<p>  },
+  "author": "Scott Smith",
+  "license": "ISC",
+  "dependencies": {</p>
+
+<pre><code>"express": "^4.9.5"
+</code></pre>
+
+<p>  }
+}
+```</p>
+
+<p>Now that we have Express installed, we can update our server code to use it. Replace your <code>server.js</code> file with the following code.</p>
+
+<p>```javascript
+// Load required packages
+var express = require('express');</p>
+
+<p>// Create our Express application
+var app = express();</p>
+
+<p>// Create our Express router
+var router = express.Router();</p>
+
+<p>// Initial dummy route for testing
+router.get('/', function(req, res) {
+  res.end('Twitatron');
+});</p>
+
+<p>// Register all our routes
+app.use(router);</p>
+
+<p>// Start the server
+app.listen(3000);
+```</p>
+
+<p>Let's explore what we added to our application in detail.</p>
+
+<p><strong>Require</strong></p>
+
+<p><code>javascript
+// Get the packages we need
+var express = require('express');
+</code></p>
+
+<p>This block of code will load the Express package and allow us to use it within our application. We will be requiring more packages here as we add more complexity to our application.</p>
+
+<p><strong>Express Application</strong></p>
+
+<p><code>javascript
+// Create our Express application
+var app = express();
+</code></p>
+
+<p>The Express Application is the main component for your web application. Among other things, it is used to define routes, start listening for http connections, and perform routing for requests.</p>
+
+<p><strong>Express Router</strong></p>
+
+<p><code>javascript
+// Create our Express router
+var router = express.Router();
+</code></p>
+
+<p>A router is an isolated instance of middleware and routes. Routers can be thought of as "mini" applications only capable of performing middleware and routing. Every express application has a builtin app router. Routers behave like middleware themselves and can be ".use()'d" by the app or in other routers.</p>
+
+<p><strong>Create Route</strong></p>
+
+<p><code>javascript
+// Initial dummy route for testing
+router.get('/', function(req, res) {
+  res.end('Twitatron');
+});
+</code></p>
+
+<p>Here we are creating a route for '/' to return 'Twitatron'. All HTTP requests made to '/' will execute this portion of code and return back a string.</p>
+
+<p><strong>Register Routes and Start Server</strong></p>
+
+<p>```javascript
+// Register all our routes
+app.use(router);</p>
+
+<p>// Start the server
+app.listen(3000);
+```</p>
+
+<p>Finally we register our previously defined routes with the application.</p>
+
+<p>The last step is to call <code>listen</code> on port 3000 to start listening for incoming connections and requests.</p>
+
+<p><strong>Test it out</strong></p>
+
+<p>If you did everything correctly, you should be able to start your server and make your first request. In the root folder of your application run:</p>
+
+<p><code>tcsh
+node server.js
+</code></p>
+
+<p>Open your browser and browse to <a href="http://localhost:3000/">http://localhost:3000/</a>. You should get back a response with the word 'Twitatron'.</p>
+
+<h3>Nodemon</h3>
+
+<p>Now is a good time to segue into some tooling that will make things much easier when developing Node applications. <a href="http://nodemon.io/">Nodemon</a> is a utility that will monitor for any changes in your source and automatically restart your server.</p>
+
+<p>You can install it using npm using the following command. I like to install it globally so I can use it for all projects, but you can remove the <code>-g</code> to install it locally instead.</p>
+
+<p><code>tcsh
+npm install -g nodemon
+</code></p>
+
+<p>Now instead of using <code>node server.js</code> to run your application, you can use <code>nodemon server.js</code>. It will watch for any changes in your application and automatically restart your server for you.</p>
+
+<h3>Node Inspector</h3>
+
+<p><a href="https://github.com/node-inspector/node-inspector">Node Inspector</a> is a debugger interface for Node.js applications that uses the Blink Developer Tools. The really cool thing is that it works almost exactly as the Chrome Developer Tools.</p>
+
+<p>Some of the things you can do with Node Inspector are:</p>
+
+<ul>
+<li>Navigate in your source files</li>
+<li>Set breakpoints (and specify trigger conditions)</li>
+<li>Step over, step in, step out, resume (continue)</li>
+<li>Inspect scopes, variables, object properties</li>
+<li>Hover your mouse over an expression in your source to display its value in a tooltip</li>
+<li>Edit variables and object properties</li>
+<li>Continue to location</li>
+<li>Break on exceptions</li>
+<li>Disable/enable all breakpoints</li>
+</ul>
+
+
+<p>Just like Nodemon, you can install it locally or globally. Use the following command to install it globablly:</p>
+
+<p><code>tcsh
+npm install -g node-inspector
+</code></p>
+
+<p>Once it is installed, you can run it using the following command. This will start the debugger and open your browser.</p>
+
+<p><code>tcsh
+node-debug server.js
+</code></p>
+
+<h3>Serving static content</h3>
+
+<p>The final piece of this part will be adding the ability to serve static content such as HTML, images, CSS, JavaScript, etc. To do this we will need to use the <a href="http://expressjs.com/4x/api.html#express.static">Express static middleware</a>.</p>
+
+<p>Update <code>server.js</code> with the following code.</p>
+
+<p>```javascript
+...</p>
+
+<p>// Create our Express application
+var app = express();</p>
+
+<p>// Add static middleware
+app.use(express.static(__dirname + '/public'));</p>
+
+<p>// Create our Express router
+var router = express.Router();</p>
+
+<p>...
+```</p>
+
+<p>What we have done here is register the static middleware with our Express application and told it our static content should be served from the <code>public</code> directory. If you didn't already create the <code>public</code> directory, please do so now. You will also need to create <code>js</code>, <code>img</code>, and <code>css</code> as subdirectories.</p>
+
+<p>Save <a href="/images/birdatron-small.jpg">this image</a> (right click and save as) to your newly created <code>public/img</code> directory and name it <code>birdatron-small.jpg</code>. Image is Creative Commons licensed by <a href="https://www.flickr.com/photos/keoni101/">Keoni Cabral</a> and can be found <a href="https://www.flickr.com/photos/keoni101/5378177339/in/photolist-9cfyKv-5yyZvf-eXRPno-7fcWcC-3FKdg-687fi2-nn75ou-7BkmKT-9uC7Bj-9dGgEf-7oRoDs-9EUbXH-8MrU4Z-dRuEno-oNu6bQ-7CUsNN-8xx539-877bg5-73mvEr-24CgB-85T5T8-7uv3Nh-5yTumQ-9uz7Wa-8xaJqB-8D7z4g-eNC3WB-4ukiRF-9VfCzc-5jywWv-6qZMc5-8NZqBB-8z1APg-cYGmY1-dYRS9n-dYRSe6-6N6cEx-eNC3Nt-eb9p6k-dBomcA-9q28rg-4F9jd3-4BssTb-6mMBE3-8UMRPQ-LWeDw-7wVrhV-eb9iKn-6Pdep-9DEwyi">here</a>.</p>
+
+<p>In the <code>public</code> directory, create a file named <code>index.html</code> and add the following markup to it.</p>
+
+<p><code>html
+&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;Twitatron&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Twitatron has been born!&lt;/h1&gt;
+  &lt;img src="http://scottksmith.com/img/birdatron-small.jpg"&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></p>
+
+<p>Open up your web browser and browse to <a href="http://localhost:3000/">http://localhost:3000/</a>. If everything was done correctly, you should see the following. You will notice now that our route that returned back 'Twitatron' is no longer getting executed. This is because the static middleware is automatically looking for <code>index.html</code> in the root of the <code>public</code> directory and returning it. If that were not there or named anything but <code>index.html</code>, the original route would execute.</p>
+
+<p><img src="/images/twitatron1.png" alt="Static page screenshot" /></p>
+
+<h3>Compress our static content</h3>
+
+<p>If you were to open up your DevTools and request <a href="http://localhost:3000/">http://localhost:3000/</a> you would notice the response is not being compressed with gzip. This is very inefficient yet surprisingly easy to fix. First thing we need to do is install the <a href="https://www.npmjs.org/package/compression">compression</a> npm package.</p>
+
+<p><code>tcsh
+npm install compression --save
+</code></p>
+
+<p>Once installed, we can update our <code>server.js</code> to use this package.</p>
+
+<p>```javascript
+// Load required packages
+...
+var compression = require('compression');</p>
+
+<p>// Create our Express application
+var app = express();</p>
+
+<p>// Add content compression middleware
+app.use(compression());</p>
+
+<p>...
+```</p>
+
+<p>If you were to make a request again, you wouldn't see the response headers indicating the content has been compressed with gzip. The reason for this is that the <code>compression</code> package defaults the bytes threshold to 1024. Our <code>index.html</code> file is below that threshold so it isn't compressed. If you want to force compression on all responses regardless of size, you can update the code like this.</p>
+
+<p><code>javascript
+app.use(compression({
+  threshold: false
+}));
+</code></p>
+
+<p>You can also control it by the number of bytes for the threshold like this.</p>
+
+<p><code>javascript
+app.use(compression({
+  threshold: 256
+}));
+</code></p>
+
+<p>I would suggest leaving the defaults as is because there tends to be no gain when making the threshold too small. There are cases where your response could actually be bigger after compression.</p>
+
+<h3>Cache our static content</h3>
+
+<p>The last part of this tutorial will be caching our static content client side. This helps reduce unnecessary requests to your server and makes page load times much faster for client browsers. To do this, we will use the Express cache middleware.</p>
+
+<p>If you were to examine the response headers now, you would see the following.</p>
+
+<p><code>http
+Cache-Control: public, max-age=0
+</code></p>
+
+<p>This is telling the client browser to not cache the content. In order to change this, we need to update our Express static middleware in <code>server.js</code>.</p>
+
+<p>```javascript
+...</p>
+
+<p>// Add static middleware
+var oneDay = 86400000;
+app.use(express.static(__dirname + '/public', { maxAge: oneDay }));</p>
+
+<p>...
+```</p>
+
+<p>What we have done here is tell our Express application to set the <code>Cache-Control</code> header to one day using milliseconds. Here is what the response headers look like after this change.</p>
+
+<p><code>http
+Cache-Control: public, max-age=86400
+</code></p>
+
+<h3>Wrap up</h3>
+
+<p>We now have the tools to create a simple, yet fully functional web application capable of serving static content that can be compressed and cached client side. This is just the beginning of a thorough and detailed tutorial series on building production ready Node web applications.</p>
+
+<p>If you found this article or others useful be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+
+<p>Source code for this part can be found <a href="https://github.com/scottksmith95/twitatron/tree/master/01">here on GitHub</a>.</p>
+]]></content>
+  </entry>
+  
+</feed>

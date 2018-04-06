@@ -1,0 +1,1595 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Algolia Real Time Search With ASP.NET MVC &amp; Windows Phone 8.1 - Scott Smith</title>
+  <meta name="author" content="Scott Smith">
+
+  
+  <meta name="description" content="Learn how to quickly and easily add Algolia search to a Windows Phone 8.1 application with an ASP.NET MVC backend.">
+  <meta name="keywords" content="Algolia, Search, Tutorials, .NET, ASP.NET, ASP.NET MVC, Windows Phone, C#">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1">
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@scottksmith95" />
+  <meta name="twitter:title" content="Algolia Real Time Search With ASP.NET MVC &amp; Windows Phone 8.1 - Scott Smith" />
+  <meta name="twitter:description" content="Learn how to quickly and easily add Algolia search to a Windows Phone 8.1 application with an ASP.NET MVC backend." />
+  <meta name="twitter:url" content="http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1" />
+
+  <meta property="og:title" content="Algolia Real Time Search With ASP.NET MVC &amp; Windows Phone 8.1 - Scott Smith"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:description" content="Learn how to quickly and easily add Algolia search to a Windows Phone 8.1 application with an ASP.NET MVC backend."/>
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+  <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196">
+  <link rel="icon" type="image/png" href="/favicon-160x160.png" sizes="160x160">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <style>
+  #DegreedButton.degreed-28-full,.degreed-28-full {
+    background-color: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKIAAAAcCAYAAADiMmQeAAAI3UlEQVR4Ae2c/VNTVxrH/WX/iW1lX7ad1a3udme329ruy85OuypdmaXase1s60va7tjKllFENLJaFayyWko73YJKV120pVEQhKBEJJTlhShBKBAQUaBCIIEAhpCX5H43587lmdy85IYEdJjez8wzcnPuPcm955NzznPujYtyc69/T9vY/EFNk/5eTVMLHlTIIQdzTtvQcog5uIhJ2NZ1G3a7AzIyDxLmXE1ji5o5uEjbpB+0O2QJZR4OzD3m4CLWRT5InH0dsKpP8uEwNEJGhjnIi7jltA4Zl9pRbRiG3eVGMG4ZJ3Fc24NtXzTj9eP1ePtUE39MXY8JHMchUiYKDmJo42N8jH30d8gQsojf31ZM8UR6OQ6WfoORyWl4PByKmgfwYraWyoPFn45cxdUOI6Tg7DaMpPyRRDRueRJuyzD8kZFFpPhxagmeOXiFtiOJ9KLWkL0j53LAkpfCBBTFaNYGeGz3ARlZxJQv9UjI0eKR7eFF+9X7FdhyRoc0VQteza1DXMrFgH2KbgzAF9dgD6yVp2HaEy+WULGE/h7e/ntY1SfgvNMGme+wiIz6HhOez6oKKmBCTg20XcNwuT2YdrqpgsFxG1765GvRvidqeuDLeP6ugF5wqqoA080ar4xLxb3jkTcQDTpDP85r6qGubUIkjNs4LIvfhLeU+xGK/XkqxP1uHbS6RswXXQMmVOnaUNfa7Y1b/N99RhMWMhyAdckZ3mu3hm3NTsTXcuuCCvi0d2guu3kPDE2HEX84fBW/3FeB03V3eCkZLLnZUajHz/+p5pMem9MdVsTh5GfhHjfBY5+CKf0vMYvIAVjsFSZOiAnrOKQYsjj5fX+7fgNC8fT69/h9TqpUCEZSxmdYHv8aAA+IGD63OBKhNxiwEPHQef2VbcU2R/xRagmOXu7kJRuemMam/IaAfZ7NqGSJjGTGzJZpht9bIRJuZNdKmDNfEb1mfPfXmDiXidnSaBgSNeLhvJNzIuILCiWJKHGxoxbxUeEzr0/eh8y8QrycnCE6l2KN5rsrIusd75qtmMHp9uBjTRdLXoL2mi/8qyqijHlaVwFj0m8Chmnj28sxVXUW0fK8IAxFBEOC2eqREpHqDdUjPkoXm4tZRLOFhmOMWt0+PWUiOM6FhcajsYj4i71qFDd/i1AwOV8NHMIpEr1zxabeUYTD0X0dQ5seF4loqy9BtEw5ITTYWlTrOqkBO3t7Ahr9YN55LI/f6I0NeG59EkhEEsCFlYo0Vpe3fCsrJxH961ohHM9itfeYD/LyqWxrRi6VLY//G/qNQ5IiGs0j8KXfbKc6Ltd+jRkKNdfZa3TODa2top5ok/JDKo9XbOPnnX9W7EaLoQMltd/w5643dKPU+zdNYyTqjaRco+vCMuHasrl3XLQiskVqy5QDkcCG42Xp5SGF3HCiHh2DEwjF2MfvkoSmvQmIhS81euGkV4nmda8kp8KXJXRxKEQi3ncgaHkoEanHIuHWgrE0xPsMGAcjFZF4xm+O+qmqmkRQKI8hTvylo/3jFdvxj4zPRO9/rqwM/ylrCPK57knVK1FObSCKqEWcLaNWB5IKroeUkS0DsfI+GuJBWCtPwbj1KT4mvjiEGKCGL9ZUgnFFd4uGNJfb7te7JMJksYBxs9csEvENZY7QiEng4JFMVuxu0DzI5XbxUnUOjFMDTDumwdiZ/V+h3ndmIyJ9eej9RcO4mc5VqNtnXraWGv+l5EN8+e2Bu2CIRUxAe2+fVL2S5XQOvOxqMGzOGOaI0XKtcxhPHbgcUsgf7LiI3edv8ndp5haa55FkCuVR6qlITmoAsQyD4mSFEpMWQ3tEc0QucB5EPUd6dg5msNggmrdGI2K+ShWqx6bemPMRcchsgpsDfha/ieoWi/gifRaJeiXLXRxJR3VyscwRP6/txdC4DVI4XB5UdRr55ZrVH1bjyb1qWtQOFz9JK8Xh8g5M2V2YK1Kzz9JFCX6h1lED0HAdPFkh6UiI6EWkrF0sYoKEiEa/lYBB0RA4TvUk4mzZNRSUaSnqW9tDDJHsnHeCIf5CboWAVL1S5XQd6fzmIllhwZKR5r4x+DNhcyLzUjuW7L5E+0YT7B72XCAeEi7D7nRjyuHi/y2tbRetKV7R9VCv5HA64OEXXDN9RaRh+C3lATCMFjv1ruFFTMS0w+4nzxqaFvxbdY3eJ9w5dPT28ttTDjdyVVU+Mq0KmJf2sKFWgPVI5bWNM9MNkuaCpg59RlEvSyLSZ5Gud1bljUICU6i5gbi5Wkd88/NGnPpfL79wnaXuxBN7yqgslmC3BmNHfNHFyxvUwDRM2t2hhhdqFJJVFBIiLg5SzyM+r1H2SEN+SBEDg7449qAjQLwiFasUu4XtlWC8n3cxyKiwAUWa6pAiStQrVU7TmjlLVnZ+1cIWsSOSac1HWhTU34VhaAJjUw64PRwY7EmdyWkn7pisqGgbxMuf1s6biO9knBB6sH1hy5MzsgRxR0TzyeOqSiz2G6YO5F0QLX1sVmZTxhmMSl13gIgON9hySYilDgkRqa4tqNbpEYxjZ8r9RHsdekMXu2Xpk9ke9cqSJmxTouGTZGyNtF6pckrcVggjCoucM0XCdkJ0yUq3cRI/lRh6j6g7ECn6vrGA47/S9eNh4uakh3w3x2E2cCHrwXxAdXMgaH6q1TXAl8U+yzQR1xtNeeiyqLJmloCEFfFmvwXSUGIjOvai/lvMDzIltZ3UI72pzOJvFz5HvRTLkj0L5+kbNsQuVdJckH8sbH9Jm0imCzcGohZx9L4d84eMzjCAzcpjwh2OjVitSEFFbRP12QtFRPbIP0nD7pywTJmx50Irvc6erokQ9rCESESr3QUZGUkRN+c3kjSfXO3GDKZJO364g09k+DXDexYbIoDdd6b6Ht91CTIyYUVkP+Vr7TPT09mPpZX633dm96JJqtRCPSKAJTZ0DHt4VkYm7M9J2Y+bz1W38T8DYNLsLW6DP7eGJ0lUFiUt4ROPG3dHRY+Nnay5DRmZYD+wbzPcBnNQ/i9H5HhowXpC5h5z8P+niYlTnKOTMAAAAABJRU5ErkJggg==) !important;
+    height: 28px !important;
+    width: 162px !important;
+  }
+  </style>
+  <link href="/atom.xml" rel="alternate" title="Scott Smith" type="application/atom+xml">
+
+  <script src="//load.sumome.com/" data-sumo-site-id="0d857e605c25378eb99ef0880f3d471e6d4792fd62b3c1e378fa89057293706c" async="async"></script>
+</head>
+
+<body   >
+  <header role="banner"><div class="logo">
+  <img src="/images/logo.png" alt="Site Logo">
+</div>
+<hgroup>
+  <h1><a href="/">Scott Smith</a></h1>
+  <h2>
+    <a href="/">Blog</a>
+    <a href="/blog/categories/tutorials">Tutorials</a>
+    <a href="/projects">Projects</a>
+    <a href="/speaking">Speaking</a>
+    <a href="/atom.xml" class="rss">RSS</a>
+  </h2>
+</hgroup>
+</header>
+  <div id="main">
+    <div id="content">
+      <div style="padding-top: 0;">
+<article class="hentry" role="article">
+  
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title">Algolia Real Time Search With ASP.NET MVC &amp; Windows Phone 8.1</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-04-04T20:11:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2015</time>
+      </p>
+    
+    
+      <button style="margin-top: 20px;" onclick="var e=document.createElement('script');e.setAttribute('charset','UTF-8');e.setAttribute('src','https://az287915.vo.msecnd.net/scripts/degreed/media/bookmarklet.js?id=1&v=' + Math.random()*99999999);document.getElementsByTagName('body')[0].appendChild(e)" title="+ Degreed" id="DegreedButton" class="degreed-28-full">+ Degreed</button>
+    
+  </header>
+
+
+<div class="entry-content">
+  <p>In this article, we are going to explore how to easily add Algolia search to a Windows Phone 8.1 application with an ASP.NET MVC backend. To do this, we will take advantage of Algolia&#8217;s <a href="https://github.com/algolia/algoliasearch-client-csharp">C# client</a> to add indexing capabilities to the ASP.NET MVC application and search capabilities to the Windows Phone application.</p>
+
+<p>The application we will be building is called PackageTrack. It is a simple web application where a user can create, read, update, and delete packages they like and use. The web application will be capable of managing the package information, indexing that data with Algolia, and providing a simple REST API for the data. We will also create a Windows Phone application with an auto suggest search box hooked into the Algolia search service to provide search results. Users will then be able to select one of the search results and have that information shown by requesting the data from the web application API.</p>
+
+<h2>Prerequisites</h2>
+
+<p>In order to follow along well, it will be helpful to share versions of tooling, operating system, and technology used for the tutorial. You will need to use (at the very least) Visual Studio 2013 with update 4. Also, in order to develop Windows Phone 8.1 applications, you will need to be developing on Windows 8 or greater. Finally, the application is being built using .NET framework 4.5.</p>
+
+<h2>Create a new ASP.NET Web Application</h2>
+
+<p>With Visual Studio running, create a new solution and choose an ASP.NET Web Application for your initial project. If you want to follow along exactly, name your solution <code>PackageTrack</code> and your project <code>PackageTrack.Web</code>.</p>
+
+<p><img src="/images/algolia_csharp_01.png" alt="Screenshot 01" /></p>
+
+<p>To keep this tutorial simple, change the authentication to <code>No Authentication</code>.</p>
+
+<p><img src="/images/algolia_csharp_02.png" alt="Screenshot 02" /></p>
+
+<p>You will also want to make sure MVC and Web API are selected.</p>
+
+<p><img src="/images/algolia_csharp_03.png" alt="Screenshot 03" /></p>
+
+<h2>Install necessary NuGet packages</h2>
+
+<p>This application requires two new packages in order to work.</p>
+
+<p><strong>Entity Framework</strong></p>
+
+<p>Install the Entity Framework package. The version used in this tutorial is 6.1.3.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>PM&gt; Install-Package EntityFramework
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Algolia Search</strong></p>
+
+<p>Install the Algolia Search package. The version used in this tutorial is 3.0.5.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>PM&gt; Install-Package Algolia.Search
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally, we need to update all installed packages to make sure we are using the latest libraries and scripts. You can do this by right clicking the web project in Solution Explore and choosing <code>Manage NuGet Packages...</code>.</p>
+
+<h2>Cleanup</h2>
+
+<p>Now that we have our packages installed and updated, we need to perform a little cleanup in our project.</p>
+
+<p>First, let&#8217;s delete the Home Controller, <code>HomeController.cs</code>, and the <code>Home</code> directory within <code>Views</code>. We are removing the controller and its views because we will be creating our own later.</p>
+
+<h2>Update our layout</h2>
+
+<p>Our layout needs a little updating to improve the look and feel a bit. Update <code>\Vieews\Shared\_Layout.cshtml</code> with the following.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="cp">&lt;!DOCTYPE html&gt;</span>
+</span><span class='line'><span class="nt">&lt;html&gt;</span>
+</span><span class='line'><span class="nt">&lt;head&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">&quot;utf-8&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">&quot;viewport&quot;</span> <span class="na">content=</span><span class="s">&quot;width=device-width, initial-scale=1.0&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;title&gt;</span>Package Track<span class="nt">&lt;/title&gt;</span>
+</span><span class='line'>    @Styles.Render(&quot;~/Content/css&quot;)
+</span><span class='line'>    @Scripts.Render(&quot;~/bundles/modernizr&quot;)
+</span><span class='line'><span class="nt">&lt;/head&gt;</span>
+</span><span class='line'><span class="nt">&lt;body&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;navbar navbar-inverse navbar-fixed-top&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;container&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;navbar-header&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>                @Html.ActionLink(&quot;Package Track&quot;, &quot;Index&quot;, &quot;Home&quot;, new { area = &quot;&quot; }, new { @class = &quot;navbar-brand&quot; })
+</span><span class='line'>            <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;container body-content&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>        @RenderBody()
+</span><span class='line'>        <span class="nt">&lt;hr</span> <span class="nt">/&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;footer&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;p&gt;</span><span class="ni">&amp;copy;</span> @DateTime.Now.Year - <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;https://www.algolia.com/&quot;</span> <span class="na">target=</span><span class="s">&quot;_blank&quot;</span><span class="nt">&gt;</span>Algolia<span class="nt">&lt;/a&gt;&lt;/p&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;/footer&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>
+</span><span class='line'>    @Scripts.Render(&quot;~/bundles/jquery&quot;)
+</span><span class='line'>    @Scripts.Render(&quot;~/bundles/bootstrap&quot;)
+</span><span class='line'>    @RenderSection(&quot;scripts&quot;, required: false)
+</span><span class='line'><span class="nt">&lt;/body&gt;</span>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Entity Framework and Database</h2>
+
+<p>We are now ready to create our model and DbContext in order to take advantage of Entity Framework. What we will do is a create a simple model to represent our package that we want to store in the database. After that, we will create our DbContext which will allow us to easily add, remove, update, and more on our packages stored in the database.</p>
+
+<p>By default, the project is setup to use a local MDF database. You are welcome to change it but for simplicity this tutorial will not.</p>
+
+<p>To create our package model, create a new file named <code>Package.cs</code> inside the <code>Models</code> directory. Update the created class to look like the following.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">public</span> <span class="k">class</span> <span class="nc">Package</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">public</span> <span class="kt">int</span> <span class="n">Id</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>    <span class="k">public</span> <span class="kt">string</span> <span class="n">Name</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>    <span class="k">public</span> <span class="kt">string</span> <span class="n">Link</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>    <span class="k">public</span> <span class="kt">int</span> <span class="n">Count</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next, we need to create our DbContext. To do this, create a new directory called <code>Data</code> at the root of the project. Then create a new file named <code>PackageTrackContext.cs</code> inside this new directory. Update the code to the following.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">using</span> <span class="nn">PackageTrack.Web.Models</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Data.Entity</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Linq</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Web</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">namespace</span> <span class="nn">PackageTrack.Web.Data</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">public</span> <span class="k">class</span> <span class="nc">PackageTrackDbContext</span> <span class="p">:</span> <span class="n">DbContext</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="k">public</span> <span class="n">DbSet</span><span class="p">&lt;</span><span class="n">Package</span><span class="p">&gt;</span> <span class="n">Packages</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Before moving on, be sure to build your solution. This will be necessary for the next steps where we use Visual Studio tooling to scaffold our CRUD controller and views for us.</p>
+
+<h2>Package CRUD</h2>
+
+<p>We now need to create the controller, actions, and views in order to create, read, update, and delete packages. To do this we will use Visual Studio tooling. This will make it super simple. The following 3 screenshots show what to do.</p>
+
+<p>First, right click the <code>Controller</code> directory and choose <code>Add</code> followed by <code>Controller</code>.</p>
+
+<p><img src="/images/algolia_csharp_04.png" alt="Screenshot 04" /></p>
+
+<p>Next, choose <code>MVC 5 Controller with views, using Entity Framework</code>.</p>
+
+<p><img src="/images/algolia_csharp_05.png" alt="Screenshot 05" /></p>
+
+<p>Finally, be sure to choose the Package model we created for the <code>Model class</code>, the PackageTrackDbContext we created for the <code>Data context class</code>, check <code>Use async controller actions</code>, and set the <code>Controller name</code> to HomeController.</p>
+
+<p><img src="/images/algolia_csharp_06.png" alt="Screenshot 06" /></p>
+
+<p>Visual Studio should create a new HomeController along with a set of views. You can now build and run your project. You should be able to create, read, update, and delete packages. Go head and do this now and create a few packages. We will need them later.</p>
+
+<h2>Build an Admin controller</h2>
+
+<p>We now need to create an Admin controller that will provide us the ability to issue index, re-index, and delete commands to our Algolia index.</p>
+
+<p>Inside the <code>Controllers</code> directory, create a file named <code>AdminController.cs</code>. Update it to contain the following code.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">using</span> <span class="nn">Algolia.Search</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">PackageTrack.Web.Data</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">PackageTrack.Web.Models</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Linq</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Threading.Tasks</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Web</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Web.Mvc</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">namespace</span> <span class="nn">PackageTrack.Web.Controllers</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">public</span> <span class="k">class</span> <span class="nc">AdminController</span> <span class="p">:</span> <span class="n">Controller</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="k">private</span> <span class="n">PackageTrackDbContext</span> <span class="n">db</span> <span class="p">=</span> <span class="k">new</span> <span class="n">PackageTrackDbContext</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">public</span> <span class="n">ActionResult</span> <span class="nf">Index</span><span class="p">()</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nf">View</span><span class="p">();</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="na">        [HttpPost]</span>
+</span><span class='line'><span class="na">        [ValidateAntiForgeryToken]</span>
+</span><span class='line'>        <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">ActionResult</span><span class="p">&gt;</span> <span class="n">ReIndexData</span><span class="p">()</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nf">View</span><span class="p">();</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="na">        [HttpPost]</span>
+</span><span class='line'><span class="na">        [ValidateAntiForgeryToken]</span>
+</span><span class='line'>        <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">ActionResult</span><span class="p">&gt;</span> <span class="n">IndexData</span><span class="p">()</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nf">View</span><span class="p">();</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="na">        [HttpPost]</span>
+</span><span class='line'><span class="na">        [ValidateAntiForgeryToken]</span>
+</span><span class='line'>        <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">ActionResult</span><span class="p">&gt;</span> <span class="n">DeleteData</span><span class="p">()</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nf">View</span><span class="p">();</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">Dispose</span><span class="p">(</span><span class="kt">bool</span> <span class="n">disposing</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>            <span class="k">if</span> <span class="p">(</span><span class="n">disposing</span><span class="p">)</span>
+</span><span class='line'>            <span class="p">{</span>
+</span><span class='line'>                <span class="n">db</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span><span class='line'>            <span class="p">}</span>
+</span><span class='line'>            <span class="k">base</span><span class="p">.</span><span class="n">Dispose</span><span class="p">(</span><span class="n">disposing</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Inside the <code>Views</code> directory, create a new directory named <code>Admin</code>. Now that we have a new place for our admin views, create a new view there named <code>Index.cshml</code>. This is where we will setup our ability to issue index commands. Update the view with the following code.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;h2&gt;</span>Admin<span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;hr</span> <span class="nt">/&gt;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;form-actions no-color&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>        @using (Html.BeginForm(&quot;reindexdata&quot;, &quot;admin&quot;))
+</span><span class='line'>        {
+</span><span class='line'>            @Html.AntiForgeryToken()
+</span><span class='line'>            <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;submit&quot;</span> <span class="na">value=</span><span class="s">&quot;Re-Index Data&quot;</span> <span class="na">class=</span><span class="s">&quot;btn btn-default&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>        }
+</span><span class='line'>        <span class="nt">&lt;br</span> <span class="nt">/&gt;</span>
+</span><span class='line'>        @using (Html.BeginForm(&quot;indexdata&quot;, &quot;admin&quot;))
+</span><span class='line'>        {
+</span><span class='line'>            @Html.AntiForgeryToken()
+</span><span class='line'>            <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;submit&quot;</span> <span class="na">value=</span><span class="s">&quot;Index Data&quot;</span> <span class="na">class=</span><span class="s">&quot;btn btn-default&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>        }
+</span><span class='line'>        <span class="nt">&lt;br</span> <span class="nt">/&gt;</span>
+</span><span class='line'>        @using (Html.BeginForm(&quot;deletedata&quot;, &quot;admin&quot;))
+</span><span class='line'>        {
+</span><span class='line'>            @Html.AntiForgeryToken()
+</span><span class='line'>            <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;submit&quot;</span> <span class="na">value=</span><span class="s">&quot;Delete Data&quot;</span> <span class="na">class=</span><span class="s">&quot;btn btn-default&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>        }
+</span><span class='line'>    <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now we need to create 3 views that can be used to show when our index commands have completed. Create the following views with their markup inside the <code>Views\Admin</code> directory.</p>
+
+<p><strong>ReIndexData.cshtml</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;h2&gt;</span>Data Re-Indexed<span class="nt">&lt;/h2&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>IndexData.cshtml</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;h2&gt;</span>Data Indexed<span class="nt">&lt;/h2&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>DeleteData.cshtml</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;h2&gt;</span>Data Deleted<span class="nt">&lt;/h2&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Algolia time</h2>
+
+<p>Up to this point, we have been doing standard .NET development and nothing with Algolia (except adding the NuGet package). We are now ready to start.</p>
+
+<p>Since our web application allows our users to create, update, and delete packages, we need to be able to do the same things to our Algolia index. On top of that, there are cases where we need to perform an index on all of our data, do a full re-index where data is removed and then added, and also remove all data from our index. We do all this from our web application rather than the Windows Phone application because it is much more secure to have our server talking to Algolia rather than each client. We don&#8217;t want our credentials that allow changing index data to fall into a user&#8217;s hand.</p>
+
+<h3>Create reusable Algolia client</h3>
+
+<p>The AlgoliaClient allows our application to easily interact with our Algolia index. In order to keep performance optimal, we don&#8217;t want to create an instance of this client each time we need it. To address this, we will create one AlgoliaClient and store it in an Application Variable.</p>
+
+<p>Let&#8217;s go ahead and do this now.</p>
+
+<p>Open up your <code>Global.asax.cs</code> file and update it as follows.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">using</span> <span class="nn">Algolia.Search</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">PackageTrack.Web.Data</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">PackageTrack.Web.Models</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Linq</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Web</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Web.Http</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Web.Mvc</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Web.Optimization</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Web.Routing</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">namespace</span> <span class="nn">PackageTrack.Web</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">public</span> <span class="k">class</span> <span class="nc">MvcApplication</span> <span class="p">:</span> <span class="n">System</span><span class="p">.</span><span class="n">Web</span><span class="p">.</span><span class="n">HttpApplication</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="k">protected</span> <span class="k">void</span> <span class="nf">Application_Start</span><span class="p">()</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>            <span class="n">AreaRegistration</span><span class="p">.</span><span class="n">RegisterAllAreas</span><span class="p">();</span>
+</span><span class='line'>            <span class="n">GlobalConfiguration</span><span class="p">.</span><span class="n">Configure</span><span class="p">(</span><span class="n">WebApiConfig</span><span class="p">.</span><span class="n">Register</span><span class="p">);</span>
+</span><span class='line'>            <span class="n">FilterConfig</span><span class="p">.</span><span class="n">RegisterGlobalFilters</span><span class="p">(</span><span class="n">GlobalFilters</span><span class="p">.</span><span class="n">Filters</span><span class="p">);</span>
+</span><span class='line'>            <span class="n">RouteConfig</span><span class="p">.</span><span class="n">RegisterRoutes</span><span class="p">(</span><span class="n">RouteTable</span><span class="p">.</span><span class="n">Routes</span><span class="p">);</span>
+</span><span class='line'>            <span class="n">BundleConfig</span><span class="p">.</span><span class="n">RegisterBundles</span><span class="p">(</span><span class="n">BundleTable</span><span class="p">.</span><span class="n">Bundles</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">// Create our Algolia client</span>
+</span><span class='line'>            <span class="kt">var</span> <span class="n">algoliaClient</span> <span class="p">=</span> <span class="k">new</span> <span class="n">AlgoliaClient</span><span class="p">(</span><span class="s">&quot;&lt;APPLICATION_ID&gt;&quot;</span><span class="p">,</span> <span class="s">&quot;&lt;ADMIN_API_KEY&gt;&quot;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">// Create our index helper</span>
+</span><span class='line'>            <span class="kt">var</span> <span class="n">indexHelper</span> <span class="p">=</span> <span class="k">new</span> <span class="n">IndexHelper</span><span class="p">&lt;</span><span class="n">Package</span><span class="p">&gt;(</span><span class="n">algoliaClient</span><span class="p">,</span> <span class="s">&quot;packages&quot;</span><span class="p">,</span> <span class="s">&quot;Id&quot;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">// Store our index helper in an application variable.</span>
+</span><span class='line'>            <span class="c1">// We don&#39;t want to create a new one each time</span>
+</span><span class='line'>            <span class="c1">// because it will impact performance.</span>
+</span><span class='line'>            <span class="n">Application</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="s">&quot;PackageIndexHelper&quot;</span><span class="p">,</span> <span class="n">indexHelper</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What we are doing here is first creating an AlgoliaClient using our application id and key. You will need to update these two values using your own credentials. You can either use the Admin key already created for you or create your own key and choose the permissions allowed.</p>
+
+<p>Next, we create an IndexHelper and inject our AlgoliaClient into it along with the name of the index and the value of our Package model identifier that should be mapped to the Algolia index object Id. The reason we want to specify the identifier in our model is because the IndexHelper will automatically build and  map our model to the Algolia index object.</p>
+
+<p>Finally, we add our IndexHlper to the application variable so we can use it elsewhere in our application.</p>
+
+<p>One thing to note is the index we are using in Algolia is called <code>packages</code>. You can either create it ahead of time or it will be automatically created when you issue index commands.</p>
+
+<h3>Update our Admin controller to work with Algolia</h3>
+
+<p>Now that we have an Algolia IndexHelper to use, we need to update our Admin controller to talk to Algolia when someone issues an indexing command.</p>
+
+<p>Update each of the 3 following actions inside <code>AdminController.cs</code>. Make sure and add a using statement for Algolia.Search.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="na">[HttpPost]</span>
+</span><span class='line'><span class="na">[ValidateAntiForgeryToken]</span>
+</span><span class='line'><span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">ActionResult</span><span class="p">&gt;</span> <span class="n">ReIndexData</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="c1">// Get the package index helper from Application variable</span>
+</span><span class='line'>    <span class="kt">var</span> <span class="n">packageIndexHelper</span> <span class="p">=</span> <span class="n">HttpContext</span><span class="p">.</span><span class="n">Application</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="s">&quot;PackageIndexHelper&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">IndexHelper</span><span class="p">&lt;</span><span class="n">Package</span><span class="p">&gt;;</span>
+</span><span class='line'>    <span class="k">await</span> <span class="n">packageIndexHelper</span><span class="p">.</span><span class="n">OverwriteIndexAsync</span><span class="p">(</span><span class="n">db</span><span class="p">.</span><span class="n">Packages</span><span class="p">,</span> <span class="m">1000</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nf">View</span><span class="p">();</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="na">[HttpPost]</span>
+</span><span class='line'><span class="na">[ValidateAntiForgeryToken]</span>
+</span><span class='line'><span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">ActionResult</span><span class="p">&gt;</span> <span class="n">IndexData</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="c1">// Get the package index helper from Application variable</span>
+</span><span class='line'>    <span class="kt">var</span> <span class="n">packageIndexHelper</span> <span class="p">=</span> <span class="n">HttpContext</span><span class="p">.</span><span class="n">Application</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="s">&quot;PackageIndexHelper&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">IndexHelper</span><span class="p">&lt;</span><span class="n">Package</span><span class="p">&gt;;</span>
+</span><span class='line'>    <span class="k">await</span> <span class="n">packageIndexHelper</span><span class="p">.</span><span class="n">SaveObjectsAsync</span><span class="p">(</span><span class="n">db</span><span class="p">.</span><span class="n">Packages</span><span class="p">,</span> <span class="m">1000</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nf">View</span><span class="p">();</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="na">[HttpPost]</span>
+</span><span class='line'><span class="na">[ValidateAntiForgeryToken]</span>
+</span><span class='line'><span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">ActionResult</span><span class="p">&gt;</span> <span class="n">DeleteData</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="c1">// Get the package index helper from Application variable</span>
+</span><span class='line'>    <span class="kt">var</span> <span class="n">packageIndexHelper</span> <span class="p">=</span> <span class="n">HttpContext</span><span class="p">.</span><span class="n">Application</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="s">&quot;PackageIndexHelper&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">IndexHelper</span><span class="p">&lt;</span><span class="n">Package</span><span class="p">&gt;;</span>
+</span><span class='line'>    <span class="k">await</span> <span class="n">packageIndexHelper</span><span class="p">.</span><span class="n">DeleteObjectsAsync</span><span class="p">(</span><span class="n">db</span><span class="p">.</span><span class="n">Packages</span><span class="p">,</span> <span class="m">1000</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nf">View</span><span class="p">();</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The IndexHelper is very nice. It will automatically handle the steps needed to perform indexing, re-indexing, and deleting of data. The way it works is it already knows the identifier to look for in your model so when you make an OverwriteIndex, SaveObjects, or DeleteObjects call it automatically converts your model to JSON, adds an objectId field, sets the objectId field to the identifier you told it to use, and makes the necessary calls to Algolia.</p>
+
+<p>Now is a great time to test things out. You should already have packages in your database that are not in your Algolia index. Try out the different functions under the <code>/admin</code> path. You should see your index get populated, re-populated, and cleared out depending on which function you use.</p>
+
+<h3>Update our CRUD to work with Algolia</h3>
+
+<p>Having administrative ability to manage our index is great, but we really need to have our index kept up to date as users create, update, and delete packages from our database.</p>
+
+<p>We will do this by updating the actions inside our Home controller we created earlier to support our CRUD operations on packages.</p>
+
+<p>Update each of the 3 following actions inside <code>HomeController.cs</code>. Make sure and add a using statement for Algolia.Search.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="na">[HttpPost]</span>
+</span><span class='line'><span class="na">[ValidateAntiForgeryToken]</span>
+</span><span class='line'><span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">ActionResult</span><span class="p">&gt;</span> <span class="n">Create</span><span class="p">([</span><span class="n">Bind</span><span class="p">(</span><span class="n">Include</span> <span class="p">=</span> <span class="s">&quot;Id,Name,Link,Count&quot;</span><span class="p">)]</span> <span class="n">Package</span> <span class="n">package</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">ModelState</span><span class="p">.</span><span class="n">IsValid</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="n">db</span><span class="p">.</span><span class="n">Packages</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">package</span><span class="p">);</span>
+</span><span class='line'>        <span class="k">await</span> <span class="n">db</span><span class="p">.</span><span class="n">SaveChangesAsync</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">// Get the package index helper from Application variable</span>
+</span><span class='line'>        <span class="kt">var</span> <span class="n">packageIndexHelper</span> <span class="p">=</span> <span class="n">HttpContext</span><span class="p">.</span><span class="n">Application</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="s">&quot;PackageIndexHelper&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">IndexHelper</span><span class="p">&lt;</span><span class="n">Package</span><span class="p">&gt;;</span>
+</span><span class='line'>        <span class="k">await</span> <span class="n">packageIndexHelper</span><span class="p">.</span><span class="n">SaveObjectAsync</span><span class="p">(</span><span class="n">package</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">return</span> <span class="nf">RedirectToAction</span><span class="p">(</span><span class="s">&quot;Index&quot;</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nf">View</span><span class="p">(</span><span class="n">package</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="na">[HttpPost]</span>
+</span><span class='line'><span class="na">[ValidateAntiForgeryToken]</span>
+</span><span class='line'><span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">ActionResult</span><span class="p">&gt;</span> <span class="n">Edit</span><span class="p">([</span><span class="n">Bind</span><span class="p">(</span><span class="n">Include</span> <span class="p">=</span> <span class="s">&quot;Id,Name,Link,Count&quot;</span><span class="p">)]</span> <span class="n">Package</span> <span class="n">package</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">ModelState</span><span class="p">.</span><span class="n">IsValid</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="n">db</span><span class="p">.</span><span class="n">Entry</span><span class="p">(</span><span class="n">package</span><span class="p">).</span><span class="n">State</span> <span class="p">=</span> <span class="n">EntityState</span><span class="p">.</span><span class="n">Modified</span><span class="p">;</span>
+</span><span class='line'>        <span class="k">await</span> <span class="n">db</span><span class="p">.</span><span class="n">SaveChangesAsync</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">// Get the package index helper from Application variable</span>
+</span><span class='line'>        <span class="kt">var</span> <span class="n">packageIndexHelper</span> <span class="p">=</span> <span class="n">HttpContext</span><span class="p">.</span><span class="n">Application</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="s">&quot;PackageIndexHelper&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">IndexHelper</span><span class="p">&lt;</span><span class="n">Package</span><span class="p">&gt;;</span>
+</span><span class='line'>        <span class="k">await</span> <span class="n">packageIndexHelper</span><span class="p">.</span><span class="n">SaveObjectAsync</span><span class="p">(</span><span class="n">package</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">return</span> <span class="nf">RedirectToAction</span><span class="p">(</span><span class="s">&quot;Index&quot;</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nf">View</span><span class="p">(</span><span class="n">package</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="na">[HttpPost, ActionName(&quot;Delete&quot;)]</span>
+</span><span class='line'><span class="na">[ValidateAntiForgeryToken]</span>
+</span><span class='line'><span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">ActionResult</span><span class="p">&gt;</span> <span class="n">DeleteConfirmed</span><span class="p">(</span><span class="kt">int</span> <span class="n">id</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="n">Package</span> <span class="n">package</span> <span class="p">=</span> <span class="k">await</span> <span class="n">db</span><span class="p">.</span><span class="n">Packages</span><span class="p">.</span><span class="n">FindAsync</span><span class="p">(</span><span class="n">id</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">db</span><span class="p">.</span><span class="n">Packages</span><span class="p">.</span><span class="n">Remove</span><span class="p">(</span><span class="n">package</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">await</span> <span class="n">db</span><span class="p">.</span><span class="n">SaveChangesAsync</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Get the package index helper from Application variable</span>
+</span><span class='line'>    <span class="kt">var</span> <span class="n">packageIndexHelper</span> <span class="p">=</span> <span class="n">HttpContext</span><span class="p">.</span><span class="n">Application</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="s">&quot;PackageIndexHelper&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">IndexHelper</span><span class="p">&lt;</span><span class="n">Package</span><span class="p">&gt;;</span>
+</span><span class='line'>    <span class="k">await</span> <span class="n">packageIndexHelper</span><span class="p">.</span><span class="n">DeleteObjectAsync</span><span class="p">(</span><span class="n">package</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nf">RedirectToAction</span><span class="p">(</span><span class="s">&quot;Index&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What we did here was whenever a package is created, updated, or deleted, we use the IndexHelper to add, update, or remove the data within our index.</p>
+
+<p>Go ahead and try it out.</p>
+
+<h2>Implement real time search</h2>
+
+<p>With all of our indexing in place, we are ready to add a real time search experience to our web application.</p>
+
+<h3>Download JavaScript libraries</h3>
+
+<p>We will need some JavaScript libraries in order to create the search feature. Download each of the following and save them in the <code>Scripts</code> directory with the names I indicate.</p>
+
+<p><strong>typeahead.jquery.js</strong><br/>
+<a href="https://cdn.jsdelivr.net/typeahead.js/0.10.5/typeahead.jquery.min.js">https://cdn.jsdelivr.net/typeahead.js/0.10.5/typeahead.jquery.min.js</a></p>
+
+<p><strong>hogan.common.js</strong><br/>
+<a href="https://cdn.jsdelivr.net/hogan.js/3.0.2/hogan.common.js">https://cdn.jsdelivr.net/hogan.js/3.0.2/hogan.common.js</a></p>
+
+<p><strong>algoliasearch.min.js</strong><br/>
+<a href="https://cdn.jsdelivr.net/algoliasearch/2.9/algoliasearch.min.js">https://cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js</a></p>
+
+<h3>Bundle new JavaScript</h3>
+
+<p>With the new scripts added to our project, we need to update our bundles to include them. Open up <code>\App_Start\BundleConfig.cs</code> and add the following new bundle.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="n">bundles</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">ScriptBundle</span><span class="p">(</span><span class="s">&quot;~/bundles/main&quot;</span><span class="p">).</span><span class="n">Include</span><span class="p">(</span>
+</span><span class='line'>          <span class="s">&quot;~/Scripts/typeahead.jquery.min.js&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="s">&quot;~/Scripts/hogan.common.js&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="s">&quot;~/Scripts/algoliasearch.min.js&quot;</span><span class="p">,</span>
+</span><span class='line'>          <span class="s">&quot;~/Scripts/main.js&quot;</span><span class="p">));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Update our layout</h3>
+
+<p>Now we need to update our layout to include a search box and the new script bundle we created.</p>
+
+<p>Open up <code>_Layout.cshtml</code> and modify the code as follows.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>....
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;navbar navbar-inverse navbar-fixed-top&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;container&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;navbar-header&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>            @Html.ActionLink(&quot;Package Track&quot;, &quot;Index&quot;, &quot;Home&quot;, new { area = &quot;&quot; }, new { @class = &quot;navbar-brand&quot; })
+</span><span class='line'>        <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;typeahead-container&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>            <span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">&quot;typeahead-algolia&quot;</span> <span class="na">class=</span><span class="s">&quot;typeahead&quot;</span> <span class="na">type=</span><span class="s">&quot;text&quot;</span> <span class="na">placeholder=</span><span class="s">&quot;Search...&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>
+</span><span class='line'>...
+</span><span class='line'>
+</span><span class='line'>@Scripts.Render(&quot;~/bundles/jquery&quot;)
+</span><span class='line'>@Scripts.Render(&quot;~/bundles/bootstrap&quot;)
+</span><span class='line'>@Scripts.Render(&quot;~/bundles/main&quot;)
+</span><span class='line'>@RenderSection(&quot;scripts&quot;, required: false)
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Create JavaScript to tie UI with Algolia</h3>
+
+<p>The following code needs to be added to a new file named <code>main.js</code> within the <code>Scripts</code> directory. This sets us up to perform searches with our packages index on Algolia. Be sure to update the application id and key using your search only key.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">client</span> <span class="o">=</span> <span class="nx">algoliasearch</span><span class="p">(</span><span class="s1">&#39;&lt;APPLICATION ID&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;SEARCH-ONLY API KEY&gt;&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">index</span> <span class="o">=</span> <span class="nx">client</span><span class="p">.</span><span class="nx">initIndex</span><span class="p">(</span><span class="s1">&#39;&lt;INDEX NAME&gt;&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">template</span> <span class="o">=</span> <span class="nx">Hogan</span><span class="p">.</span><span class="nx">compile</span><span class="p">(</span>
+</span><span class='line'>        <span class="s1">&#39;&lt;a href=&quot;/home/details/}&quot;&gt;&#39;</span> <span class="o">+</span>
+</span><span class='line'>            <span class="s1">&#39;&lt;div class=&quot;hit&quot;&gt;&#39;</span> <span class="o">+</span>
+</span><span class='line'>                <span class="s1">&#39;&lt;div class=&quot;name&quot;&gt;&#39;</span> <span class="o">+</span>
+</span><span class='line'>                    <span class="s1">&#39;} &#39;</span> <span class="o">+</span>
+</span><span class='line'>                <span class="s1">&#39;&lt;/div&gt;&#39;</span> <span class="o">+</span>
+</span><span class='line'>                <span class="s1">&#39;&#39;</span> <span class="o">+</span>
+</span><span class='line'>                <span class="s1">&#39;&lt;div class=&quot;attribute&quot;&gt;: }&lt;/div&gt;&#39;</span> <span class="o">+</span>
+</span><span class='line'>                <span class="s1">&#39;&#39;</span> <span class="o">+</span>
+</span><span class='line'>            <span class="s1">&#39;&lt;/div&gt;&#39;</span> <span class="o">+</span>
+</span><span class='line'>        <span class="s1">&#39;&lt;/a&gt;&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#typeahead-algolia&#39;</span><span class="p">).</span><span class="nx">typeahead</span><span class="p">({</span>
+</span><span class='line'>        <span class="nx">highlight</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+</span><span class='line'>        <span class="nx">hint</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+</span><span class='line'>        <span class="nx">minLength</span><span class="o">:</span> <span class="mi">1</span>
+</span><span class='line'>    <span class="p">},</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="nx">source</span><span class="o">:</span> <span class="nx">index</span><span class="p">.</span><span class="nx">ttAdapter</span><span class="p">({</span> <span class="s2">&quot;hitsPerPage&quot;</span><span class="o">:</span> <span class="mi">10</span> <span class="p">}),</span>
+</span><span class='line'>        <span class="nx">displayKey</span><span class="o">:</span> <span class="s1">&#39;Name&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="nx">templates</span><span class="o">:</span> <span class="p">{</span>
+</span><span class='line'>            <span class="nx">suggestion</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">hit</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                <span class="c1">// select matching attributes only</span>
+</span><span class='line'>                <span class="nx">hit</span><span class="p">.</span><span class="nx">attributes</span> <span class="o">=</span> <span class="p">[];</span>
+</span><span class='line'>                <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">attribute</span> <span class="k">in</span> <span class="nx">hit</span><span class="p">.</span><span class="nx">_highlightResult</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                    <span class="k">if</span> <span class="p">(</span><span class="nx">attribute</span> <span class="o">===</span> <span class="s1">&#39;Name&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                        <span class="c1">// already handled by the template</span>
+</span><span class='line'>                        <span class="k">continue</span><span class="p">;</span>
+</span><span class='line'>                    <span class="p">}</span>
+</span><span class='line'>                    <span class="c1">// all others attributes that are matching should be added in the attributes array</span>
+</span><span class='line'>                    <span class="c1">// so we can display them in the dropdown menu. Non-matching attributes are skipped.</span>
+</span><span class='line'>                    <span class="k">if</span> <span class="p">(</span><span class="nx">hit</span><span class="p">.</span><span class="nx">_highlightResult</span><span class="p">[</span><span class="nx">attribute</span><span class="p">].</span><span class="nx">matchLevel</span> <span class="o">!==</span> <span class="s1">&#39;none&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                        <span class="nx">hit</span><span class="p">.</span><span class="nx">attributes</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span> <span class="nx">attribute</span><span class="o">:</span> <span class="nx">attribute</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span> <span class="nx">hit</span><span class="p">.</span><span class="nx">_highlightResult</span><span class="p">[</span><span class="nx">attribute</span><span class="p">].</span><span class="nx">value</span> <span class="p">});</span>
+</span><span class='line'>                    <span class="p">}</span>
+</span><span class='line'>                <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>                <span class="c1">// render the hit using Hogan.js</span>
+</span><span class='line'>                <span class="k">return</span> <span class="nx">template</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="nx">hit</span><span class="p">);</span>
+</span><span class='line'>            <span class="p">}</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">});</span>
+</span><span class='line'><span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Style the search</h3>
+
+<p>Finally, we want to style our search. Add the following CSS to <code>\Content\Site.css</code>.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+</pre></td><td class='code'><pre><code class='css'><span class='line'><span class="nc">.typeahead-container</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">float</span><span class="o">:</span> <span class="k">right</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nc">.typeahead</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">padding</span><span class="o">:</span> <span class="m">0</span> <span class="m">5px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">margin-top</span><span class="o">:</span> <span class="m">10px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">width</span><span class="o">:</span> <span class="m">300px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">height</span><span class="o">:</span> <span class="m">30px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">font-size</span><span class="o">:</span> <span class="m">14px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">line-height</span><span class="o">:</span> <span class="m">30px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">max-width</span><span class="o">:</span> <span class="k">none</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nc">.tt-input</span><span class="o">,</span>
+</span><span class='line'><span class="nc">.tt-hint</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">width</span><span class="o">:</span> <span class="m">396px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">height</span><span class="o">:</span> <span class="m">30px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">padding</span><span class="o">:</span> <span class="m">8px</span> <span class="m">12px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">font-size</span><span class="o">:</span> <span class="m">14px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">line-height</span><span class="o">:</span> <span class="m">30px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">border</span><span class="o">:</span> <span class="m">2px</span> <span class="k">solid</span> <span class="m">#ccc</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">border</span><span class="o">-</span><span class="n">radius</span><span class="o">:</span> <span class="m">8px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">outline</span><span class="o">:</span> <span class="k">none</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nc">.tt-input</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">box</span><span class="o">-</span><span class="n">shadow</span><span class="o">:</span> <span class="k">inset</span> <span class="m">0</span> <span class="m">1px</span> <span class="m">1px</span> <span class="n">rgba</span><span class="p">(</span><span class="m">0</span><span class="o">,</span> <span class="m">0</span><span class="o">,</span> <span class="m">0</span><span class="o">,</span> <span class="m">0</span><span class="o">.</span><span class="m">075</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nc">.tt-hint</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">color</span><span class="o">:</span> <span class="m">#999</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nc">.tt-dropdown-menu</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">width</span><span class="o">:</span> <span class="m">422px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">margin-top</span><span class="o">:</span> <span class="m">12px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">padding</span><span class="o">:</span> <span class="m">8px</span> <span class="m">0</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">background-color</span><span class="o">:</span> <span class="m">#fff</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">border</span><span class="o">:</span> <span class="m">1px</span> <span class="k">solid</span> <span class="m">#ccc</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">border</span><span class="o">:</span> <span class="m">1px</span> <span class="k">solid</span> <span class="n">rgba</span><span class="p">(</span><span class="m">0</span><span class="o">,</span> <span class="m">0</span><span class="o">,</span> <span class="m">0</span><span class="o">,</span> <span class="m">0</span><span class="o">.</span><span class="m">2</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">border</span><span class="o">-</span><span class="n">radius</span><span class="o">:</span> <span class="m">8px</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">box</span><span class="o">-</span><span class="n">shadow</span><span class="o">:</span> <span class="m">0</span> <span class="m">5px</span> <span class="m">10px</span> <span class="n">rgba</span><span class="p">(</span><span class="m">0</span><span class="o">,</span><span class="m">0</span><span class="o">,</span><span class="m">0</span><span class="o">,.</span><span class="m">2</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nc">.tt-suggestion</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">padding</span><span class="o">:</span> <span class="m">3px</span> <span class="m">20px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">font-size</span><span class="o">:</span> <span class="m">14px</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">line-height</span><span class="o">:</span> <span class="m">24px</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nc">.tt-suggestion.tt-cursor</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">color</span><span class="o">:</span> <span class="m">#fff</span><span class="p">;</span>
+</span><span class='line'>        <span class="k">background-color</span><span class="o">:</span> <span class="m">#0097cf</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nc">.tt-suggestion</span> <span class="nt">p</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">margin</span><span class="o">:</span> <span class="m">0</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nc">.tt-suggestion</span> <span class="nt">em</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">font-weight</span><span class="o">:</span> <span class="k">bold</span><span class="p">;</span>
+</span><span class='line'>        <span class="k">font-style</span><span class="o">:</span> <span class="k">normal</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nc">.name</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">font-weight</span><span class="o">:</span> <span class="k">bold</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nc">.attribute</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">margin-left</span><span class="o">:</span> <span class="m">10px</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you would like to get a more in depth tutorial on the real time search piece we just added, you can read other articles I wrote here.</p>
+
+<p><a href="http://scottksmith.com/blog/2014/10/21/getting-started-with-algolia-real-time-search/">http://scottksmith.com/blog/2014/10/21/getting-started-with-algolia-real-time-search/</a></p>
+
+<p><a href="http://scottksmith.com/blog/2014/10/29/algolia-real-time-search-with-twitters-typeaheadjs/">http://scottksmith.com/blog/2014/10/29/algolia-real-time-search-with-twitters-typeaheadjs/</a></p>
+
+<h2>Create REST API for packages</h2>
+
+<p>The last thing we need to do in our web application is to build a REST based API for our package information. This will be used by our Windows Phone application.</p>
+
+<p>First, create a new directory within the <code>Controllers</code> directory and name it <code>Api</code>.</p>
+
+<p>Right click on the Api folder and choose <code>Add</code> followed by <code>Controller</code>. Follow the next few screenshots to see what settings to use and values to set.</p>
+
+<p><img src="/images/algolia_csharp_07.png" alt="Screenshot 07" /></p>
+
+<p><img src="/images/algolia_csharp_08.png" alt="Screenshot 08" /></p>
+
+<p><img src="/images/algolia_csharp_09.png" alt="Screenshot 09" /></p>
+
+<p>Because we want to only return JSON even when the request header is not <code>application/json</code> we need to update our <code>WebApiConfig.cs</code> file in the <code>App_Start</code> directory.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">using</span> <span class="nn">System.Net.Http.Headers</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="p">...</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">config</span><span class="p">.</span><span class="n">Formatters</span><span class="p">.</span><span class="n">JsonFormatter</span><span class="p">.</span><span class="n">SupportedMediaTypes</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">MediaTypeHeaderValue</span><span class="p">(</span><span class="s">&quot;text/html&quot;</span><span class="p">));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We are now ready to create our Windows Phone application that will perform searches using Algolia and show data from our web application.</p>
+
+<h2>Create a new Windows Phone Application</h2>
+
+<p>In our current solution, create a new project and choose <code>Blank App (Windows Phone)</code>. You can name it whatever you like, but I went with PackageTrack.Phone.</p>
+
+<p><img src="/images/algolia_csharp_10.png" alt="Screenshot 10" /></p>
+
+<h2>Install necessary NuGet package</h2>
+
+<p>This application requires one new package in order to work.</p>
+
+<p><strong>Algolia Search</strong></p>
+
+<p>Install the Algolia Search package. The version used in this tutorial is 3.0.5.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>PM&gt; Install-Package Algolia.Search
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Configure startup projects</h2>
+
+<p>In order for both applications to work, we need to configure our solution to start the web and phone application when we build and run. The following screenshots show how to do this.</p>
+
+<p><img src="/images/algolia_csharp_11.png" alt="Screenshot 11" /></p>
+
+<p><img src="/images/algolia_csharp_12.png" alt="Screenshot 12" /></p>
+
+<p>Debug or run your applications now to make sure both projects start.</p>
+
+<h2>Build our application UI</h2>
+
+<p>Now that our project and solution are ready to go, we can add some components to our application to build out our UI.</p>
+
+<p>If <code>MainPage.xaml</code> is not open, you will want to open it now. This will load the designer view. The next two steps and screenshots show the two components we want to add to our view. Just drag each of the components from the Toolbox within Visual Studio into your UI as shown below.</p>
+
+<h3>Add AutoSuggestBox</h3>
+
+<p><img src="/images/algolia_csharp_13.png" alt="Screenshot 13" /></p>
+
+<h3>Add WebView</h3>
+
+<p><img src="/images/algolia_csharp_14.png" alt="Screenshot 14" /></p>
+
+<p><img src="/images/algolia_csharp_15.png" alt="Screenshot 15" /></p>
+
+<h3>Configure WebView</h3>
+
+<p>We need to give our WebView a name so we can reference it within our code. You will need to name it <code>SearchWebView</code>. The following code shows the updated XAML for this change.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;WebView</span> <span class="na">Name=</span><span class="s">&quot;SearchWebView&quot;</span> <span class="na">HorizontalAlignment=</span><span class="s">&quot;Left&quot;</span> <span class="na">Height=</span><span class="s">&quot;576&quot;</span> <span class="na">Margin=</span><span class="s">&quot;10,54,0,0&quot;</span> <span class="na">VerticalAlignment=</span><span class="s">&quot;Top&quot;</span> <span class="na">Width=</span><span class="s">&quot;380&quot;</span><span class="nt">/&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Configure AutoSuggestBox events</h3>
+
+<p>Our AutoSuggestBox is where the user will start typing a search query and will be responsible for searching our index on Algolia. We need to setup two events to handle when the text changes and when a suggestion is selected.</p>
+
+<p>Update the MainPage XAML to the following for the AutoSuggestBox.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;AutoSuggestBox</span> <span class="na">HorizontalAlignment=</span><span class="s">&quot;Left&quot;</span> <span class="na">Margin=</span><span class="s">&quot;10,10,0,0&quot;</span> <span class="na">VerticalAlignment=</span><span class="s">&quot;Top&quot;</span> <span class="na">Width=</span><span class="s">&quot;380&quot;</span> <span class="na">TextChanged=</span><span class="s">&quot;AutoSuggestBox_TextChanged&quot;</span> <span class="na">SuggestionChosen=</span><span class="s">&quot;AutoSuggestBox_SuggestionChosen&quot;</span><span class="nt">/&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>When adding new event handlers in this fashion, the code behind is automatically created in <code>MainPage.xaml.cs</code>. If they are not there, be sure to add them as follows.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">private</span> <span class="k">void</span> <span class="nf">AutoSuggestBox_TextChanged</span><span class="p">(</span><span class="n">AutoSuggestBox</span> <span class="n">sender</span><span class="p">,</span> <span class="n">AutoSuggestBoxTextChangedEventArgs</span> <span class="n">args</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">private</span> <span class="k">void</span> <span class="nf">AutoSuggestBox_SuggestionChosen</span><span class="p">(</span><span class="n">AutoSuggestBox</span> <span class="n">sender</span><span class="p">,</span> <span class="n">AutoSuggestBoxSuggestionChosenEventArgs</span> <span class="n">args</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Add Algolia to our application</h2>
+
+<p>If you don&#8217;t have <code>MainPage.xaml.cs</code> open, open it now.</p>
+
+<p>We are going to add the necessary code to add Algolia search capabilities to our application.</p>
+
+<p>The first thing we need is to add two private members to our MainPage class. These will be an AlgoliaClient and Index.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">private</span> <span class="n">AlgoliaClient</span> <span class="n">algoliaClient</span> <span class="p">=</span> <span class="k">null</span><span class="p">;</span>
+</span><span class='line'><span class="k">private</span> <span class="n">Index</span> <span class="n">algoliaIndex</span> <span class="p">=</span> <span class="k">null</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next, we need to instantiate these objects within the constructor. Be sure to change the application id and search only key to the ones you used in the web project.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">public</span> <span class="nf">MainPage</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="p">.</span><span class="n">InitializeComponent</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">this</span><span class="p">.</span><span class="n">NavigationCacheMode</span> <span class="p">=</span> <span class="n">NavigationCacheMode</span><span class="p">.</span><span class="n">Required</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">algoliaClient</span> <span class="p">=</span> <span class="k">new</span> <span class="n">AlgoliaClient</span><span class="p">(</span><span class="s">&quot;&lt;APPLICATION_ID&gt;&quot;</span><span class="p">,</span> <span class="s">&quot;&lt;SEARCH_ONLY_API_KEY&gt;&quot;</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">algoliaIndex</span> <span class="p">=</span> <span class="n">algoliaClient</span><span class="p">.</span><span class="n">InitIndex</span><span class="p">(</span><span class="s">&quot;packages&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally, be sure to add the necessary using statement.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">using</span> <span class="nn">Algolia.Search</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Tie it all together</h2>
+
+<p>We now need to create a class that can be used to deserialize the Algolia search responses. Inside <code>MainPage.xaml.cs</code> create the following class. You will notice it defines Name, Link, Count, and objectID. The first 3 are fields we defined in our web application. The last one is the ID that Algolia uses in its indexed data. This is the field we mapped our models ID field to.</p>
+
+<p>Also, you will see we are overriding <code>ToString()</code>. This is because we will be adding each <code>Hit</code> object to our AutoSuggestBox and want to control how the data is shown.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">private</span> <span class="k">class</span> <span class="nc">PackagesResult</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">public</span> <span class="k">class</span> <span class="nc">Hit</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="k">public</span> <span class="kt">string</span> <span class="n">Name</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>        <span class="k">public</span> <span class="kt">string</span> <span class="n">Link</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>        <span class="k">public</span> <span class="kt">string</span> <span class="n">Count</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>        <span class="k">public</span> <span class="kt">string</span> <span class="n">objectID</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">public</span> <span class="k">override</span> <span class="kt">string</span> <span class="nf">ToString</span><span class="p">()</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">Name</span> <span class="p">+</span> <span class="n">Environment</span><span class="p">.</span><span class="n">NewLine</span> <span class="p">+</span>
+</span><span class='line'>                <span class="s">&quot;  Link:\t&quot;</span> <span class="p">+</span> <span class="n">Link</span> <span class="p">+</span> <span class="n">Environment</span><span class="p">.</span><span class="n">NewLine</span> <span class="p">+</span>
+</span><span class='line'>                <span class="s">&quot;  Count:\t&quot;</span> <span class="p">+</span> <span class="n">Count</span><span class="p">;</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">public</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">Hit</span><span class="p">&gt;</span> <span class="n">hits</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next we need to implement our search code each time a user enters a character in our AutoSuggestBox. Update the AutoSuggestBox event handler for TextChanged as follows.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">private</span> <span class="k">void</span> <span class="nf">AutoSuggestBox_TextChanged</span><span class="p">(</span><span class="n">AutoSuggestBox</span> <span class="n">sender</span><span class="p">,</span> <span class="n">AutoSuggestBoxTextChangedEventArgs</span> <span class="n">args</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">args</span><span class="p">.</span><span class="n">Reason</span> <span class="p">==</span> <span class="n">AutoSuggestionBoxTextChangeReason</span><span class="p">.</span><span class="n">UserInput</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="kt">var</span> <span class="n">searchTerm</span> <span class="p">=</span> <span class="n">sender</span><span class="p">.</span><span class="n">Text</span><span class="p">;</span>
+</span><span class='line'>        <span class="kt">var</span> <span class="n">query</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Query</span><span class="p">(</span><span class="n">searchTerm</span><span class="p">);</span>
+</span><span class='line'>        <span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="n">algoliaIndex</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">(</span><span class="n">query</span><span class="p">).</span><span class="n">Result</span><span class="p">;</span>
+</span><span class='line'>        <span class="kt">var</span> <span class="n">packagesResult</span> <span class="p">=</span> <span class="n">result</span><span class="p">.</span><span class="n">ToObject</span><span class="p">&lt;</span><span class="n">PackagesResult</span><span class="p">&gt;();</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">sender</span><span class="p">.</span><span class="n">ItemsSource</span> <span class="p">=</span> <span class="n">packagesResult</span><span class="p">.</span><span class="n">hits</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What we are doing here is creating a new Algolia Query using the entered text. We then issue a search, get back the results as JSON, and convert it to a PackagesResult object. The last thing we do is add the list of Hits as the ItemsSource of our AutoSuggestBox. This will automatically show the results to the user.</p>
+
+<p>Finally, we need to update the SuggestionChosen event for our AutoSuggestBox when a user selects one of the results we showed them. Update it as follows.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">private</span> <span class="k">void</span> <span class="nf">AutoSuggestBox_SuggestionChosen</span><span class="p">(</span><span class="n">AutoSuggestBox</span> <span class="n">sender</span><span class="p">,</span> <span class="n">AutoSuggestBoxSuggestionChosenEventArgs</span> <span class="n">args</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="kt">var</span> <span class="n">hit</span> <span class="p">=</span> <span class="p">(</span><span class="n">PackagesResult</span><span class="p">.</span><span class="n">Hit</span><span class="p">)</span><span class="n">args</span><span class="p">.</span><span class="n">SelectedItem</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">SearchWebView</span><span class="p">.</span><span class="n">Navigate</span><span class="p">(</span><span class="k">new</span> <span class="n">Uri</span><span class="p">(</span><span class="s">&quot;http://localhost:8671/api/packages/&quot;</span> <span class="p">+</span> <span class="n">hit</span><span class="p">.</span><span class="n">objectID</span><span class="p">));</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>All we are doing here is taking the selected item, reference that items object ID, and then navigating our WebView to that page. The page we are showing is the API endpoint we created in our web application. This is just a simple example of how to tie the two applications together. A more robust approach would be to process the data from the API and build a UI capable of viewing, editing, and deleting the data.</p>
+
+<p><img src="/images/algolia_csharp_16.png" alt="Screenshot 16" /></p>
+
+<h3>Wrap up</h3>
+
+<p>That wraps up this tutorial on adding Algolia to an ASP.NET MVC application along with a Windows Phone 8.1 application. There was a lot going on here, but if you take out the standard stuff for our web and phone application, the Algolia part is very simple and straightforward.</p>
+
+<p>If you found this article or others useful be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+
+<p>Source code for tutorial can be found <a href="https://github.com/algolia/tutorials/tree/master/csharp/src/PackageTrack">here on GitHub</a>.</p>
+
+</div>
+
+
+  <button onclick="var e=document.createElement('script');e.setAttribute('charset','UTF-8');e.setAttribute('src','https://az287915.vo.msecnd.net/scripts/degreed/media/bookmarklet.js?id=1&v=' + Math.random()*99999999);document.getElementsByTagName('body')[0].appendChild(e)
+  " title="+ Degreed" id="DegreedButton" class="degreed-28-full">+ Degreed</button>
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Scott Smith</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-04-04T20:11:00-07:00" pubdate data-updated="true">Apr 4<span>th</span>, 2015</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/dot-net/'>.NET</a>, <a class='category' href='/blog/categories/asp-dot-net/'>ASP.NET</a>, <a class='category' href='/blog/categories/asp-dot-net-mvc/'>ASP.NET MVC</a>, <a class='category' href='/blog/categories/algolia/'>Algolia</a>, <a class='category' href='/blog/categories/c-number/'>C#</a>, <a class='category' href='/blog/categories/search/'>Search</a>, <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>, <a class='category' href='/blog/categories/windows-phone/'>Windows Phone</a>
+  
+</span>
+
+
+    </p>
+    
+      <!-- <div class="sharing">
+  <h4>Share On:</h4>
+  <a href="https://twitter.com/intent/tweet?text=Algolia Real Time Search With ASP.NET MVC &amp; Windows Phone 8.1&url=http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1/&via=scottksmith95" target="_blank">
+    <img src="/images/icons/twitter/twitter-128.png" alt="Share on Twitter" class="twitter">
+  </a>
+  <a href="https://plus.google.com/share?url=http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1/" target="_blank">
+    <img src="/images/icons/googleplus/googleplus-128.png" alt="Share on Google+" class="googleplus">
+  </a>
+  <a href="https://www.facebook.com/sharer/sharer.php?u=http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1/" target="_blank">
+    <img src="/images/icons/facebook/facebook-128.png" alt="Share on Facebook" class="facebook">
+  </a>
+  <a href="https://www.linkedin.com/shareArticle?mini=true&title=Algolia Real Time Search With ASP.NET MVC &amp; Windows Phone 8.1&url=http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1/" target="_blank">
+    <img src="/images/icons/linkedin/linkedin-128.png" alt="Share on LinkedIn" class="linkedin">
+  </a>
+  <a href="mailto:?body=http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1/&subject=Algolia Real Time Search With ASP.NET MVC &amp; Windows Phone 8.1">
+    <img src="/images/icons/email/email-128.png" alt="Share via Email" class="email">
+  </a>
+</div> -->
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/03/23/twitatron-building-a-production-web-app-with-node-views-and-controllers/" title="Previous Post: Twitatron: Building a production web app with Node - Views &amp; Controllers">&laquo; Twitatron: Building a production web app with Node - Views &amp; Controllers</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/05/26/twitatron-building-a-production-web-app-with-node-user-accounts/" title="Next Post: Twitatron: Building a production web app with Node - User Accounts">Twitatron: Building a production web app with Node - User Accounts &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section id="links">
+  <div>
+    <a href="https://twitter.com/scottksmith95" target="_blank">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter" alt="Scott Smith on Twitter">
+    </a>
+  </div>
+  <div>
+    <a href="https://github.com/scottksmith95" target="_blank">
+      <img src="/images/icons/github/github-128.png" class="github" alt="Scott Smith on GitHub">
+    </a>
+  </div>
+  <div>
+    <a href="https://www.linkedin.com/profile/view?id=15073485" target="_blank">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin" alt="Scott Smith on LinkedIn">
+    </a>
+  </div>
+  <div>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email" alt="Scott Smith's Email">
+    </a>
+  </div>
+  <div>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss" "Site RSS Feed">
+    </a>
+  </div>
+</section>
+
+<section id="about">
+  <p>Software developer, learner, writer, & speaker.</p>
+  <p>Currently jailbreaking the degree at Degreed and promoting lifelong learning.</p>
+  <p>Past projects incude coderbits which was sold to Appirio in 2014 and Favatron.</p>
+</section><section id="newsletter">
+  <img src="/images/icons/email/email-128.png">
+  <h2>Get My Latest Articles</h2>
+  <form action="//favatron.us5.list-manage.com/subscribe/post?u=e8909f2779b99d9865361d28e&amp;id=1d7e590a16" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Email address" required>
+    <div style="position: absolute; left: -5000px;">
+      <input type="text" name="b_e8909f2779b99d9865361d28e_1d7e590a16" tabindex="-1" value="">
+    </div>
+    <div class="clear">
+      <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+    </div>
+  </form>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><span style="text-align: center">
+  Copyright &copy; 2017 <a rel="author" href="https://plus.google.com/107452035819962532888?rel=author">Scott Smith</a>
+</span>
+
+<div class="icons">
+  <span>
+    <a href="https://twitter.com/scottksmith95">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter">
+    </a>
+  </span>
+  <span>
+    <a href="https://github.com/scottksmith95">
+      <img src="/images/icons/github/github-128.png" class="github">
+    </a>
+  </span>
+  <span>
+    <a href="https://www.linkedin.com/profile/view?id=15073485">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin">
+    </a>
+  </span>
+  <span>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email">
+    </a>
+  </span>
+  <span>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss">
+    </a>
+  </span>
+</div></footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'scottksmithblog';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1/';
+        var disqus_url = 'http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+<script src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-40783302-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+</body>
+</html>

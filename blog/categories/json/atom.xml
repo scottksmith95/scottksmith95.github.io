@@ -1,0 +1,535 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[JSON | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/json/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[JSON Output in LINQPad]]></title>
+    <link href="http://scottksmith.com/blog/2012/05/15/json-output-in-linqpad/"/>
+    <updated>2012-05-15T13:50:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/05/15/json-output-in-linqpad</id>
+    <content type="html"><![CDATA[<p>This post discusses a very simple but powerful way to provide functionality for outputting formatted JSON in LINQPad using extension methods.</p>
+
+
+<p><a href="http://geekswithblogs.net/EltonStoneman/archive/2012/05/11/extension-method-for-outputting-formatted-json-in-linqpad.aspx">http://geekswithblogs.net/EltonStoneman/archive/2012/05/11/extension-method-for-outputting-formatted-json-in-linqpad.aspx</a></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[JSON Web API Consumption]]></title>
+    <link href="http://scottksmith.com/blog/2012/05/01/json-web-api-consumption/"/>
+    <updated>2012-05-01T11:34:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/05/01/json-web-api-consumption</id>
+    <content type="html"><![CDATA[<p>The web is packed full of web APIs just waiting to be consumed. Sites such as Meetup, GitHub, Twitter, LinkedIn, and Facebook to name a few all have developer APIs that can be used programmatically to consume the data contained within their site. By implementing their APIs in similar fashions using REST, JSON, and OAuth, the ease at which these APIs can be consumed is amazing.</p>
+
+<p>For this post, I am going to discuss how to consume GitHub's RESTful web API using web resources, NuGet packages, the .NET framework, and a few lines of C# code.</p>
+
+<!-- more -->
+
+
+<p>The first thing that should always be done is to seek out documentation for the web API. The current version for GitHub's is v3 and can be found <a title="GitHub's API v3 Documentation" href="http://developer.github.com/v3/">here</a>. By looking at the documentation, you will notice that the first page discusses topics such as Schema, Client Errors, HTTP Verbs, Authentication, Pagination, Rate Limiting, and a few others. While all are equally important, we will be focusing on Schema and later on Authentication.</p>
+
+<h2>Schema</h2>
+
+
+<p>All API access is over HTTPS, and accessed from the <code>api.github.com</code> domain. All data is sent and received as JSON.
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ curl -i https://api.github.com&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>HTTP/1.1 302 Found
+</span><span class='line'>Server: nginx/1.0.12
+</span><span class='line'>Date: Mon, 20 Feb 2012 11:15:49 GMT
+</span><span class='line'>Content-Type: text/html;charset=utf-8
+</span><span class='line'>Connection: keep-alive
+</span><span class='line'>Status: 302 Found
+</span><span class='line'>X-RateLimit-Limit: 5000
+</span><span class='line'>ETag: "d41d8cd98f00b204e9800998ecf8427e"
+</span><span class='line'>Location: http://developer.github.com
+</span><span class='line'>X-RateLimit-Remaining: 4999
+</span><span class='line'>Content-Length: 0</span></code></pre></td></tr></table></div></figure></notextile></div>
+Blank fields are included as <code>null</code> instead of being omitted.</p>
+
+<p>All timestamps are returned in ISO 8601 format:
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>YYYY-MM-DDTHH:MM:SSZ</span></code></pre></td></tr></table></div></figure></notextile></div>
+So what exactly does all this mean? The schema provides the information needed to know where and how to get the data along with how to process the data once you have it. In our case the schema defines that all API access is over HTTPS and can be accessed from the domain <code>api.github.com</code>. The data sent to and received from this API is <a href="http://en.wikipedia.org/wiki/JSON">JSON</a> (JavaScript Object Notation). JSON is a very versatile data format that can be consumed easily both server and client side.</p>
+
+<p>The rest of the information shown has an example request to the API using curl and discusses two important points on the data. The first states that blank fields are included as null. This is very important because it makes it even easier for discovering the data returned by the API without having to refer to the documentation. Any call to the API will return all possible fields even if they are null. The second item describes the format for timestamps so that they can be processed properly.</p>
+
+<p>Now that we know where to access the API and the type of data to expect, we can make our first call. Fire up your preferred web browser and navigate to the following location <a href="https://api.github.com/users/scottksmith95/repos">https://api.github.com/users/scottksmith95/repos</a>. If you are wondering where the path /users/scottksmith95/repos came from, it came from the GitHub API documentation for Repos found <a href="http://developer.github.com/v3/repos/">here</a>. Here is a trimmed down version of what this call returns:
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">[</span>
+</span><span class='line'>  <span class="p">{</span><span class="err">&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">&lt;pre&gt;&lt;code&gt;</span><span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;GitHub API access and OAuth connect support for the github.com API&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;has_wiki&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;svn_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/scottksmith95/CSharp.GitHub&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;open_issues&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;C#&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;watchers&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;fork&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;homepage&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;git_url&quot;</span><span class="p">:</span> <span class="s2">&quot;git://github.com/scottksmith95/CSharp.GitHub.git&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;clone_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/scottksmith95/CSharp.GitHub.git&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;pushed_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2012-04-27T20:54:27Z&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;size&quot;</span><span class="p">:</span> <span class="mi">3112</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;private&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;created_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2012-04-17T01:54:00Z&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;html_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/scottksmith95/CSharp.GitHub&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;owner&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;avatar_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://secure.gravatar.com/avatar/4400061d4ff1f220a9b5f060368cd869&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;login&quot;</span><span class="p">:</span> <span class="s2">&quot;scottksmith95&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://api.github.com/users/scottksmith95&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;gravatar_id&quot;</span><span class="p">:</span> <span class="s2">&quot;4400061d4ff1f220a9b5f060368cd869&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1346512</span>
+</span><span class='line'><span class="p">},</span>
+</span><span class='line'><span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;CSharp.GitHub&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://api.github.com/repos/scottksmith95/CSharp.GitHub&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;mirror_url&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;has_downloads&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;has_issues&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;ssh_url&quot;</span><span class="p">:</span> <span class="s2">&quot;git@github.com:scottksmith95/CSharp.GitHub.git&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2012-04-27T20:54:27Z&quot;</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">4047943</span><span class="p">,</span>
+</span><span class='line'><span class="nt">&quot;forks&quot;</span><span class="p">:</span> <span class="mi">1</span>
+</span><span class='line'><span class="err">&lt;/code&gt;&lt;/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">&lt;p&gt;</span>  <span class="p">}</span>
+</span><span class='line'><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+In the case of GitHub, the JSON returned is formatted very nicely. In many cases JSON will be returned without indentation or line breaks. If you run into this, there are many options available for formatting the JSON into a readable form. One such way is using <a href="http://jsonformatter.curiousconcept.com/">JSON Formatter and Validator</a>. This tool will not only pretty up the JSON, it will also validate it. A great tool to have in your toolbox.</p>
+
+<p>It is all well and good to pull down JSON from an API using a web browser, but we are here to consume the data programmatically.</p>
+
+<p>First we will create a class that will contain a static method for retrieving the JSON from the API as a string.
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Net</span><span class="p">;&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span><span class="k">public</span> <span class="k">class</span> <span class="nc">ApiRequest</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">readonly</span> <span class="k">static</span> <span class="n">WebClient</span> <span class="n">WebClient</span> <span class="p">=</span> <span class="k">new</span> <span class="n">WebClient</span><span class="p">();&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span>  <span class="k">public</span> <span class="k">static</span> <span class="kt">string</span> <span class="n">GetJson</span><span class="p">(</span><span class="n">Uri</span> <span class="n">uri</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">{&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">pre</span><span class="p">&gt;&lt;</span><span class="n">code</span><span class="p">&gt;</span><span class="k">return</span> <span class="n">WebClient</span><span class="p">.</span><span class="n">DownloadString</span><span class="p">(</span><span class="n">uri</span><span class="p">);</span>
+</span><span class='line'><span class="p">&lt;/</span><span class="n">code</span><span class="p">&gt;&lt;/</span><span class="n">pre</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span>  <span class="p">}</span>
+</span><span class='line'><span class="p">}&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span><span class="k">using</span> <span class="nn">System</span><span class="p">;&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span><span class="k">class</span> <span class="nc">Program</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">const</span> <span class="kt">string</span> <span class="n">GitHubPath</span> <span class="p">=</span> <span class="s">&quot;https://api.github.com/users/scottksmith95/repos&quot;</span><span class="p">;&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span>  <span class="k">static</span> <span class="k">void</span> <span class="n">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">{&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">pre</span><span class="p">&gt;&lt;</span><span class="n">code</span><span class="p">&gt;</span><span class="kt">var</span> <span class="n">gitHubUri</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Uri</span><span class="p">(</span><span class="n">GitHubPath</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">var</span> <span class="n">json</span> <span class="p">=</span> <span class="n">ApiRequest</span><span class="p">.</span><span class="n">GetJson</span><span class="p">(</span><span class="n">gitHubUri</span><span class="p">);</span>
+</span><span class='line'><span class="p">&lt;/</span><span class="n">code</span><span class="p">&gt;&lt;/</span><span class="n">pre</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+Now that we have the ability to make requests for JSON from web APIs, we need to do something useful with it.</p>
+
+<p>The .NET framework has the <code>System.Web.Script.Serialization</code> namespace. This namespace contains the <code>JavaScriptSerializer</code> class that can be used to serialize and deserialize JSON. Make sure you add a reference to the assembly <code>System.Web.Extensions</code>. Here it is in action in the updated Program class.
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Web.Script.Serialization</span><span class="p">;&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span><span class="k">class</span> <span class="nc">Program</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">const</span> <span class="kt">string</span> <span class="n">GitHubPath</span> <span class="p">=</span> <span class="s">&quot;https://api.github.com/users/scottksmith95/repos&quot;</span><span class="p">;&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span>  <span class="k">static</span> <span class="k">readonly</span> <span class="n">JavaScriptSerializer</span> <span class="n">Serializer</span> <span class="p">=</span> <span class="k">new</span> <span class="n">JavaScriptSerializer</span><span class="p">();&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span>  <span class="k">static</span> <span class="k">void</span> <span class="n">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">{&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">pre</span><span class="p">&gt;&lt;</span><span class="n">code</span><span class="p">&gt;</span><span class="kt">var</span> <span class="n">gitHubUri</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Uri</span><span class="p">(</span><span class="n">GitHubPath</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">var</span> <span class="n">json</span> <span class="p">=</span> <span class="n">ApiRequest</span><span class="p">.</span><span class="n">GetJson</span><span class="p">(</span><span class="n">gitHubUri</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">var</span> <span class="n">jsonObject</span> <span class="p">=</span> <span class="n">Serializer</span><span class="p">.</span><span class="n">Deserialize</span><span class="p">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="n">lt</span><span class="p">;</span><span class="kt">object</span><span class="p">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="n">gt</span><span class="p">;(</span><span class="n">json</span><span class="p">);</span>
+</span><span class='line'><span class="p">&lt;/</span><span class="n">code</span><span class="p">&gt;&lt;/</span><span class="n">pre</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+If you were to step through the execution of this code with a debugger, you would notice that <code>jsonObject</code> is an object array containing arrays of key value pairs that correspond to the JSON. This is definitely better than handling the JSON as a string, but we can do much better.</p>
+
+<p>First off, we are going to switch to a different deserializer. The <code>JavaScriptSerializer</code> we were using will do the job, but there are much more robust and higher performance deserializers available. The one we are going to use is <a href="http://json.codeplex.com/">Json.Net</a>. Json.Net is available as a Nuget package so we will add it to our project via the NuGet package manager console in Visual Studio 2010 using the command
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>PM&gt; Install-Package Newtonsoft.Json</span></code></pre></td></tr></table></div></figure></notextile></div>
+With the Json.Net package installed, we will alter our existing Program class to use it.
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="n">sing</span> <span class="n">System</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">Newtonsoft.Json</span><span class="p">;&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span><span class="k">class</span> <span class="nc">Program</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">const</span> <span class="kt">string</span> <span class="n">GitHubPath</span> <span class="p">=</span> <span class="s">&quot;https://api.github.com/users/scottksmith95/repos&quot;</span><span class="p">;&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span>  <span class="k">static</span> <span class="k">void</span> <span class="n">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">{&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">pre</span><span class="p">&gt;&lt;</span><span class="n">code</span><span class="p">&gt;</span><span class="kt">var</span> <span class="n">gitHubUri</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Uri</span><span class="p">(</span><span class="n">GitHubPath</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">var</span> <span class="n">json</span> <span class="p">=</span> <span class="n">ApiRequest</span><span class="p">.</span><span class="n">GetJson</span><span class="p">(</span><span class="n">gitHubUri</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">var</span> <span class="n">jsonObject</span> <span class="p">=</span> <span class="n">JsonConvert</span><span class="p">.</span><span class="n">DeserializeObject</span><span class="p">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="n">lt</span><span class="p">;</span><span class="kt">object</span><span class="p">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="n">gt</span><span class="p">;(</span><span class="n">json</span><span class="p">);</span>
+</span><span class='line'><span class="p">&lt;/</span><span class="n">code</span><span class="p">&gt;&lt;/</span><span class="n">pre</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+So the code is now using Json.Net but it isn't too different than before. We still have an object that has been created by deserializing the JSON. What we really need is a strongly typed object to store the data. For this we will create classes that will be used to store the JSON data. We could take the time to look at the JSON and manually create the classes. Instead, we are going to use a tool on the web that will do it for us. The tool is called <a href="http://json2csharp.com/">json2csharp</a>. We simply paste in the JSON we want classes for and it will generate them for us. Here are the classes it creates for us.
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">public</span> <span class="k">class</span> <span class="nc">Owner</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">avatar_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">login</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">gravatar_id</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">int</span> <span class="n">id</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'><span class="p">}&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span><span class="k">public</span> <span class="k">class</span> <span class="nc">RootObject</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">description</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">bool</span> <span class="n">has_wiki</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">svn_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">int</span> <span class="n">open_issues</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">language</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">int</span> <span class="n">watchers</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">bool</span> <span class="n">fork</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">homepage</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">git_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">clone_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">pushed_at</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">int</span> <span class="n">size</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">bool</span> <span class="n">@private</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">created_at</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">html_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="n">Owner</span> <span class="n">owner</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">name</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">object</span> <span class="n">mirror_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">bool</span> <span class="n">has_downloads</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">bool</span> <span class="n">has_issues</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">ssh_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">updated_at</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">int</span> <span class="n">id</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">int</span> <span class="n">forks</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+If you examine the generated classes you may notice that the <code>mirror_url</code> member is not strongly typed. It is of type <code>object</code> because the JSON we submitted to the class generator contained null for the data. Because of this, the generated class used object instead of string (which is the actual type). When you run into cases like this, you will want to make sure and change them to the appropriate type. For our example it is not an issue so we will leave it alone.</p>
+
+<p>The second item of note is the name of the root class. The tool named it RootObject because it is the root level object. We know what this is so we will rename it to <code>GitHubRepo</code>.</p>
+
+<p>Finally, now that we have classes to represent the JSON data, we will update the Program class to deserialize the JSON into objects of these types.
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">Newtonsoft.Json</span><span class="p">;&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span><span class="k">class</span> <span class="nc">Program</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">const</span> <span class="kt">string</span> <span class="n">GitHubPath</span> <span class="p">=</span> <span class="s">&quot;https://api.github.com/users/scottksmith95/repos&quot;</span><span class="p">;&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span>  <span class="k">static</span> <span class="k">void</span> <span class="n">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">{&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">pre</span><span class="p">&gt;&lt;</span><span class="n">code</span><span class="p">&gt;</span><span class="kt">var</span> <span class="n">gitHubUri</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Uri</span><span class="p">(</span><span class="n">GitHubPath</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">var</span> <span class="n">json</span> <span class="p">=</span> <span class="n">ApiRequest</span><span class="p">.</span><span class="n">GetJson</span><span class="p">(</span><span class="n">gitHubUri</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">var</span> <span class="n">jsonObject</span> <span class="p">=</span> <span class="n">JsonConvert</span><span class="p">.</span><span class="n">DeserializeObject</span><span class="p">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="n">lt</span><span class="p">;</span><span class="n">List</span><span class="p">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="n">lt</span><span class="p">;</span><span class="n">GitHubRepo</span><span class="p">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="n">gt</span><span class="p">;&amp;</span><span class="n">amp</span><span class="p">;</span><span class="n">gt</span><span class="p">;(</span><span class="n">json</span><span class="p">);</span>
+</span><span class='line'><span class="p">&lt;/</span><span class="n">code</span><span class="p">&gt;&lt;/</span><span class="n">pre</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span>  <span class="p">}</span>
+</span><span class='line'><span class="p">}&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span><span class="k">public</span> <span class="k">class</span> <span class="nc">Owner</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">avatar_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">login</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">gravatar_id</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">int</span> <span class="n">id</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'><span class="p">}&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">&lt;</span><span class="n">p</span><span class="p">&gt;</span><span class="k">public</span> <span class="k">class</span> <span class="nc">GitHubRepo</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">description</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">bool</span> <span class="n">has_wiki</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">svn_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">int</span> <span class="n">open_issues</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">language</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">int</span> <span class="n">watchers</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">bool</span> <span class="n">fork</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">homepage</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">git_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">clone_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">pushed_at</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">int</span> <span class="n">size</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">bool</span> <span class="n">@private</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">created_at</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">html_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="n">Owner</span> <span class="n">owner</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">name</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">object</span> <span class="n">mirror_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">bool</span> <span class="n">has_downloads</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">bool</span> <span class="n">has_issues</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">ssh_url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">string</span> <span class="n">updated_at</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">int</span> <span class="n">id</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">public</span> <span class="kt">int</span> <span class="n">forks</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+Now we are getting somewhere. We now have a <code>List</code> of <code>GitHubRepo</code> objects that we can use programmatically. There is still one things bothering me. The member names of the JSON objects are not the greatest and don't conform to most naming guidelines. What I want is to have properly named members yet still have the deserializer code able to deserialize each member. Json.Net has many different attributes that can be applied, but the one we will use is <code>JsonProperty</code>. This property allows us to specify the name of the field to deserialize and to change the member name to anything we want. Here is an example.
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="k">public</span> <span class="kt">string</span> <span class="n">avatar_url</span><span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+becomes
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='c#'><span class='line'><span class="na">[JsonProperty(&quot;avatar_url&quot;)]</span>
+</span><span class='line'><span class="k">public</span> <span class="kt">string</span> <span class="n">AvatarUrl</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+That about wraps up this walk through on how to consume a JSON web API programmatically.</p>
+
+<p>The final source code can be found <a href="https://github.com/scottksmith95/JSON-Web-API-Consumption">here</a> on GitHub.</p>
+]]></content>
+  </entry>
+  
+</feed>

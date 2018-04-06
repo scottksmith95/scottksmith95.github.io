@@ -1,0 +1,2050 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Algolia | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/algolia/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Algolia Real Time Search With ASP.NET MVC &amp; Windows Phone 8.1]]></title>
+    <link href="http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1/"/>
+    <updated>2015-04-04T20:11:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2015/04/04/algolia-real-time-search-with-asp-dot-net-mvc-and-windows-phone-8-dot-1</id>
+    <content type="html"><![CDATA[<p>In this article, we are going to explore how to easily add Algolia search to a Windows Phone 8.1 application with an ASP.NET MVC backend. To do this, we will take advantage of Algolia's <a href="https://github.com/algolia/algoliasearch-client-csharp">C# client</a> to add indexing capabilities to the ASP.NET MVC application and search capabilities to the Windows Phone application.</p>
+
+<p>The application we will be building is called PackageTrack. It is a simple web application where a user can create, read, update, and delete packages they like and use. The web application will be capable of managing the package information, indexing that data with Algolia, and providing a simple REST API for the data. We will also create a Windows Phone application with an auto suggest search box hooked into the Algolia search service to provide search results. Users will then be able to select one of the search results and have that information shown by requesting the data from the web application API.</p>
+
+<h2>Prerequisites</h2>
+
+<p>In order to follow along well, it will be helpful to share versions of tooling, operating system, and technology used for the tutorial. You will need to use (at the very least) Visual Studio 2013 with update 4. Also, in order to develop Windows Phone 8.1 applications, you will need to be developing on Windows 8 or greater. Finally, the application is being built using .NET framework 4.5.</p>
+
+<h2>Create a new ASP.NET Web Application</h2>
+
+<p>With Visual Studio running, create a new solution and choose an ASP.NET Web Application for your initial project. If you want to follow along exactly, name your solution <code>PackageTrack</code> and your project <code>PackageTrack.Web</code>.</p>
+
+<p><img src="/images/algolia_csharp_01.png" alt="Screenshot 01" /></p>
+
+<p>To keep this tutorial simple, change the authentication to <code>No Authentication</code>.</p>
+
+<p><img src="/images/algolia_csharp_02.png" alt="Screenshot 02" /></p>
+
+<p>You will also want to make sure MVC and Web API are selected.</p>
+
+<p><img src="/images/algolia_csharp_03.png" alt="Screenshot 03" /></p>
+
+<h2>Install necessary NuGet packages</h2>
+
+<p>This application requires two new packages in order to work.</p>
+
+<p><strong>Entity Framework</strong></p>
+
+<p>Install the Entity Framework package. The version used in this tutorial is 6.1.3.</p>
+
+<p><code>tcsh
+PM&gt; Install-Package EntityFramework
+</code></p>
+
+<p><strong>Algolia Search</strong></p>
+
+<p>Install the Algolia Search package. The version used in this tutorial is 3.0.5.</p>
+
+<p><code>tcsh
+PM&gt; Install-Package Algolia.Search
+</code></p>
+
+<p>Finally, we need to update all installed packages to make sure we are using the latest libraries and scripts. You can do this by right clicking the web project in Solution Explore and choosing <code>Manage NuGet Packages...</code>.</p>
+
+<h2>Cleanup</h2>
+
+<p>Now that we have our packages installed and updated, we need to perform a little cleanup in our project.</p>
+
+<p>First, let's delete the Home Controller, <code>HomeController.cs</code>, and the <code>Home</code> directory within <code>Views</code>. We are removing the controller and its views because we will be creating our own later.</p>
+
+<h2>Update our layout</h2>
+
+<p>Our layout needs a little updating to improve the look and feel a bit. Update <code>\Vieews\Shared\_Layout.cshtml</code> with the following.</p>
+
+<p>```html
+&lt;!DOCTYPE html>
+<html>
+<head></p>
+
+<pre><code>&lt;meta charset="utf-8" /&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+&lt;title&gt;Package Track&lt;/title&gt;
+@Styles.Render("~/Content/css")
+@Scripts.Render("~/bundles/modernizr")
+</code></pre>
+
+<p></head>
+<body></p>
+
+<pre><code>&lt;div class="navbar navbar-inverse navbar-fixed-top"&gt;
+    &lt;div class="container"&gt;
+        &lt;div class="navbar-header"&gt;
+            @Html.ActionLink("Package Track", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="container body-content"&gt;
+    @RenderBody()
+    &lt;hr /&gt;
+    &lt;footer&gt;
+        &lt;p&gt;&amp;copy; @DateTime.Now.Year - &lt;a href="https://www.algolia.com/" target="_blank"&gt;Algolia&lt;/a&gt;&lt;/p&gt;
+    &lt;/footer&gt;
+&lt;/div&gt;
+
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/bootstrap")
+@RenderSection("scripts", required: false)
+</code></pre>
+
+<p></body>
+</html>
+```</p>
+
+<h2>Entity Framework and Database</h2>
+
+<p>We are now ready to create our model and DbContext in order to take advantage of Entity Framework. What we will do is a create a simple model to represent our package that we want to store in the database. After that, we will create our DbContext which will allow us to easily add, remove, update, and more on our packages stored in the database.</p>
+
+<p>By default, the project is setup to use a local MDF database. You are welcome to change it but for simplicity this tutorial will not.</p>
+
+<p>To create our package model, create a new file named <code>Package.cs</code> inside the <code>Models</code> directory. Update the created class to look like the following.</p>
+
+<p>```c#
+public class Package
+{</p>
+
+<pre><code>public int Id { get; set; }
+public string Name { get; set; }
+public string Link { get; set; }
+public int Count { get; set; }
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Next, we need to create our DbContext. To do this, create a new directory called <code>Data</code> at the root of the project. Then create a new file named <code>PackageTrackContext.cs</code> inside this new directory. Update the code to the following.</p>
+
+<p>```c#
+using PackageTrack.Web.Models;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Web;</p>
+
+<p>namespace PackageTrack.Web.Data
+{</p>
+
+<pre><code>public class PackageTrackDbContext : DbContext
+{
+    public DbSet&lt;Package&gt; Packages { get; set; }
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Before moving on, be sure to build your solution. This will be necessary for the next steps where we use Visual Studio tooling to scaffold our CRUD controller and views for us.</p>
+
+<h2>Package CRUD</h2>
+
+<p>We now need to create the controller, actions, and views in order to create, read, update, and delete packages. To do this we will use Visual Studio tooling. This will make it super simple. The following 3 screenshots show what to do.</p>
+
+<p>First, right click the <code>Controller</code> directory and choose <code>Add</code> followed by <code>Controller</code>.</p>
+
+<p><img src="/images/algolia_csharp_04.png" alt="Screenshot 04" /></p>
+
+<p>Next, choose <code>MVC 5 Controller with views, using Entity Framework</code>.</p>
+
+<p><img src="/images/algolia_csharp_05.png" alt="Screenshot 05" /></p>
+
+<p>Finally, be sure to choose the Package model we created for the <code>Model class</code>, the PackageTrackDbContext we created for the <code>Data context class</code>, check <code>Use async controller actions</code>, and set the <code>Controller name</code> to HomeController.</p>
+
+<p><img src="/images/algolia_csharp_06.png" alt="Screenshot 06" /></p>
+
+<p>Visual Studio should create a new HomeController along with a set of views. You can now build and run your project. You should be able to create, read, update, and delete packages. Go head and do this now and create a few packages. We will need them later.</p>
+
+<h2>Build an Admin controller</h2>
+
+<p>We now need to create an Admin controller that will provide us the ability to issue index, re-index, and delete commands to our Algolia index.</p>
+
+<p>Inside the <code>Controllers</code> directory, create a file named <code>AdminController.cs</code>. Update it to contain the following code.</p>
+
+<p>```c#
+using Algolia.Search;
+using PackageTrack.Web.Data;
+using PackageTrack.Web.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.Mvc;</p>
+
+<p>namespace PackageTrack.Web.Controllers
+{</p>
+
+<pre><code>public class AdminController : Controller
+{
+    private PackageTrackDbContext db = new PackageTrackDbContext();
+
+    public ActionResult Index()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;ActionResult&gt; ReIndexData()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;ActionResult&gt; IndexData()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;ActionResult&gt; DeleteData()
+    {
+        return View();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            db.Dispose();
+        }
+        base.Dispose(disposing);
+    }
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Inside the <code>Views</code> directory, create a new directory named <code>Admin</code>. Now that we have a new place for our admin views, create a new view there named <code>Index.cshml</code>. This is where we will setup our ability to issue index commands. Update the view with the following code.</p>
+
+<p>```html</p>
+
+<h2>Admin</h2>
+
+
+
+
+<div>
+    <hr />
+
+    <div class="form-actions no-color">
+        @using (Html.BeginForm("reindexdata", "admin"))
+        {
+            @Html.AntiForgeryToken()
+            <input type="submit" value="Re-Index Data" class="btn btn-default" />
+        }
+        <br />
+        @using (Html.BeginForm("indexdata", "admin"))
+        {
+            @Html.AntiForgeryToken()
+            <input type="submit" value="Index Data" class="btn btn-default" />
+        }
+        <br />
+        @using (Html.BeginForm("deletedata", "admin"))
+        {
+            @Html.AntiForgeryToken()
+            <input type="submit" value="Delete Data" class="btn btn-default" />
+        }
+    </div>
+</div>
+
+
+<p>```</p>
+
+<p>Now we need to create 3 views that can be used to show when our index commands have completed. Create the following views with their markup inside the <code>Views\Admin</code> directory.</p>
+
+<p><strong>ReIndexData.cshtml</strong></p>
+
+<p>```html</p>
+
+<h2>Data Re-Indexed</h2>
+
+
+<p>```</p>
+
+<p><strong>IndexData.cshtml</strong></p>
+
+<p>```html</p>
+
+<h2>Data Indexed</h2>
+
+
+<p>```</p>
+
+<p><strong>DeleteData.cshtml</strong></p>
+
+<p>```html</p>
+
+<h2>Data Deleted</h2>
+
+
+<p>```</p>
+
+<h2>Algolia time</h2>
+
+<p>Up to this point, we have been doing standard .NET development and nothing with Algolia (except adding the NuGet package). We are now ready to start.</p>
+
+<p>Since our web application allows our users to create, update, and delete packages, we need to be able to do the same things to our Algolia index. On top of that, there are cases where we need to perform an index on all of our data, do a full re-index where data is removed and then added, and also remove all data from our index. We do all this from our web application rather than the Windows Phone application because it is much more secure to have our server talking to Algolia rather than each client. We don't want our credentials that allow changing index data to fall into a user's hand.</p>
+
+<h3>Create reusable Algolia client</h3>
+
+<p>The AlgoliaClient allows our application to easily interact with our Algolia index. In order to keep performance optimal, we don't want to create an instance of this client each time we need it. To address this, we will create one AlgoliaClient and store it in an Application Variable.</p>
+
+<p>Let's go ahead and do this now.</p>
+
+<p>Open up your <code>Global.asax.cs</code> file and update it as follows.</p>
+
+<p>```c#
+using Algolia.Search;
+using PackageTrack.Web.Data;
+using PackageTrack.Web.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Http;
+using System.Web.Mvc;
+using System.Web.Optimization;
+using System.Web.Routing;</p>
+
+<p>namespace PackageTrack.Web
+{</p>
+
+<pre><code>public class MvcApplication : System.Web.HttpApplication
+{
+    protected void Application_Start()
+    {
+        AreaRegistration.RegisterAllAreas();
+        GlobalConfiguration.Configure(WebApiConfig.Register);
+        FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+        RouteConfig.RegisterRoutes(RouteTable.Routes);
+        BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+        // Create our Algolia client
+        var algoliaClient = new AlgoliaClient("&lt;APPLICATION_ID&gt;", "&lt;ADMIN_API_KEY&gt;");
+
+        // Create our index helper
+        var indexHelper = new IndexHelper&lt;Package&gt;(algoliaClient, "packages", "Id");
+
+        // Store our index helper in an application variable.
+        // We don't want to create a new one each time
+        // because it will impact performance.
+        Application.Add("PackageIndexHelper", indexHelper);
+    }
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>What we are doing here is first creating an AlgoliaClient using our application id and key. You will need to update these two values using your own credentials. You can either use the Admin key already created for you or create your own key and choose the permissions allowed.</p>
+
+<p>Next, we create an IndexHelper and inject our AlgoliaClient into it along with the name of the index and the value of our Package model identifier that should be mapped to the Algolia index object Id. The reason we want to specify the identifier in our model is because the IndexHelper will automatically build and  map our model to the Algolia index object.</p>
+
+<p>Finally, we add our IndexHlper to the application variable so we can use it elsewhere in our application.</p>
+
+<p>One thing to note is the index we are using in Algolia is called <code>packages</code>. You can either create it ahead of time or it will be automatically created when you issue index commands.</p>
+
+<h3>Update our Admin controller to work with Algolia</h3>
+
+<p>Now that we have an Algolia IndexHelper to use, we need to update our Admin controller to talk to Algolia when someone issues an indexing command.</p>
+
+<p>Update each of the 3 following actions inside <code>AdminController.cs</code>. Make sure and add a using statement for Algolia.Search.</p>
+
+<p>```c#
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<ActionResult> ReIndexData()
+{</p>
+
+<pre><code>// Get the package index helper from Application variable
+var packageIndexHelper = HttpContext.Application.Get("PackageIndexHelper") as IndexHelper&lt;Package&gt;;
+await packageIndexHelper.OverwriteIndexAsync(db.Packages, 1000);
+
+return View();
+</code></pre>
+
+<p>}</p>
+
+<p>[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<ActionResult> IndexData()
+{</p>
+
+<pre><code>// Get the package index helper from Application variable
+var packageIndexHelper = HttpContext.Application.Get("PackageIndexHelper") as IndexHelper&lt;Package&gt;;
+await packageIndexHelper.SaveObjectsAsync(db.Packages, 1000);
+
+return View();
+</code></pre>
+
+<p>}</p>
+
+<p>[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<ActionResult> DeleteData()
+{</p>
+
+<pre><code>// Get the package index helper from Application variable
+var packageIndexHelper = HttpContext.Application.Get("PackageIndexHelper") as IndexHelper&lt;Package&gt;;
+await packageIndexHelper.DeleteObjectsAsync(db.Packages, 1000);
+
+return View();
+</code></pre>
+
+<p>}
+```</p>
+
+<p>The IndexHelper is very nice. It will automatically handle the steps needed to perform indexing, re-indexing, and deleting of data. The way it works is it already knows the identifier to look for in your model so when you make an OverwriteIndex, SaveObjects, or DeleteObjects call it automatically converts your model to JSON, adds an objectId field, sets the objectId field to the identifier you told it to use, and makes the necessary calls to Algolia.</p>
+
+<p>Now is a great time to test things out. You should already have packages in your database that are not in your Algolia index. Try out the different functions under the <code>/admin</code> path. You should see your index get populated, re-populated, and cleared out depending on which function you use.</p>
+
+<h3>Update our CRUD to work with Algolia</h3>
+
+<p>Having administrative ability to manage our index is great, but we really need to have our index kept up to date as users create, update, and delete packages from our database.</p>
+
+<p>We will do this by updating the actions inside our Home controller we created earlier to support our CRUD operations on packages.</p>
+
+<p>Update each of the 3 following actions inside <code>HomeController.cs</code>. Make sure and add a using statement for Algolia.Search.</p>
+
+<p>```c#
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<ActionResult> Create([Bind(Include = "Id,Name,Link,Count")] Package package)
+{</p>
+
+<pre><code>if (ModelState.IsValid)
+{
+    db.Packages.Add(package);
+    await db.SaveChangesAsync();
+
+    // Get the package index helper from Application variable
+    var packageIndexHelper = HttpContext.Application.Get("PackageIndexHelper") as IndexHelper&lt;Package&gt;;
+    await packageIndexHelper.SaveObjectAsync(package);
+
+    return RedirectToAction("Index");
+}
+
+return View(package);
+</code></pre>
+
+<p>}</p>
+
+<p>[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<ActionResult> Edit([Bind(Include = "Id,Name,Link,Count")] Package package)
+{</p>
+
+<pre><code>if (ModelState.IsValid)
+{
+    db.Entry(package).State = EntityState.Modified;
+    await db.SaveChangesAsync();
+
+    // Get the package index helper from Application variable
+    var packageIndexHelper = HttpContext.Application.Get("PackageIndexHelper") as IndexHelper&lt;Package&gt;;
+    await packageIndexHelper.SaveObjectAsync(package);
+
+    return RedirectToAction("Index");
+}
+return View(package);
+</code></pre>
+
+<p>}</p>
+
+<p>[HttpPost, ActionName("Delete")]
+[ValidateAntiForgeryToken]
+public async Task<ActionResult> DeleteConfirmed(int id)
+{</p>
+
+<pre><code>Package package = await db.Packages.FindAsync(id);
+db.Packages.Remove(package);
+await db.SaveChangesAsync();
+
+// Get the package index helper from Application variable
+var packageIndexHelper = HttpContext.Application.Get("PackageIndexHelper") as IndexHelper&lt;Package&gt;;
+await packageIndexHelper.DeleteObjectAsync(package);
+
+return RedirectToAction("Index");
+</code></pre>
+
+<p>}
+```</p>
+
+<p>What we did here was whenever a package is created, updated, or deleted, we use the IndexHelper to add, update, or remove the data within our index.</p>
+
+<p>Go ahead and try it out.</p>
+
+<h2>Implement real time search</h2>
+
+<p>With all of our indexing in place, we are ready to add a real time search experience to our web application.</p>
+
+<h3>Download JavaScript libraries</h3>
+
+<p>We will need some JavaScript libraries in order to create the search feature. Download each of the following and save them in the <code>Scripts</code> directory with the names I indicate.</p>
+
+<p><strong>typeahead.jquery.js</strong><br/>
+<a href="https://cdn.jsdelivr.net/typeahead.js/0.10.5/typeahead.jquery.min.js">https://cdn.jsdelivr.net/typeahead.js/0.10.5/typeahead.jquery.min.js</a></p>
+
+<p><strong>hogan.common.js</strong><br/>
+<a href="https://cdn.jsdelivr.net/hogan.js/3.0.2/hogan.common.js">https://cdn.jsdelivr.net/hogan.js/3.0.2/hogan.common.js</a></p>
+
+<p><strong>algoliasearch.min.js</strong><br/>
+<a href="https://cdn.jsdelivr.net/algoliasearch/2.9/algoliasearch.min.js">https://cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js</a></p>
+
+<h3>Bundle new JavaScript</h3>
+
+<p>With the new scripts added to our project, we need to update our bundles to include them. Open up <code>\App_Start\BundleConfig.cs</code> and add the following new bundle.</p>
+
+<p>```c#
+bundles.Add(new ScriptBundle("~/bundles/main").Include(</p>
+
+<pre><code>      "~/Scripts/typeahead.jquery.min.js",
+      "~/Scripts/hogan.common.js",
+      "~/Scripts/algoliasearch.min.js",
+      "~/Scripts/main.js"));
+</code></pre>
+
+<p>```</p>
+
+<h3>Update our layout</h3>
+
+<p>Now we need to update our layout to include a search box and the new script bundle we created.</p>
+
+<p>Open up <code>_Layout.cshtml</code> and modify the code as follows.</p>
+
+<p>```html
+....</p>
+
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            @Html.ActionLink("Package Track", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+        </div>
+        <div class="typeahead-container">
+            <input id="typeahead-algolia" class="typeahead" type="text" placeholder="Search...">
+        </div>
+    </div>
+</div>
+
+
+<p>...</p>
+
+<p>@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/bootstrap")
+@Scripts.Render("~/bundles/main")
+@RenderSection("scripts", required: false)
+```</p>
+
+<h3>Create JavaScript to tie UI with Algolia</h3>
+
+<p>The following code needs to be added to a new file named <code>main.js</code> within the <code>Scripts</code> directory. This sets us up to perform searches with our packages index on Algolia. Be sure to update the application id and key using your search only key.</p>
+
+<p>```javascript
+$(document).ready(function () {</p>
+
+<pre><code>var client = algoliasearch('&lt;APPLICATION ID&gt;', '&lt;SEARCH-ONLY API KEY&gt;');
+var index = client.initIndex('&lt;INDEX NAME&gt;');
+
+var template = Hogan.compile(
+    '&lt;a href="http://scottksmith.com/home/details/}"&gt;' +
+        '&lt;div class="hit"&gt;' +
+            '&lt;div class="name"&gt;' +
+                '} ' +
+            '&lt;/div&gt;' +
+            '' +
+            '&lt;div class="attribute"&gt;: }&lt;/div&gt;' +
+            '' +
+        '&lt;/div&gt;' +
+    '&lt;/a&gt;');
+
+$('#typeahead-algolia').typeahead({
+    highlight: false,
+    hint: true,
+    minLength: 1
+},
+{
+    source: index.ttAdapter({ "hitsPerPage": 10 }),
+    displayKey: 'Name',
+    templates: {
+        suggestion: function (hit) {
+            // select matching attributes only
+            hit.attributes = [];
+            for (var attribute in hit._highlightResult) {
+                if (attribute === 'Name') {
+                    // already handled by the template
+                    continue;
+                }
+                // all others attributes that are matching should be added in the attributes array
+                // so we can display them in the dropdown menu. Non-matching attributes are skipped.
+                if (hit._highlightResult[attribute].matchLevel !== 'none') {
+                    hit.attributes.push({ attribute: attribute, value: hit._highlightResult[attribute].value });
+                }
+            }
+
+            // render the hit using Hogan.js
+            return template.render(hit);
+        }
+    }
+});
+</code></pre>
+
+<p>});
+```</p>
+
+<h3>Style the search</h3>
+
+<p>Finally, we want to style our search. Add the following CSS to <code>\Content\Site.css</code>.</p>
+
+<p>```css
+.typeahead-container {</p>
+
+<pre><code>float: right;
+</code></pre>
+
+<p>}</p>
+
+<p>.typeahead {</p>
+
+<pre><code>padding: 0 5px;
+margin-top: 10px;
+width: 300px;
+height: 30px;
+font-size: 14px;
+line-height: 30px;
+max-width: none;
+</code></pre>
+
+<p>}</p>
+
+<p>.tt-input,
+.tt-hint {</p>
+
+<pre><code>width: 396px;
+height: 30px;
+padding: 8px 12px;
+font-size: 14px;
+line-height: 30px;
+border: 2px solid #ccc;
+border-radius: 8px;
+outline: none;
+</code></pre>
+
+<p>}</p>
+
+<p>.tt-input {</p>
+
+<pre><code>box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+</code></pre>
+
+<p>}</p>
+
+<p>.tt-hint {</p>
+
+<pre><code>color: #999;
+</code></pre>
+
+<p>}</p>
+
+<p>.tt-dropdown-menu {</p>
+
+<pre><code>width: 422px;
+margin-top: 12px;
+padding: 8px 0;
+background-color: #fff;
+border: 1px solid #ccc;
+border: 1px solid rgba(0, 0, 0, 0.2);
+border-radius: 8px;
+box-shadow: 0 5px 10px rgba(0,0,0,.2);
+</code></pre>
+
+<p>}</p>
+
+<p>.tt-suggestion {</p>
+
+<pre><code>padding: 3px 20px;
+font-size: 14px;
+line-height: 24px;
+</code></pre>
+
+<p>}</p>
+
+<pre><code>.tt-suggestion.tt-cursor {
+    color: #fff;
+    background-color: #0097cf;
+}
+
+.tt-suggestion p {
+    margin: 0;
+}
+
+.tt-suggestion em {
+    font-weight: bold;
+    font-style: normal;
+}
+</code></pre>
+
+<p>.name {</p>
+
+<pre><code>font-weight: bold;
+</code></pre>
+
+<p>}</p>
+
+<p>.attribute {</p>
+
+<pre><code>margin-left: 10px;
+</code></pre>
+
+<p>}
+```</p>
+
+<p>If you would like to get a more in depth tutorial on the real time search piece we just added, you can read other articles I wrote here.</p>
+
+<p><a href="http://scottksmith.com/blog/2014/10/21/getting-started-with-algolia-real-time-search/">http://scottksmith.com/blog/2014/10/21/getting-started-with-algolia-real-time-search/</a></p>
+
+<p><a href="http://scottksmith.com/blog/2014/10/29/algolia-real-time-search-with-twitters-typeaheadjs/">http://scottksmith.com/blog/2014/10/29/algolia-real-time-search-with-twitters-typeaheadjs/</a></p>
+
+<h2>Create REST API for packages</h2>
+
+<p>The last thing we need to do in our web application is to build a REST based API for our package information. This will be used by our Windows Phone application.</p>
+
+<p>First, create a new directory within the <code>Controllers</code> directory and name it <code>Api</code>.</p>
+
+<p>Right click on the Api folder and choose <code>Add</code> followed by <code>Controller</code>. Follow the next few screenshots to see what settings to use and values to set.</p>
+
+<p><img src="/images/algolia_csharp_07.png" alt="Screenshot 07" /></p>
+
+<p><img src="/images/algolia_csharp_08.png" alt="Screenshot 08" /></p>
+
+<p><img src="/images/algolia_csharp_09.png" alt="Screenshot 09" /></p>
+
+<p>Because we want to only return JSON even when the request header is not <code>application/json</code> we need to update our <code>WebApiConfig.cs</code> file in the <code>App_Start</code> directory.</p>
+
+<p>```c#
+using System.Net.Http.Headers;</p>
+
+<p>  ...</p>
+
+<p>  config.Formatters.JsonFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/html"));
+```</p>
+
+<p>We are now ready to create our Windows Phone application that will perform searches using Algolia and show data from our web application.</p>
+
+<h2>Create a new Windows Phone Application</h2>
+
+<p>In our current solution, create a new project and choose <code>Blank App (Windows Phone)</code>. You can name it whatever you like, but I went with PackageTrack.Phone.</p>
+
+<p><img src="/images/algolia_csharp_10.png" alt="Screenshot 10" /></p>
+
+<h2>Install necessary NuGet package</h2>
+
+<p>This application requires one new package in order to work.</p>
+
+<p><strong>Algolia Search</strong></p>
+
+<p>Install the Algolia Search package. The version used in this tutorial is 3.0.5.</p>
+
+<p><code>tcsh
+PM&gt; Install-Package Algolia.Search
+</code></p>
+
+<h2>Configure startup projects</h2>
+
+<p>In order for both applications to work, we need to configure our solution to start the web and phone application when we build and run. The following screenshots show how to do this.</p>
+
+<p><img src="/images/algolia_csharp_11.png" alt="Screenshot 11" /></p>
+
+<p><img src="/images/algolia_csharp_12.png" alt="Screenshot 12" /></p>
+
+<p>Debug or run your applications now to make sure both projects start.</p>
+
+<h2>Build our application UI</h2>
+
+<p>Now that our project and solution are ready to go, we can add some components to our application to build out our UI.</p>
+
+<p>If <code>MainPage.xaml</code> is not open, you will want to open it now. This will load the designer view. The next two steps and screenshots show the two components we want to add to our view. Just drag each of the components from the Toolbox within Visual Studio into your UI as shown below.</p>
+
+<h3>Add AutoSuggestBox</h3>
+
+<p><img src="/images/algolia_csharp_13.png" alt="Screenshot 13" /></p>
+
+<h3>Add WebView</h3>
+
+<p><img src="/images/algolia_csharp_14.png" alt="Screenshot 14" /></p>
+
+<p><img src="/images/algolia_csharp_15.png" alt="Screenshot 15" /></p>
+
+<h3>Configure WebView</h3>
+
+<p>We need to give our WebView a name so we can reference it within our code. You will need to name it <code>SearchWebView</code>. The following code shows the updated XAML for this change.</p>
+
+<p><code>xml
+&lt;WebView Name="SearchWebView" HorizontalAlignment="Left" Height="576" Margin="10,54,0,0" VerticalAlignment="Top" Width="380"/&gt;
+</code></p>
+
+<h3>Configure AutoSuggestBox events</h3>
+
+<p>Our AutoSuggestBox is where the user will start typing a search query and will be responsible for searching our index on Algolia. We need to setup two events to handle when the text changes and when a suggestion is selected.</p>
+
+<p>Update the MainPage XAML to the following for the AutoSuggestBox.</p>
+
+<p><code>xml
+&lt;AutoSuggestBox HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="380" TextChanged="AutoSuggestBox_TextChanged" SuggestionChosen="AutoSuggestBox_SuggestionChosen"/&gt;
+</code></p>
+
+<p>When adding new event handlers in this fashion, the code behind is automatically created in <code>MainPage.xaml.cs</code>. If they are not there, be sure to add them as follows.</p>
+
+<p>```c#
+private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+{</p>
+
+<p>}</p>
+
+<p>private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+{</p>
+
+<p>}
+```</p>
+
+<h2>Add Algolia to our application</h2>
+
+<p>If you don't have <code>MainPage.xaml.cs</code> open, open it now.</p>
+
+<p>We are going to add the necessary code to add Algolia search capabilities to our application.</p>
+
+<p>The first thing we need is to add two private members to our MainPage class. These will be an AlgoliaClient and Index.</p>
+
+<p><code>c#
+private AlgoliaClient algoliaClient = null;
+private Index algoliaIndex = null;
+</code></p>
+
+<p>Next, we need to instantiate these objects within the constructor. Be sure to change the application id and search only key to the ones you used in the web project.</p>
+
+<p>```c#
+public MainPage()
+{</p>
+
+<pre><code>this.InitializeComponent();
+
+this.NavigationCacheMode = NavigationCacheMode.Required;
+
+algoliaClient = new AlgoliaClient("&lt;APPLICATION_ID&gt;", "&lt;SEARCH_ONLY_API_KEY&gt;");
+algoliaIndex = algoliaClient.InitIndex("packages");
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Finally, be sure to add the necessary using statement.</p>
+
+<p><code>c#
+using Algolia.Search;
+</code></p>
+
+<h2>Tie it all together</h2>
+
+<p>We now need to create a class that can be used to deserialize the Algolia search responses. Inside <code>MainPage.xaml.cs</code> create the following class. You will notice it defines Name, Link, Count, and objectID. The first 3 are fields we defined in our web application. The last one is the ID that Algolia uses in its indexed data. This is the field we mapped our models ID field to.</p>
+
+<p>Also, you will see we are overriding <code>ToString()</code>. This is because we will be adding each <code>Hit</code> object to our AutoSuggestBox and want to control how the data is shown.</p>
+
+<p>```c#
+private class PackagesResult
+{</p>
+
+<pre><code>public class Hit
+{
+    public string Name { get; set; }
+    public string Link { get; set; }
+    public string Count { get; set; }
+    public string objectID { get; set; }
+
+    public override string ToString()
+    {
+        return Name + Environment.NewLine +
+            "  Link:\t" + Link + Environment.NewLine +
+            "  Count:\t" + Count;
+    }
+}
+
+public List&lt;Hit&gt; hits { get; set; }
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Next we need to implement our search code each time a user enters a character in our AutoSuggestBox. Update the AutoSuggestBox event handler for TextChanged as follows.</p>
+
+<p>```c#
+private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+{</p>
+
+<pre><code>if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+{
+    var searchTerm = sender.Text;
+    var query = new Query(searchTerm);
+    var result = algoliaIndex.SearchAsync(query).Result;
+    var packagesResult = result.ToObject&lt;PackagesResult&gt;();
+
+    sender.ItemsSource = packagesResult.hits;
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>What we are doing here is creating a new Algolia Query using the entered text. We then issue a search, get back the results as JSON, and convert it to a PackagesResult object. The last thing we do is add the list of Hits as the ItemsSource of our AutoSuggestBox. This will automatically show the results to the user.</p>
+
+<p>Finally, we need to update the SuggestionChosen event for our AutoSuggestBox when a user selects one of the results we showed them. Update it as follows.</p>
+
+<p>```c#
+private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+{</p>
+
+<pre><code>var hit = (PackagesResult.Hit)args.SelectedItem;
+SearchWebView.Navigate(new Uri("http://localhost:8671/api/packages/" + hit.objectID));
+</code></pre>
+
+<p>}
+```</p>
+
+<p>All we are doing here is taking the selected item, reference that items object ID, and then navigating our WebView to that page. The page we are showing is the API endpoint we created in our web application. This is just a simple example of how to tie the two applications together. A more robust approach would be to process the data from the API and build a UI capable of viewing, editing, and deleting the data.</p>
+
+<p><img src="/images/algolia_csharp_16.png" alt="Screenshot 16" /></p>
+
+<h3>Wrap up</h3>
+
+<p>That wraps up this tutorial on adding Algolia to an ASP.NET MVC application along with a Windows Phone 8.1 application. There was a lot going on here, but if you take out the standard stuff for our web and phone application, the Algolia part is very simple and straightforward.</p>
+
+<p>If you found this article or others useful be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+
+<p>Source code for tutorial can be found <a href="https://github.com/algolia/tutorials/tree/master/csharp/src/PackageTrack">here on GitHub</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Algolia Real Time Search With Firebase]]></title>
+    <link href="http://scottksmith.com/blog/2014/12/09/algolia-real-time-search-with-firebase/"/>
+    <updated>2014-12-09T16:17:00-08:00</updated>
+    <id>http://scottksmith.com/blog/2014/12/09/algolia-real-time-search-with-firebase</id>
+    <content type="html"><![CDATA[<p>One key feature of <a href="https://www.firebase.com/">Firebase</a> is building realtime applications by using their backend to store and sync data. Algolia further enhances that by providing realtime search capabilities. In a few simple steps, this tutorial will teach you how to import your existing data, index new data as it is added to Firebase, and remove indexed data when it is removed from Firebase.</p>
+
+<p>Algolia's <a href="https://github.com/algolia/algoliasearch-client-js">Node.js client</a> simplifies the integration of your Firebase applications with Algolia's real time search service. The module makes it easy for you to use Algolia's search capabilities in a manner that will be familiar to those already developing Firebase and Node.js applications.</p>
+
+<h2>Prerequisites</h2>
+
+<h3>Familiar with Firebase</h3>
+
+<p>This tutorial assumes you are familiar with Firebase, how it works, and how to build Firebase applications. If you would like to learn more before continuing with this tutorial, I suggest reading the following documentation and tutorials:</p>
+
+<ol>
+<li><a href="https://www.firebase.com/how-it-works.html">Getting started</a></li>
+<li><a href="https://www.firebase.com/docs/web/quickstart.html">Quickstart web tutorial</a></li>
+<li><a href="https://www.firebase.com/docs/web/guide/">Web development guide</a></li>
+</ol>
+
+
+<h2>Create a Node.js Application</h2>
+
+<p>In order to index your Firebase data and continually add/update index information, you will need to create a Node.js application. This application will be responsible for getting data out of Firebase and indexing it with Algolia. It can then be run anywhere like Heroku, Nodejitsu, AWS, Azure, etc.</p>
+
+<p>In this tutorial, we will be indexing contact information in a Firebase application. Be sure to change 'YourApplicationID' and 'YourAPIKey' to your account values <a href="https://www.algolia.com/licensing">here</a>. Because we are making calls that require more than read access, you will need to create a new key or use an existing one that can Add Records, Delete Records, and Delete Index (for reindexing example). You will also need to set your Firebase 'INSTANCE' to the one your application uses.</p>
+
+<p>Here is the intial portion of the Node.js application.</p>
+
+<p>```javascript
+var Firebase = require('firebase');
+var algoliasearch = require('algoliasearch');
+var client = algoliasearch('YourApplicationID', 'YourAPIKey');
+var index = client.initIndex('contacts');</p>
+
+<p>// Connect to our Firebase contacts data
+var fb = new Firebase('<INSTANCE>.firebaseio.com/contacts');
+```</p>
+
+<p>Be sure to install the necessary packages so your application will run.</p>
+
+<p><code>tcsh
+npm install firebase --save
+npm install algoliasearch --save
+</code></p>
+
+<h2>Import Existing Data</h2>
+
+<p>In many cases, you may already have data within your Firebase application. In order to integrate with Algolia, you will want to index that data. We will use contact information being stored within Firebaseio as our example. Add the following code to your Node.js application.</p>
+
+<p>```javascript
+// Get all data from Firebase
+fb.on('value', initIndex);</p>
+
+<p>function initIndex(dataSnapshot) {
+  // Array of data to index
+  var objectsToIndex = [];</p>
+
+<p>  // Get all objects
+  var values = dataSnapshot.val();</p>
+
+<p>  // Process each Firebase ojbect
+  for (var key in values) {</p>
+
+<pre><code>if (values.hasOwnProperty(key)) {
+  // Get current Firebase object
+  var firebaseObject = values[key];
+
+  // Specify Algolia's objectID using the Firebase object key
+  firebaseObject.objectID = key;
+
+  // Add object for indexing
+  objectsToIndex.push(firebaseObject);
+}
+</code></pre>
+
+<p>  }</p>
+
+<p>  // Add or update new objects
+  index.saveObjects(objectsToIndex, function(err, content) {</p>
+
+<pre><code>if (err) {
+  throw err;
+}
+
+console.log('Firebase&lt;&gt;Algolia import done');
+</code></pre>
+
+<p>  });
+}
+```</p>
+
+<p>To ensure the indexing performs well it is suggested you limit the number of items indexed per call between 1,000 and 10,000 depending on the object size.</p>
+
+<p>Once you run this code, you will have all of your existing Firebase data indexed with Algolia. You will want to remove this code once is is done because the event will continue to fire each time data is added.</p>
+
+<h2>Reindex Data</h2>
+
+<p>Sometimes, you may have the need to completely reindex your data. This means removing data from the index that may not longer exist, adding new data, and updating existing data. The following code can be added to the Node.js application to perform a reindexing. You will want to remove or comment out the initial index code if currently present.</p>
+
+<p>```javascript
+// Get all data from Firebase
+fb.on('value', reindexIndex);</p>
+
+<p>function reindexIndex(dataSnapshot) {
+  // Array of objects to index
+  var objectsToIndex = [];</p>
+
+<p>  // Create a temp index
+  var tempIndexName = 'contacts_temp';
+  var tempIndex = client.initIndex(tempIndexName);</p>
+
+<p>  // Get all objects
+  var values = dataSnapshot.val();</p>
+
+<p>  // Process each Firebase object
+  for (var key in values) {</p>
+
+<pre><code>if (values.hasOwnProperty(key)) {
+  // Get current Firebase object
+  var firebaseObject = values[key];
+
+  // Specify Algolia's objectID using the Firebase object key
+  firebaseObject.objectID = key;
+
+  // Add object for indexing
+  objectsToIndex.push(firebaseObject);
+}
+</code></pre>
+
+<p>  }</p>
+
+<p>  // Add or update new objects
+  index.saveObjects(objectsToIndex, function(err, content) {</p>
+
+<pre><code>if (err) {
+  throw err;
+}
+
+// Overwrite main index with temp index
+client.moveIndex(tempIndexName, 'contacts', function(err, content) {
+  if (err) {
+    throw err;
+  }
+
+  console.log('Firebase&lt;&gt;Algolia reimport done');
+});
+</code></pre>
+
+<p>  });
+}
+```</p>
+
+<p>To ensure the reindexing performs well it is suggested you limit the number of items indexed per call between 1,000 and 10,000 depending on the object size.</p>
+
+<p>Once you run this code, you will have all of your existing Firebase data reindexed with Algolia. You will want to remove this code once is is done because the event will continue to fire each time data is added.</p>
+
+<h2>Add or Update Data</h2>
+
+<p>Now, we need to handle the case where data is being added or updated. We can easily setup our code to automatically add or update data to our search index by attaching to the 'child_added' and 'child_changed' events. This will allow us to define code that will be called after data is stored in Firebase. Add the following code to your Node.js application.</p>
+
+<p>```javascript
+// Listen for changes to Firebase data
+fb.on('child_added', addOrUpdateObject);
+fb.on('child_changed', addOrUpdateObject);</p>
+
+<p>function addOrUpdateObject(dataSnapshot) {
+  // Get Firebase object
+  var firebaseObject = dataSnapshot.val();</p>
+
+<p>  // Specify Algolia's objectID using the Firebase object key
+  firebaseObject.objectID = dataSnapshot.key();</p>
+
+<p>  // Add or update object
+  index.saveObject(firebaseObject, function(err, content) {</p>
+
+<pre><code>if (err) {
+  throw err;
+}
+
+console.log('Firebase&lt;&gt;Algolia object saved');
+</code></pre>
+
+<p>  });
+}
+```</p>
+
+<p>Now, whenever contact data is saved in Firebase, it will automatically be indexed with Algolia.</p>
+
+<h2>Delete Data</h2>
+
+<p>Next, we need to handle the case where data is deleted from your Firebase application. In order to do this, we can attach to the 'child_removed' event. This will allow us to define code that will be called after data is removed from Firebase. Add the following code to your Node.js application.</p>
+
+<p>```javascript
+// Listen for changes to Firebase data
+fb.on('child_removed', removeIndex);</p>
+
+<p>function removeIndex(dataSnapshot) {
+  // Get Algolia's objectID from the Firebase object key
+  var objectID = dataSnapshot.key();</p>
+
+<p>  // Remove the object from Algolia
+  index.deleteObject(objectID, function(err, content) {</p>
+
+<pre><code>if (err) {
+  throw err;
+}
+
+console.log('Firebase&lt;&gt;Algolia object deleted');
+</code></pre>
+
+<p>  });
+}
+```</p>
+
+<p>Now, whenever contact data is removed from Firebase, it will automatically get removed from Algolia.</p>
+
+<h2>Next Steps</h2>
+
+<ol>
+<li><a href="https://www.algolia.com/doc/node">Read the Node.js documentation</a></li>
+<li><a href="https://github.com/algolia/algoliasearch-client-node#commands-reference">Dive into the Node.js command reference</a></li>
+<li><a href="https://github.com/algolia/algoliasearch-client-node">Explore the Node.js API client source code</a></li>
+</ol>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Algolia Real Time Search With Parse]]></title>
+    <link href="http://scottksmith.com/blog/2014/12/08/algolia-real-time-search-with-parse/"/>
+    <updated>2014-12-08T08:42:00-08:00</updated>
+    <id>http://scottksmith.com/blog/2014/12/08/algolia-real-time-search-with-parse</id>
+    <content type="html"><![CDATA[<p>One key feature of <a href="https://parse.com/">Parse</a> is for applications to use Parse Core as their data store. In a few simple steps, this tutorial will teach you how to import your existing data, index new data as it is added to Parse, and remove indexed data when it is removed from Parse.</p>
+
+<p>The <a href="https://github.com/algolia/algoliasearch-client-js#parsecom">Algolia Parse Module</a> simplifies the integration of your Parse based applications with Algolia's real time search service. The module makes it easy for you to use Algolia's search capabilities in a manner that will be familiar to those already using the Algolia Node.js client APIs.</p>
+
+<h2>Prerequisites</h2>
+
+<h3>Familiar with Parse</h3>
+
+<p>This tutorial assumes you are familiar with Parse, how it works, and how to build Cloud Code applications. If you would like to learn more before continuing with this tutorial, I suggest reading the following documentation and tutorials:</p>
+
+<ol>
+<li><a href="https://parse.com/docs/cloud_code_guide#started">Getting started with Cloud Code</a></li>
+<li><a href="https://parse.com/apps/quickstart#parse_data/web/new">Parse quickstart web project</a></li>
+<li><a href="https://parse.com/apps/quickstart#cloud_code/unix">Parse quickstart Cloud Code project on Mac/Linux</a></li>
+<li><a href="https://parse.com/apps/quickstart#cloud_code/windows">Parse quickstart Cloud Code project on Windows</a></li>
+</ol>
+
+
+<h2>Add Agolia Real Time Search to the Project</h2>
+
+<p>In order to integrate Aloglia within your Parse application, you will need to add the Algolia Node.js client. Copy <a href="https://raw.githubusercontent.com/algolia/algoliasearch-client-js/master/dist/algoliasearch.parse.js">algoliasearch.parse.js</a> to <code>cloud/algoliasearch.parse.js</code> within your Parse Cloud Code directory.</p>
+
+<h2>Import Existing Data</h2>
+
+<p>In many cases, you may already have data within your Parse application. In order to integrate with Algolia, you will want to index that data. We will use contact information being stored within Parse as our example.</p>
+
+<p>```javascript
+var algoliasearch = require('cloud/algoliasearch.parse.js');
+var client = algoliasearch('YourApplicationID', 'YourAPIKey');
+var index = client.initIndex('contacts');</p>
+
+<p>function indexData() {
+  var objectsToIndex = [];</p>
+
+<p>  //Create a new query for Contacts
+  var query = new Parse.Query('Contact');</p>
+
+<p>  // Find all items
+  query.find({</p>
+
+<pre><code>success: function(contacts) {
+  // prepare objects to index from contacts
+  objectsToIndex = contacts.map(function(contact) {
+    // convert to regular key/value JavaScript object
+    contact = contact.toJSON();
+
+    // Specify Algolia's objectID with the Parse.Object unique ID
+    contact.objectID = contact.objectId;
+
+    return contact;
+  });
+
+  // Add or update new objects
+  index.saveObjects(objectsToIndex, function(err, content) {
+    if (err) {
+      throw err;
+    }
+
+    console.log('Parse&lt;&gt;Algolia import done');
+  });
+},
+error: function(err) {
+  throw err;
+}
+</code></pre>
+
+<p>  });
+}
+```</p>
+
+<p>You can now use this function within your own Parse Cloud Code functions in order to index your existing data.</p>
+
+<p>Be sure to change 'YourApplicationID' and 'YourAPIKey' to your account values <a href="https://www.algolia.com/licensing">here</a>. Because we are making calls that require more than read access, you will need to create a new key or use an existing one that can Add Records, Delete Records, and Delete Index (for reindexing example). If you create a new key, you will need to make sure it can Add Records and Delete Records.</p>
+
+<h2>Reindex Data</h2>
+
+<p>Sometimes, you may have the need to completely reindex your data. This means removing data from the index that may not longer exist, adding new data, and updating existing data. The following code can be used within your own Parse Cloud Code functions to perform a reindexing.</p>
+
+<p>```javascript
+var tempIndexName = 'contacts_temp';
+var mainIndexName = 'contacts';
+var algoliasearch = require('cloud/algoliasearch.parse.js');
+var client = algoliasearch('YourApplicationID', 'YourAPIKey');
+var tempIndex = client.initIndex(tempIndexName);</p>
+
+<p>var reindexData = function() {
+  var objectsToIndex = [];</p>
+
+<p>  // Create a temp index
+  var tempIndex = client.initIndex(tempIndexName);</p>
+
+<p>  // Create a new query for Contacts
+  var query = new Parse.Query('Contact');</p>
+
+<p>  // Find all items
+  query.find({</p>
+
+<pre><code>success: function(contacts) {
+  // prepare objects to index from contacts
+  objectsToIndex = contacts.map(function(contact) {
+    // convert to regular key/value JavaScript object
+    contact = contact.toJSON();
+
+    // Specify Algolia's objectID with the Parse.Object unique ID
+    contact.objectID = contact.objectId;
+
+    return contact;
+  });
+
+  // Add new objects to temp index
+  tempIndex.saveObjects(objectsToIndex, function(err, content) {
+    if (err) {
+      throw err;
+    }
+
+    // Overwrite main index with temp index
+    client.moveIndex(tempIndexName, mainIndexName, function(err, content) {
+      if (err) {
+        throw err;
+      }
+
+      console.log('Parse&lt;&gt;Algolia reimport done');
+    });
+  });
+},
+error: function(err) {
+  throw err;
+}
+</code></pre>
+
+<p>  });
+};
+```</p>
+
+<h2>Add or Update Data</h2>
+
+<p>Now, we need to handle the case where data is being added or updated. We can easily setup our code to automatically add or update data to our search index by using the <code>afterSave</code> Parse function. This will allow us to define code that will be called after data is stored in Parse.</p>
+
+<p>```javascript
+var algoliasearch = require('cloud/algoliasearch.parse.js');
+var client = algoliasearch('YourApplicationID', 'YourAPIKey');
+var index = client.initIndex('contacts');</p>
+
+<p>Parse.Cloud.afterSave('Contact', function(request) {
+  // Convert Parse.Object to JSON
+  var objectToSave = request.object.toJSON();</p>
+
+<p>  // Specify Algolia's objectID with the Parse.Object unique ID
+  objectToSave.objectID = objectToSave.objectId;</p>
+
+<p>  // Add or update object
+  index.saveObject(objectToSave, function(err, content) {</p>
+
+<pre><code>if (err) {
+  throw err;
+}
+
+console.log('Parse&lt;&gt;Algolia object saved');
+</code></pre>
+
+<p>  });
+});
+```</p>
+
+<p>Now, whenever contact data is saved in Parse, it will automatically be indexed with Algolia.</p>
+
+<h2>Delete Data</h2>
+
+<p>Next, we need to handle the case where data is deleted from your Parse application. In order to do this, we can use the <code>afterDelete</code> Parse function. This will allow us to define code that will be called after data is removed from Parse.</p>
+
+<p>```javascript
+var algoliasearch = require('cloud/algoliasearch.parse.js');
+var client = algoliasearch('YourApplicationID', 'YourAPIKey');
+var index = client.initIndex('contacts');</p>
+
+<p>Parse.Cloud.afterDelete('Contact', function(request) {
+  // Get Algolia objectID
+  var objectID = request.object.id;</p>
+
+<p>  // Remove the object from Algolia
+  index.deleteObject(objectID, function(err, content) {</p>
+
+<pre><code>if (err) {
+  throw err;
+}
+
+console.log('Parse&lt;&gt;Algolia object deleted');
+</code></pre>
+
+<p>  });
+});
+```</p>
+
+<p>Now, whenever contact data is removed from Parse, it will automatically get removed from Algolia.</p>
+
+<h2>Next Steps</h2>
+
+<ol>
+<li><a href="https://www.algolia.com/doc/node">Read the Node.js documentation</a></li>
+<li><a href="https://github.com/algolia/algoliasearch-client-node#commands-reference">Dive into the Node.js command reference</a></li>
+<li><a href="https://github.com/algolia/algoliasearch-client-node">Explore the Node.js API client source code</a></li>
+</ol>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Algolia Real Time Search with Twitter typeahead.js]]></title>
+    <link href="http://scottksmith.com/blog/2014/10/29/algolia-real-time-search-with-twitters-typeaheadjs/"/>
+    <updated>2014-10-29T11:35:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2014/10/29/algolia-real-time-search-with-twitters-typeaheadjs</id>
+    <content type="html"><![CDATA[<p><img src="/images/Algolia_logo2.png" alt="Algolia Logo" /></p>
+
+<p>In our <a href="/blog/2014/10/21/getting-started-with-algolia-real-time-search/">previous article</a> we learned how to easily add <a href="https://www.algolia.com">Algolia's real time search</a> to our web application. We kept it simple and showed the results in a functional but not very pretty result list.</p>
+
+<p>In this article, we will see how to quickly and easily add some awesomesauce to our application by integrating our search results with Twitter's <a href="https://github.com/twitter/typeahead.js">typeahead.js</a>. If you haven't read the <a href="/blog/2014/10/21/getting-started-with-algolia-real-time-search/">previous article</a>, you will want to so you can create your Algolia account and initial data index which will be used in this article.</p>
+
+<h3>Initial code</h3>
+
+<p>To help start this tutorial, we will start with a basic application structure. Create the following directory structure and files.</p>
+
+<p>```
+user-search-typeahead/
+  css/</p>
+
+<pre><code>styles.css
+</code></pre>
+
+<p>  js/</p>
+
+<pre><code>main.js
+</code></pre>
+
+<p>  index.html
+```</p>
+
+<p>Add the following code to <code>index.html</code>, <code>styles.css</code>, and <code>main.js</code>.</p>
+
+<p>```html
+&lt;!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Algolia | User Search with typeahead.js</title>
+  <link rel="stylesheet" type="text/css" href="http://scottksmith.com/css/styles.css">
+</head>
+<body>
+  <div class="search"></p>
+
+<pre><code>&lt;h1&gt;Search users in real time with typeahead.js&lt;/h1&gt;
+&lt;input id="typeahead-algolia" class="typeahead" type="text"&gt;
+</code></pre>
+
+<p>  </div>
+  <script src="http://scottksmith.com//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+  <script src="http://scottksmith.com//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+  <script src="http://scottksmith.com/js/main.js"></script>
+</body>
+</html>
+```</p>
+
+<p><code>css
+.typeahead {
+  width: 300px;
+  height: 30px;
+  font-size: 24px;
+  line-height: 30px;
+}
+</code></p>
+
+<p><code>javascript
+$(document).ready(function() {
+  var client = algoliasearch('&lt;APPLICATION ID&gt;', '&lt;SEARCH-ONLY API KEY&gt;');
+  var index = client.initIndex('&lt;INDEX NAME&gt;');
+});
+</code></p>
+
+<p>You will need to update the JavaScript file and set your own application id, search-only api key, and index name. These will be the same ones you used for the previous tutorial we did.</p>
+
+<h3>Algolia's support for Twitter typeahead.js</h3>
+
+<p>One of the many nice things about Algolia's APIs is the built in adapter for Twitter typeahead.js.</p>
+
+<p>```javascript
+/<em>
+ * Get a Typeahead.js adapter
+ * @param searchParams contains an object with query parameters (see search for details)
+ </em>/
+ttAdapter: function(params) {</p>
+
+<pre><code>var self = this;
+return function(query, cb) {
+    self.search(query, function(success, content) {
+        if (success) {
+            cb(content.hits);
+        }
+    }, params);
+};
+</code></pre>
+
+<p>}
+```</p>
+
+<p>This adapter makes it very simple to hook into typeahead.js functionality for building beautiful auto complete UI components. In essence it is building the necessary hooks to automatically initiate a search and return the results as a user types within the typeahead.js component.</p>
+
+<h3>Add typeahead.js to our application</h3>
+
+<p>In order to add typeahead.js to our application, we need to include the script. In the <code>index.html</code> file, add the following typeahead.js script tag just before the Algolia script tag.</p>
+
+<p>```html</p>
+
+<script src="https://cdn.jsdelivr.net/typeahead.js/0.10.5/typeahead.jquery.min.js"></script>
+
+
+<p>```</p>
+
+<p>Now that we have the necessary scripts, we can tie the typeahead.js functionality with our Algolia search code. Update <code>main.js</code> to look like the following.</p>
+
+<p>```javascript
+$(document).ready(function() {
+  var client = algoliasearch('<APPLICATION ID>', '<SEARCH-ONLY API KEY>');
+  var index = client.initIndex('<INDEX NAME>');</p>
+
+<p>  $('#typeahead-algolia').typeahead(null, {</p>
+
+<pre><code>source: index.ttAdapter({ "hitsPerPage": 10 }),
+displayKey: 'name'
+</code></pre>
+
+<p>  });
+});
+```</p>
+
+<p>So that is all we need in order to have nice type ahead/auto complete functionality tied to our Algolia real time search. What is happening here is as we type in the input field, the typeahead component is firing off searches using the <code>ttAdapter</code> we hooked in as the source. As results come back, the typeahead component pulls out the <code>name</code> field from each <code>hit</code> and shows that in the dropdown.</p>
+
+<h3>Make it a little prettier</h3>
+
+<p>Some final touches will be to make the results look a little nicer with some CSS. Open up <code>styles.css</code> and update it to the following.</p>
+
+<p>```css
+.typeahead {
+  width: 300px;
+  height: 30px;
+  font-size: 24px;
+  line-height: 30px;
+}</p>
+
+<p>.tt-input,
+.tt-hint {
+  width: 396px;
+  height: 30px;
+  padding: 8px 12px;
+  font-size: 24px;
+  line-height: 30px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+}</p>
+
+<p>.tt-input {
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}</p>
+
+<p>.tt-hint {
+  color: #999
+}</p>
+
+<p>.tt-dropdown-menu {
+  width: 422px;
+  margin-top: 12px;
+  padding: 8px 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 5px 10px rgba(0,0,0,.2);
+}</p>
+
+<p>.tt-suggestion {
+  padding: 3px 20px;
+  font-size: 18px;
+  line-height: 24px;
+}</p>
+
+<p>.tt-suggestion.tt-cursor {
+  color: #fff;
+  background-color: #0097cf;
+}</p>
+
+<p>.tt-suggestion p {
+  margin: 0;
+}</p>
+
+<p>.tt-suggestion em {
+  font-weight: bold;
+  font-style: normal;
+}</p>
+
+<p>.name {
+  font-weight: bold;
+}</p>
+
+<p>.attribute {
+  margin-left: 10px;
+}
+```</p>
+
+<p>Your results should look like this now if everything was done correctly.</p>
+
+<p><img src="/images/Algolia_typeahead.png" alt="Algolia Typeahead Example" /></p>
+
+<h3>Customize our typeahead.js options</h3>
+
+<p>There are three options we can control when setting up typeahead.js.</p>
+
+<ol>
+<li>highlight - If true, when suggestions are rendered, pattern matches for the current query in text nodes will be wrapped in a strong element with tt-highlight class. Defaults to false.</li>
+<li>hint - If false, the typeahead will not show a hint. Defaults to true.</li>
+<li>minLength - The minimum character length needed before suggestions start getting rendered. Defaults to 1.</li>
+</ol>
+
+
+<p>Right now we are not supplying options when creating our typeahead object. Let's change that by updating our code in <code>main.js</code> to look like this.</p>
+
+<p>```javascript
+$(document).ready(function() {
+  var client = algoliasearch('<APPLICATION ID>', '<SEARCH-ONLY API KEY>');
+  var index = client.initIndex('<INDEX NAME>');</p>
+
+<p>  $('#typeahead-algolia').typeahead({</p>
+
+<pre><code>highlight: false,
+hint: true,
+minLength: 1
+</code></pre>
+
+<p>  },
+  {</p>
+
+<pre><code>source: index.ttAdapter({ "hitsPerPage": 10 }),
+displayKey: 'name'
+</code></pre>
+
+<p>  });
+});
+```</p>
+
+<p>What we have done is passed in an object with the options explicitly set to the defaults. This will give you and idea of what you can tweak and play with. As the code stands now, the application will behave the same. Feel free to try different settings out to see how they behave.</p>
+
+<h3>Enhancing our dataset</h3>
+
+<p>The second parameter to typeahead.js is an object that is a dataset. Datasets in typeahead.js have 4 fields that can be set.</p>
+
+<ol>
+<li>source – The backing data source for suggestions. Expected to be a function with the signature (query, cb). It is expected that the function will compute the suggestion set (i.e. an array of JavaScript objects) for query and then invoke cb with said set. cb can be invoked synchronously or asynchronously. A Bloodhound suggestion engine can be used here, to learn how, see Bloodhound Integration. Required.</li>
+<li>name – The name of the dataset. This will be appended to tt-dataset- to form the class name of the containing DOM element. Must only consist of underscores, dashes, letters (a-z), and numbers. Defaults to a random number.</li>
+<li>displayKey – For a given suggestion object, determines the string representation of it. This will be used when setting the value of the input control after a suggestion is selected. Can be either a key string or a function that transforms a suggestion object into a string. Defaults to value.</li>
+<li>templates – A hash of templates to be used when rendering the dataset. Note a precompiled template is a function that takes a JavaScript object as its first argument and returns a HTML string.</li>
+</ol>
+
+
+<p>We have already used source and displayKey. We will now take advantage of templates to further enhance our application.</p>
+
+<h3>Typeahead.js templates</h3>
+
+<p>For our template, we will use <a href="http://twitter.github.io/hogan.js/">Hogan.js</a>. What we essentially need is a function that can take a JavaScript object and return an HTML string. Hogan will give us that functionality.</p>
+
+<p>First thing we need to do is include Hogan.js in our application. Open up <code>index.html</code> and add the following script tag before the Algolia script tag.</p>
+
+<p>```html</p>
+
+<script src="https://cdn.jsdelivr.net/hogan.js/3.0.2/hogan.common.js"></script>
+
+
+<p>```</p>
+
+<p>Next we will need to create our template for use by typeahead.js. Open up <code>main.js</code> and add the following code before the typeahead.js code.</p>
+
+<p>```javascript
+var template = Hogan.compile('<div class="hit">' +
+  '<div class="name">' +</p>
+
+<pre><code>'} ' +
+</code></pre>
+
+<p>  '</div>' +
+  '' +</p>
+
+<pre><code>'&lt;div class="attribute"&gt;: }&lt;/div&gt;' +
+</code></pre>
+
+<p>  '' +
+  '</div>');
+```</p>
+
+<p>This template will serve to show our results by displaying the name along with a sub list of attributes that match out search criteria.</p>
+
+<p>The final piece we need is to tell typeahead.js to use our template. Update the typeahead.js code like the following.</p>
+
+<p>```javascript
+$('#typeahead-algolia').typeahead({
+  highlight: false,
+  hint: true,
+  minLength: 1
+},
+{                              <br/>
+  source: index.ttAdapter({ "hitsPerPage": 10 }),
+  displayKey: 'name',
+  templates: {</p>
+
+<pre><code>suggestion: function(hit) {
+  hit.attributes = [];
+
+  // check each hit for highlighted results
+  for (var attribute in hit._highlightResult) {
+    if (attribute === 'name') {
+      // already shown, no need to add a second time
+      continue;
+    }
+
+    // all highlighted results with match level not equal to non should
+    // be added in order to show up in the results drop down
+    if (hit._highlightResult[attribute].matchLevel !== 'none') {
+      hit.attributes.push({ 
+        attribute: attribute, 
+        value: hit._highlightResult[attribute].value 
+      });
+    }
+  }
+
+  // render a template for each hit
+  return template.render(hit);
+}
+</code></pre>
+
+<p>  }
+});
+```</p>
+
+<p>What we have done is defined what we want to show for the suggestion in the drop down by building our template. The really cool thing going on here is that we are taking advantage of the <code>_highlightResult</code> object for each of the hits provided by Algolia. For each of the highlighted results that have a match level not equal to none, we add it to our attributes object which will end up being shown as part of our template. Here is an example of a hit with the highlighted results. You will notice that email, web, and name have highlighted results when searching for the letter 'k'.</p>
+
+<p>```javascript
+{
+  "company": "Frances Meyer Inc",
+  "address": "2505 Congress St",
+  "email": "kelli@varrato.com",
+  "web": "http://www.kellivarrato.com",
+  "name": "Kelli Varrato",
+  "objectID": "3769410",
+  "_highlightResult": {</p>
+
+<pre><code>"company": {
+  "value": "Frances Meyer Inc",
+  "matchLevel": "none",
+  "matchedWords": []
+},
+"address": {
+  "value": "2505 Congress St",
+  "matchLevel": "none",
+  "matchedWords": []
+},
+"email": {
+  "value": "&lt;em&gt;k&lt;/em&gt;elli@varrato.com",
+  "matchLevel": "full",
+  "matchedWords": ["k"]
+},
+"web": {
+  "value": "http://www.&lt;em&gt;k&lt;/em&gt;ellivarrato.com",
+  "matchLevel": "full",
+  "matchedWords": ["k"]
+},
+"name": {
+  "value": "&lt;em&gt;K&lt;/em&gt;elli Varrato",
+  "matchLevel": "full",
+  "matchedWords": ["k"]
+}
+</code></pre>
+
+<p>  }
+}
+```</p>
+
+<h3>Final result</h3>
+
+<p>If everything is working properly, this is what your results should look like.</p>
+
+<p><img src="/images/Algolia_hogan.png" alt="Algolia Advanced Example" /></p>
+
+<h3>Wrap up</h3>
+
+<p>I absolutely love what Algolia is making for real time search. The ease of development is amazing and the speed of the search is unparalleled. Look forward to more articles as I dig deeper into the guts, options, and more on this fantastic developer service.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting Started With Algolia Real Time Search]]></title>
+    <link href="http://scottksmith.com/blog/2014/10/21/getting-started-with-algolia-real-time-search/"/>
+    <updated>2014-10-21T16:09:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2014/10/21/getting-started-with-algolia-real-time-search</id>
+    <content type="html"><![CDATA[<p>Ever heard of Stripe? Stripe makes it dead simple for developers to add payment processing and management to their applications through a set of tools and APIs. Now, imagine the speed and simplicity of Stripe's payment integration for real time search. That is where <a href="https://www.algolia.com/">Algolia</a> comes in. <a href="https://www.algolia.com/">Algolia</a> does for search what Stripe does for payments.</p>
+
+<p><a href="https://www.algolia.com/">Algolia</a> is a service that provides APIs and tools for developers to facilitate and simplify the process of adding real time search to mobile and web applications.</p>
+
+<p>A few of the <a href="https://www.algolia.com/features">features</a> provided by Algolia are:</p>
+
+<ol>
+<li>Real time database search</li>
+<li>Get up and running in minutes</li>
+<li>Client side integrations</li>
+<li>Server side integrations</li>
+<li>Expert help to build the perfect configuration</li>
+</ol>
+
+
+<p>Enough spouting about how great it is, let's start using it!</p>
+
+<h3>Creating an account</h3>
+
+<p>The first thing we need to do is <a href="https://www.algolia.com/users/sign_up">create an account</a>. You will be able to sign up and try out their service using the free Hacker Plan.</p>
+
+<p><img src="/images/Algolia_signup.png" alt="Algolia Signup" /></p>
+
+<p>After you create your account, you will be asked to choose the location of your data center. This is an important step as it will determine performance and latency. As of writing this article it is not possible to change the location of your data center so you will want to choose wisely. The team has informed me this will be possible in the future along with multiple locations. The best advice now is to pick a data center closest to your servers.</p>
+
+<p><img src="/images/Algolia_datacenter.png" alt="Algolia Datacenter" /></p>
+
+<p>After you pick the best data center, in my case North America West, you will be presented with a page to create your first data index.</p>
+
+<h3>Creating your first index</h3>
+
+<p>Indexes are entities within Algolia that allow you to define the attributes you want be be searched, the rank/order of those attributes, how to display that data, and much more.</p>
+
+<p><img src="/images/Algolia_start.png" alt="Algolia Start" /></p>
+
+<p>You have three options for creating your first index.</p>
+
+<ol>
+<li>Quick start with sample data</li>
+<li>Upload your own data via the web application</li>
+<li>Use of the API clients to get started</li>
+</ol>
+
+
+<p>For this tutorial we will use the sample data option. Go ahead and pick the middle option: User Profile. You will see a loading screen as your data is being imported. Once it is done, you should see something similar to this. You are now ready to make your first search.</p>
+
+<p><img src="/images/Algolia_index.png" alt="Algolia Index" /></p>
+
+<p>Algolia provides a very nice interface here that allows you to explore and search your newly created index. In the section titled "Explore your index", you can enter search terms and see your results instantly below. Here is what it looks like when searching for the name "Kevin".</p>
+
+<p><img src="/images/Algolia_explore.png" alt="Algolia Index Explore" /></p>
+
+<p>You also have the option to view the data as raw JSON along with specifying numerous query parameters to control the search.</p>
+
+<h3>Adding real time to search to a web app</h3>
+
+<p>Let's explore now how to integrate Algolia into a web application in order to provide real time search.</p>
+
+<p>We will first create our HTML file for the web application. In order to keep this article simple to follow, I will not be placing CSS or JavaScript in separate files. Go ahead and create an <code>index.html</code> file with the following content.</p>
+
+<p>```html
+&lt;!DOCTYPE html>
+<html lang='en'>
+<head>
+  <title>Algolia | User Search</title>
+  <style></p>
+
+<pre><code>.search {
+  text-align: center;
+}
+.search input {
+  font-size: 20px;
+  width: 300px;
+}
+.results {
+  margin: auto;
+  text-align: center;
+}
+.results ul {
+  list-style-type: none;
+  padding: 0;
+}
+</code></pre>
+
+<p>  </style>
+</head>
+<body>
+  <div class="search"></p>
+
+<pre><code>&lt;h1&gt;Search users in real time&lt;/h1&gt;
+&lt;input type="text"&gt;
+</code></pre>
+
+<p>  </div>
+  <div class="results"></p>
+
+<pre><code>&lt;ul id="users"&gt;&lt;/ul&gt;
+</code></pre>
+
+<p>  </div>
+  <script src="http://scottksmith.com//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+  <script src="http://scottksmith.com//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+  <script></p>
+
+<pre><code>//TODO
+</code></pre>
+
+<p>  </script>
+</body>
+</html>
+```</p>
+
+<p>What we have here is a very simple page with an input box that will allow us to search our data indexed with Algolia. We are including jQuery to simplify the code and the latest Algolia client side script to facilitate our integration.</p>
+
+<p>The next thing we will do is add code to make queries to Algolia as a user enters search terms. Update your <code>index.html</code> file with the following code within the <code>&lt;script&gt;</code> tags by replacing the <code>//TODO</code>.</p>
+
+<p>```html</p>
+
+<script>
+$(document).ready(function() {
+  var client = algoliasearch('<APPLICATION ID>', '<SEARCH-ONLY API KEY>');
+  var index = client.initIndex('<INDEX NAME>');
+  var $input = $('input');
+  $input.keyup(function() {
+    index.search($input.val(), {
+      hitsPerPage: 10,
+      facets: '*'
+    }, searchCallback);
+  }).focus();
+});
+
+function searchCallback(err, content) {
+  if (err) {
+    console.error(err);
+    return;
+  }
+
+  console.log(content);
+};
+</script>
+
+
+<p>```</p>
+
+<p>There are 3 items in the code we just added that need to be configured for your account. You can find your APPLICATION ID and SEARCH-ONLY API KEY on the <a href="https://www.algolia.com/licensing">Credentials</a> page of your account. Once you find them, update <code>&lt;APPLICATION ID&gt;</code> and <code>&lt;SEARCH-ONLY API KEY&gt;</code> with the values from your account. The final value needing to be updated is INDEX NAME. You can find the name of your index on the <a href="https://www.algolia.com/explorer">Indices</a> page. Mine is called <code>test_drive_contacts</code>. Once you find yours, update <code>&lt;INDEX NAME&gt;</code> with it.</p>
+
+<p>There are a few things going on here in the code we just added. First, we are setting up a function to handle our callback from performing an Agolia search. We will return to this function in a bit and add functionality to it. For now, we will just log the JSON response to the console. Next, once the document is ready, we create an Algolia Search object with our API credentials. We then initialize our index with our Algolia Search object using the index name from our account.</p>
+
+<p>Finally, we hook into the <code>keyup</code> event on our input field in order to fire off a search on our Algolia Index object. When this call completes, it will call the <code>searchCallback</code> function we defined.</p>
+
+<p>With this bit of code we have successfully hooked into Algolia's real time search. If you test this out in your web browser and open up the developer tools, you will see response data coming back in your console as you type characters in the search box.</p>
+
+<h3>Show our search results</h3>
+
+<p>Now that we have the core code in place to talk to and query our data from Agolia, we need to show that data to the user. To do this we will update the <code>searchCallback</code> function to show the resulting names. Update the <code>searchCallback</code> function to the following.</p>
+
+<p>```javascript
+function searchCallback(err, content) {
+  if (err) {</p>
+
+<pre><code>console.error(err);
+return;
+</code></pre>
+
+<p>  }</p>
+
+<p>  var $users = $('#users');
+  $users.empty();</p>
+
+<p>  for (var i = 0; i &lt; content.hits.length; i++) {</p>
+
+<pre><code>$users.append('&lt;li&gt;' + content.hits[i].name + '&lt;/li&gt;');
+</code></pre>
+
+<p>  }
+};
+```</p>
+
+<p>This is simple web code not specific to Algolia. We are using jQuery to add the names returned in the search to an unordered list. First we clear out the list and then add the name of the user from the result. Once you have this done, try it out. You should see very fast results being returned and shown.</p>
+
+<p><img src="/images/Algolia_search.png" alt="Algolia Search" /></p>
+
+<h3>Where to go from here</h3>
+
+<p>We have only scratched the surface of what is available from Algolia's real time search. Some of the many things we have not touched on are Sorting, Filtering, Faceting, and Geo-Search. To learn more, check out these <a href="https://www.algolia.com/doc/tutorials">tutorials</a> and <a href="https://www.algolia.com/doc/javascript">explore their documentation</a>.</p>
+
+<p>Also, in case you run into any issue with this tutorial, here is the final code.</p>
+
+<p>```html
+&lt;!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Algolia | User Search</title>
+  <style></p>
+
+<pre><code>.search {
+  text-align: center;
+}
+.search input {
+  font-size: 20px;
+  width: 300px;
+}
+.results {
+  margin: auto;
+  text-align: center;
+}
+.results ul {
+  list-style-type: none;
+  padding: 0;
+}
+</code></pre>
+
+<p>  </style>
+</head>
+<body>
+  <div class="search"></p>
+
+<pre><code>&lt;h1&gt;Search users in real time&lt;/h1&gt;
+&lt;input type="text"&gt;
+</code></pre>
+
+<p>  </div>
+  <div class="results"></p>
+
+<pre><code>&lt;ul id="users"&gt;&lt;/ul&gt;
+</code></pre>
+
+<p>  </div></p>
+
+<p>  <script src="http://scottksmith.com//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+  <script src="http://scottksmith.com//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+  <script></p>
+
+<pre><code>var $input = $('input');
+var $users = $('#users');
+
+
+$(document).ready(function() {
+  var client = algoliasearch('&lt;APPLICATION ID&gt;', '&lt;SEARCH-ONLY API KEY&gt;');
+  var index = client.initIndex('&lt;INDEX NAME&gt;');
+
+  $input.keyup(function() {
+    index.search($input.val(), {
+      hitsPerPage: 10,
+      facets: '*'
+    }, searchCallback);
+  }).focus();
+});
+
+function searchCallback(err, content) {
+  if (err) {
+    console.error(err);
+    return;
+  }
+
+  $users.empty();
+
+  for (var i = 0; i &lt; content.hits.length; i++) {
+    $users.append('&lt;li&gt;' + content.hits[i].name + '&lt;/li&gt;');
+  }
+};
+</code></pre>
+
+<p>  </script>
+</body>
+</html>
+```</p>
+]]></content>
+  </entry>
+  
+</feed>

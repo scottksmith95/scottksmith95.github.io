@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[CSS | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/css/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Zen Coding]]></title>
+    <link href="http://scottksmith.com/blog/2012/05/31/zen-coding/"/>
+    <updated>2012-05-31T14:38:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/05/31/zen-coding</id>
+    <content type="html"><![CDATA[<p>Never write HTML again!</p>
+
+<p>Ok, so you might still need to write HTML, but Zen Coding provides an amazingly simplistic syntax for generating HTML. Take the following HTML for example:
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="ni">&amp;lt;</span>!DOCTYPE HTML&gt;
+</span><span class='line'><span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">&quot;en-US&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'><span class="nt">&lt;head&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">&quot;UTF-8&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;title&gt;&lt;/title&gt;</span>
+</span><span class='line'><span class="nt">&lt;/head&gt;</span>
+</span><span class='line'><span class="nt">&lt;body&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;container&quot;</span><span class="nt">&gt;&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;pre&gt;&lt;code&gt;</span><span class="ni">&amp;lt;</span>div id=&quot;nav&quot;<span class="ni">&amp;gt;</span>
+</span><span class='line'>  <span class="ni">&amp;lt;</span>ul<span class="ni">&amp;gt;</span>
+</span><span class='line'>    <span class="ni">&amp;lt;</span>li<span class="ni">&amp;gt;&amp;lt;</span>/li<span class="ni">&amp;gt;</span>
+</span><span class='line'>    <span class="ni">&amp;lt;</span>li<span class="ni">&amp;gt;&amp;lt;</span>/li<span class="ni">&amp;gt;</span>
+</span><span class='line'>    <span class="ni">&amp;lt;</span>li<span class="ni">&amp;gt;&amp;lt;</span>/li<span class="ni">&amp;gt;</span>
+</span><span class='line'>    <span class="ni">&amp;lt;</span>li<span class="ni">&amp;gt;&amp;lt;</span>/li<span class="ni">&amp;gt;</span>
+</span><span class='line'>    <span class="ni">&amp;lt;</span>li<span class="ni">&amp;gt;&amp;lt;</span>/li<span class="ni">&amp;gt;</span>
+</span><span class='line'>  <span class="ni">&amp;lt;</span>/ul<span class="ni">&amp;gt;</span>
+</span><span class='line'><span class="ni">&amp;lt;</span>/div<span class="ni">&amp;gt;</span>
+</span><span class='line'><span class="nt">&lt;/code&gt;&lt;/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;p&gt;</span>  <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;/body&gt;</span>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+It is simple and straightforward but why type it out by hand if you don't have to. With Zen Coding you don't! The followng will generate the HTML shown above:
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>html:5&gt;div#container&gt;div#nav&gt;ul&gt;li*5
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+The Zen Coding concept is beautifully simple: You declare a series of nested HTML or XML elements using an intuitive and expressive inline syntax, and the plugin generates the markup for you.</p>
+
+<p>There are addons to many IDEs, tools, and editors for Zen Coding including Visual Studio, Sublime Text 2, Coda, ...</p>
+
+<p>Learn more here: <a href="https://github.com/sergeche/zen-coding">https://github.com/sergeche/zen-coding</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Tinkerbin]]></title>
+    <link href="http://scottksmith.com/blog/2012/05/30/tinkerbin/"/>
+    <updated>2012-05-30T14:34:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/05/30/tinkerbin</id>
+    <content type="html"><![CDATA[<p>Tinkerbin lets you play around with HTML, JavaScript and CSS without creating files or uploading to servers.</p>
+
+
+<p>It also supports CoffeeScript, Sass (with Compass), Less, HAML, and more.</p>
+
+
+<p>Try it here:</p>
+
+
+<p><a href="http://tinkerbin.com/">http://tinkerbin.com/</a></p>
+
+]]></content>
+  </entry>
+  
+</feed>

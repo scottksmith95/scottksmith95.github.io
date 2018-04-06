@@ -1,0 +1,853 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Twitatron: Building a production web app with Node - Scott Smith</title>
+  <meta name="author" content="Scott Smith">
+
+  
+  <meta name="description" content="In this multi part series you will learn how to create a production ready Node web application with authorization, user accounts, data storage, background workers, security, email, APIs, RSS, and &hellip;">
+  <meta name="keywords" content="Node.js, JavaScript, Express, Mongoose, MongoDB, Passport, OAuth, OAuth2, Tutorials">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://scottksmith.com/blog/2014/10/05/twitatron-building-a-production-web-app-with-node">
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@scottksmith95" />
+  <meta name="twitter:title" content="Twitatron: Building a production web app with Node - Scott Smith" />
+  <meta name="twitter:description" content="In this multi part series you will learn how to create a production ready Node web application with authorization, user accounts, data storage, background workers, security, email, APIs, RSS, and &hellip;" />
+  <meta name="twitter:url" content="http://scottksmith.com/blog/2014/10/05/twitatron-building-a-production-web-app-with-node" />
+
+  <meta property="og:title" content="Twitatron: Building a production web app with Node - Scott Smith"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:description" content="In this multi part series you will learn how to create a production ready Node web application with authorization, user accounts, data storage, background workers, security, email, APIs, RSS, and &hellip;"/>
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+  <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196">
+  <link rel="icon" type="image/png" href="/favicon-160x160.png" sizes="160x160">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <style>
+  #DegreedButton.degreed-28-full,.degreed-28-full {
+    background-color: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+    background-image: url(data:image/png;base64,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) !important;
+    height: 28px !important;
+    width: 162px !important;
+  }
+  </style>
+  <link href="/atom.xml" rel="alternate" title="Scott Smith" type="application/atom+xml">
+
+  <script src="//load.sumome.com/" data-sumo-site-id="0d857e605c25378eb99ef0880f3d471e6d4792fd62b3c1e378fa89057293706c" async="async"></script>
+</head>
+
+<body   >
+  <header role="banner"><div class="logo">
+  <img src="/images/logo.png" alt="Site Logo">
+</div>
+<hgroup>
+  <h1><a href="/">Scott Smith</a></h1>
+  <h2>
+    <a href="/">Blog</a>
+    <a href="/blog/categories/tutorials">Tutorials</a>
+    <a href="/projects">Projects</a>
+    <a href="/speaking">Speaking</a>
+    <a href="/atom.xml" class="rss">RSS</a>
+  </h2>
+</hgroup>
+</header>
+  <div id="main">
+    <div id="content">
+      <div style="padding-top: 0;">
+<article class="hentry" role="article">
+  
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title">Twitatron: Building a Production Web App With Node</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-10-05T09:30:00-07:00" pubdate data-updated="true">Oct 5<span>th</span>, 2014</time>
+      </p>
+    
+    
+      <button style="margin-top: 20px;" onclick="var e=document.createElement('script');e.setAttribute('charset','UTF-8');e.setAttribute('src','https://az287915.vo.msecnd.net/scripts/degreed/media/bookmarklet.js?id=1&v=' + Math.random()*99999999);document.getElementsByTagName('body')[0].appendChild(e)" title="+ Degreed" id="DegreedButton" class="degreed-28-full">+ Degreed</button>
+    
+  </header>
+
+
+<div class="entry-content">
+  <p>Welcome to part 1 of the Twitaron series</p>
+
+<ol>
+<li><a href="/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/">Getting started</a></li>
+<li><a href="/blog/2015/03/23/twitatron-building-a-production-web-app-with-node-views-and-controllers/">Views &amp; Controllers</a></li>
+<li><a href="/blog/2015/05/26/twitatron-building-a-production-web-app-with-node-user-accounts/">User Accounts</a></li>
+<li>Under development&#8230;</li>
+</ol>
+
+
+<p>While writing the <a href="/blog/2014/05/02/building-restful-apis-with-node/">Beer Locker tutorials</a> many readers commented on how helpful it was to have a full walk through on creating RESTful APIs. I am going to continue this trend and start a multi part tutorial series on how to create a production ready Node web application.</p>
+
+<p>Some of you may know about my latest project <a href="https://favatron.com">Favatron</a>. It is a Node web application that integrates with Twitter to provide an automated bookmark and read later service for Twitter favorites. Using <a href="https://favatron.com">Favatron</a> as a guide, I will take you through the entire process of creating a fully functional production ready Node web application. Some of the many parts we will touch on include authorization, user accounts, data storage, background workers, security, email, APIs, RSS, third party service integrations, and much more.</p>
+
+<p>I am proud to introduce Twitatron, the web application we will be making. Twitatron will automatically monitor your Twitter account for mentions. When it finds those mentions, it will process them, store them, show them in the UI, expose them via an API endpoint and RSS feed, send an email digest, and share weekly stats with integrated social networks.</p>
+
+<p>Enough talking, let&#8217;s get started!</p>
+
+<h3>Prerequisites</h3>
+
+<p>Before starting the tutorial, you will need to make sure and have Node.js and MongoDB installed.</p>
+
+<ol>
+<li>Install the latest version of <a href="http://nodejs.org/download/">Node</a>. This will also automatically install <a href="https://www.npmjs.org/">npm</a> which will be used to manage packages.</li>
+<li>Install and run <a href="http://docs.mongodb.org/manual/installation/">MongoDB</a>. If you would prefer to not install MongoDB locally, you can always sign up for a <a href="https://mongolab.com/">free MongoLab account</a> and use it instead.</li>
+</ol>
+
+
+<h3>Initialize our Node application</h3>
+
+<p>First thing we need to do is create a directory for our application. I went ahead and named mine <code>twitatron</code>. Feel free to name yours whatever you want.</p>
+
+<p>In your console, navigate into your newly create folder and run the following command:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>npm init
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You will be asked a few questions in order to have npm automatically create a <code>package.json</code> file for you. The only one that matters at this time is the entry point. You will want to specify <code>server.js</code>. For reference, here is what mine looked like.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>npm init
+</span><span class='line'>This utility will walk you through creating a package.json file.
+</span><span class='line'>It only covers the most common items, and tries to guess sane defaults.
+</span><span class='line'>
+</span><span class='line'>See <span class="sb">`</span>npm help json<span class="sb">`</span> for definitive documentation on these fields
+</span><span class='line'>and exactly what they do.
+</span><span class='line'>
+</span><span class='line'>Use <span class="sb">`</span>npm install &lt;pkg&gt; --save<span class="sb">`</span> afterwards to install a package and
+</span><span class='line'>save it as a dependency in the package.json file.
+</span><span class='line'>
+</span><span class='line'>Press ^C at any <span class="nb">time </span>to quit.
+</span><span class='line'>name: <span class="o">(</span>twitatron<span class="o">)</span>
+</span><span class='line'>version: <span class="o">(</span>1.0.0<span class="o">)</span>
+</span><span class='line'>description: Twitter mention tracker
+</span><span class='line'>entry point: <span class="o">(</span>index.js<span class="o">)</span> server.js
+</span><span class='line'>test command:
+</span><span class='line'>git repository:
+</span><span class='line'>keywords:
+</span><span class='line'>author: Scott Smith
+</span><span class='line'>license: <span class="o">(</span>ISC<span class="o">)</span>
+</span><span class='line'>About to write to /Users/scott/Projects/twitatron/package.json:
+</span><span class='line'>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="s2">&quot;name&quot;</span>: <span class="s2">&quot;twitatron&quot;</span>,
+</span><span class='line'>  <span class="s2">&quot;version&quot;</span>: <span class="s2">&quot;1.0.0&quot;</span>,
+</span><span class='line'>  <span class="s2">&quot;description&quot;</span>: <span class="s2">&quot;Twitter mention tracker&quot;</span>,
+</span><span class='line'>  <span class="s2">&quot;main&quot;</span>: <span class="s2">&quot;server.js&quot;</span>,
+</span><span class='line'>  <span class="s2">&quot;scripts&quot;</span>: <span class="o">{</span>
+</span><span class='line'>    <span class="s2">&quot;test&quot;</span>: <span class="s2">&quot;echo \&quot;Error: no test specified\&quot; &amp;&amp; exit 1&quot;</span>
+</span><span class='line'>  <span class="o">}</span>,
+</span><span class='line'>  <span class="s2">&quot;author&quot;</span>: <span class="s2">&quot;Scott Smith&quot;</span>,
+</span><span class='line'>  <span class="s2">&quot;license&quot;</span>: <span class="s2">&quot;ISC&quot;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>Is this ok? <span class="o">(</span>yes<span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Directory structure</h3>
+
+<p>As we progress through this tutorial series, we will be adding many directories to our application. Here is what the final structure will be.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>twitatron/
+</span><span class='line'>  config/         // hold our configuration values
+</span><span class='line'>  controllers/    // hold our controllers
+</span><span class='line'>  models/         // holds our models
+</span><span class='line'>  node_modules/   // npm packages (auto created by npm)
+</span><span class='line'>  public/         // hold our static html, images, css, javascript, etc
+</span><span class='line'>  views/          // hold our jade views
+</span><span class='line'>  package.json    // defines our node app and dependencies
+</span><span class='line'>  server.js       // main application logic</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Don&#8217;t worry too much now about creating all those directories. We will be creating them as we progress through the tutorial.</p>
+
+<h3>Simple HTTP server</h3>
+
+<p>Now it is time to start building our application. Within the application directory, create a file named <code>server.js</code>. This is the main entry point for our application. It is what will be run by Node. Let&#8217;s start our application as a super simple HTTP listener that just returns back &#8216;Twitatron&#8217; for all HTTP requests.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">http</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;http&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">http</span><span class="p">.</span><span class="nx">createServer</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s1">&#39;Twitatron!&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="p">}).</span><span class="nx">listen</span><span class="p">(</span><span class="mi">3000</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What we are doing here is using the built in Node <code>http</code> module to start an HTTP server on port 3000. We then respond back to all requests with with the string &#8216;Twitatron!&#8217;. Start your application with the command <code>node server.js</code> and browse to it at <a href="http://localhost:3000">http://localhost:3000</a>.</p>
+
+<h3>Replace HTTP with Express</h3>
+
+<p>Our basic application is cool, but using the <code>http</code> module will get very difficult as the complexity increases. That is where <a href="http://expressjs.com/">Express</a> comes in! Express is a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.</p>
+
+<p>We will use <code>npm</code> to install the Express module. Execute the following command and make sure to include the <code>--save</code> flag. This flag will add Express to the list of Node dependencies for your application. This is useful because in most cases you won&#8217;t add the <code>node_modules</code> directory to source control which means for other people that use your application, they will need to know which packages to install. This is done by executing the <code>npm install</code> command which will download and install any packages not in the local <code>node_modules</code> directory.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>npm install express --save
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You should now have Express added to the <code>node_modules</code> directory and the <code>package.json</code> file should have it added to the dependencies object as well. Here is what my <code>package.json</code> file now has.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="s2">&quot;name&quot;</span><span class="o">:</span> <span class="s2">&quot;twitatron&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="s2">&quot;version&quot;</span><span class="o">:</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="s2">&quot;description&quot;</span><span class="o">:</span> <span class="s2">&quot;Twitter mention tracker&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="s2">&quot;main&quot;</span><span class="o">:</span> <span class="s2">&quot;server.js&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="s2">&quot;scripts&quot;</span><span class="o">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="s2">&quot;test&quot;</span><span class="o">:</span> <span class="s2">&quot;echo \&quot;Error: no test specified\&quot; &amp;&amp; exit 1&quot;</span>
+</span><span class='line'>  <span class="p">},</span>
+</span><span class='line'>  <span class="s2">&quot;author&quot;</span><span class="o">:</span> <span class="s2">&quot;Scott Smith&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="s2">&quot;license&quot;</span><span class="o">:</span> <span class="s2">&quot;ISC&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="s2">&quot;dependencies&quot;</span><span class="o">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="s2">&quot;express&quot;</span><span class="o">:</span> <span class="s2">&quot;^4.9.5&quot;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now that we have Express installed, we can update our server code to use it. Replace your <code>server.js</code> file with the following code.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Load required packages</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Create our Express application</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Create our Express router</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">router</span> <span class="o">=</span> <span class="nx">express</span><span class="p">.</span><span class="nx">Router</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Initial dummy route for testing</span>
+</span><span class='line'><span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s1">&#39;Twitatron&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Register all our routes</span>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">router</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Start the server</span>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">3000</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Let&#8217;s explore what we added to our application in detail.</p>
+
+<p><strong>Require</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Get the packages we need</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This block of code will load the Express package and allow us to use it within our application. We will be requiring more packages here as we add more complexity to our application.</p>
+
+<p><strong>Express Application</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Create our Express application</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The Express Application is the main component for your web application. Among other things, it is used to define routes, start listening for http connections, and perform routing for requests.</p>
+
+<p><strong>Express Router</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Create our Express router</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">router</span> <span class="o">=</span> <span class="nx">express</span><span class="p">.</span><span class="nx">Router</span><span class="p">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>A router is an isolated instance of middleware and routes. Routers can be thought of as &#8220;mini&#8221; applications only capable of performing middleware and routing. Every express application has a builtin app router. Routers behave like middleware themselves and can be &#8220;.use()&#8217;d&#8221; by the app or in other routers.</p>
+
+<p><strong>Create Route</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Initial dummy route for testing</span>
+</span><span class='line'><span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s1">&#39;Twitatron&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Here we are creating a route for &#8216;/&#8217; to return &#8216;Twitatron&#8217;. All HTTP requests made to &#8216;/&#8217; will execute this portion of code and return back a string.</p>
+
+<p><strong>Register Routes and Start Server</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Register all our routes</span>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">router</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Start the server</span>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">3000</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally we register our previously defined routes with the application.</p>
+
+<p>The last step is to call <code>listen</code> on port 3000 to start listening for incoming connections and requests.</p>
+
+<p><strong>Test it out</strong></p>
+
+<p>If you did everything correctly, you should be able to start your server and make your first request. In the root folder of your application run:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>node server.js
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Open your browser and browse to <a href="http://localhost:3000/">http://localhost:3000/</a>. You should get back a response with the word &#8216;Twitatron&#8217;.</p>
+
+<h3>Nodemon</h3>
+
+<p>Now is a good time to segue into some tooling that will make things much easier when developing Node applications. <a href="http://nodemon.io/">Nodemon</a> is a utility that will monitor for any changes in your source and automatically restart your server.</p>
+
+<p>You can install it using npm using the following command. I like to install it globally so I can use it for all projects, but you can remove the <code>-g</code> to install it locally instead.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>npm install -g nodemon
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now instead of using <code>node server.js</code> to run your application, you can use <code>nodemon server.js</code>. It will watch for any changes in your application and automatically restart your server for you.</p>
+
+<h3>Node Inspector</h3>
+
+<p><a href="https://github.com/node-inspector/node-inspector">Node Inspector</a> is a debugger interface for Node.js applications that uses the Blink Developer Tools. The really cool thing is that it works almost exactly as the Chrome Developer Tools.</p>
+
+<p>Some of the things you can do with Node Inspector are:</p>
+
+<ul>
+<li>Navigate in your source files</li>
+<li>Set breakpoints (and specify trigger conditions)</li>
+<li>Step over, step in, step out, resume (continue)</li>
+<li>Inspect scopes, variables, object properties</li>
+<li>Hover your mouse over an expression in your source to display its value in a tooltip</li>
+<li>Edit variables and object properties</li>
+<li>Continue to location</li>
+<li>Break on exceptions</li>
+<li>Disable/enable all breakpoints</li>
+</ul>
+
+
+<p>Just like Nodemon, you can install it locally or globally. Use the following command to install it globablly:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>npm install -g node-inspector
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Once it is installed, you can run it using the following command. This will start the debugger and open your browser.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>node-debug server.js
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Serving static content</h3>
+
+<p>The final piece of this part will be adding the ability to serve static content such as HTML, images, CSS, JavaScript, etc. To do this we will need to use the <a href="http://expressjs.com/4x/api.html#express.static">Express static middleware</a>.</p>
+
+<p>Update <code>server.js</code> with the following code.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="p">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Create our Express application</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Add static middleware</span>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="kr">static</span><span class="p">(</span><span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/public&#39;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Create our Express router</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">router</span> <span class="o">=</span> <span class="nx">express</span><span class="p">.</span><span class="nx">Router</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What we have done here is register the static middleware with our Express application and told it our static content should be served from the <code>public</code> directory. If you didn&#8217;t already create the <code>public</code> directory, please do so now. You will also need to create <code>js</code>, <code>img</code>, and <code>css</code> as subdirectories.</p>
+
+<p>Save <a href="/images/birdatron-small.jpg">this image</a> (right click and save as) to your newly created <code>public/img</code> directory and name it <code>birdatron-small.jpg</code>. Image is Creative Commons licensed by <a href="https://www.flickr.com/photos/keoni101/">Keoni Cabral</a> and can be found <a href="https://www.flickr.com/photos/keoni101/5378177339/in/photolist-9cfyKv-5yyZvf-eXRPno-7fcWcC-3FKdg-687fi2-nn75ou-7BkmKT-9uC7Bj-9dGgEf-7oRoDs-9EUbXH-8MrU4Z-dRuEno-oNu6bQ-7CUsNN-8xx539-877bg5-73mvEr-24CgB-85T5T8-7uv3Nh-5yTumQ-9uz7Wa-8xaJqB-8D7z4g-eNC3WB-4ukiRF-9VfCzc-5jywWv-6qZMc5-8NZqBB-8z1APg-cYGmY1-dYRS9n-dYRSe6-6N6cEx-eNC3Nt-eb9p6k-dBomcA-9q28rg-4F9jd3-4BssTb-6mMBE3-8UMRPQ-LWeDw-7wVrhV-eb9iKn-6Pdep-9DEwyi">here</a>.</p>
+
+<p>In the <code>public</code> directory, create a file named <code>index.html</code> and add the following markup to it.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="cp">&lt;!doctype html&gt;</span>
+</span><span class='line'><span class="nt">&lt;html&gt;</span>
+</span><span class='line'><span class="nt">&lt;head&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;title&gt;</span>Twitatron<span class="nt">&lt;/title&gt;</span>
+</span><span class='line'><span class="nt">&lt;/head&gt;</span>
+</span><span class='line'><span class="nt">&lt;body&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;h1&gt;</span>Twitatron has been born!<span class="nt">&lt;/h1&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">&quot;/img/birdatron-small.jpg&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'><span class="nt">&lt;/body&gt;</span>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Open up your web browser and browse to <a href="http://localhost:3000/">http://localhost:3000/</a>. If everything was done correctly, you should see the following. You will notice now that our route that returned back &#8216;Twitatron&#8217; is no longer getting executed. This is because the static middleware is automatically looking for <code>index.html</code> in the root of the <code>public</code> directory and returning it. If that were not there or named anything but <code>index.html</code>, the original route would execute.</p>
+
+<p><img src="/images/twitatron1.png" alt="Static page screenshot" /></p>
+
+<h3>Compress our static content</h3>
+
+<p>If you were to open up your DevTools and request <a href="http://localhost:3000/">http://localhost:3000/</a> you would notice the response is not being compressed with gzip. This is very inefficient yet surprisingly easy to fix. First thing we need to do is install the <a href="https://www.npmjs.org/package/compression">compression</a> npm package.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='tcsh'><span class='line'>npm install compression --save
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Once installed, we can update our <code>server.js</code> to use this package.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="c1">// Load required packages</span>
+</span><span class='line'><span class="p">...</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">compression</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;compression&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Create our Express application</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Add content compression middleware</span>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">compression</span><span class="p">());</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you were to make a request again, you wouldn&#8217;t see the response headers indicating the content has been compressed with gzip. The reason for this is that the <code>compression</code> package defaults the bytes threshold to 1024. Our <code>index.html</code> file is below that threshold so it isn&#8217;t compressed. If you want to force compression on all responses regardless of size, you can update the code like this.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">compression</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">threshold</span><span class="o">:</span> <span class="kc">false</span>
+</span><span class='line'><span class="p">}));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You can also control it by the number of bytes for the threshold like this.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">compression</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">threshold</span><span class="o">:</span> <span class="mi">256</span>
+</span><span class='line'><span class="p">}));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I would suggest leaving the defaults as is because there tends to be no gain when making the threshold too small. There are cases where your response could actually be bigger after compression.</p>
+
+<h3>Cache our static content</h3>
+
+<p>The last part of this tutorial will be caching our static content client side. This helps reduce unnecessary requests to your server and makes page load times much faster for client browsers. To do this, we will use the Express cache middleware.</p>
+
+<p>If you were to examine the response headers now, you would see the following.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='http'><span class='line'><span class="err">Cache-Control: public, max-age=0</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This is telling the client browser to not cache the content. In order to change this, we need to update our Express static middleware in <code>server.js</code>.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="p">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Add static middleware</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">oneDay</span> <span class="o">=</span> <span class="mi">86400000</span><span class="p">;</span>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="kr">static</span><span class="p">(</span><span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/public&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">maxAge</span><span class="o">:</span> <span class="nx">oneDay</span> <span class="p">}));</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What we have done here is tell our Express application to set the <code>Cache-Control</code> header to one day using milliseconds. Here is what the response headers look like after this change.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='http'><span class='line'><span class="err">Cache-Control: public, max-age=86400</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Wrap up</h3>
+
+<p>We now have the tools to create a simple, yet fully functional web application capable of serving static content that can be compressed and cached client side. This is just the beginning of a thorough and detailed tutorial series on building production ready Node web applications.</p>
+
+<p>If you found this article or others useful be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+
+<p>Source code for this part can be found <a href="https://github.com/scottksmith95/twitatron/tree/master/01">here on GitHub</a>.</p>
+
+</div>
+
+
+  <button onclick="var e=document.createElement('script');e.setAttribute('charset','UTF-8');e.setAttribute('src','https://az287915.vo.msecnd.net/scripts/degreed/media/bookmarklet.js?id=1&v=' + Math.random()*99999999);document.getElementsByTagName('body')[0].appendChild(e)
+  " title="+ Degreed" id="DegreedButton" class="degreed-28-full">+ Degreed</button>
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Scott Smith</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-10-05T09:30:00-07:00" pubdate data-updated="true">Oct 5<span>th</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/javascript/'>JavaScript</a>, <a class='category' href='/blog/categories/node-dot-js/'>Node.js</a>, <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>, <a class='category' href='/blog/categories/twitatron/'>Twitatron</a>
+  
+</span>
+
+
+    </p>
+    
+      <!-- <div class="sharing">
+  <h4>Share On:</h4>
+  <a href="https://twitter.com/intent/tweet?text=Twitatron: Building a production web app with Node&url=http://scottksmith.com/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/&via=scottksmith95" target="_blank">
+    <img src="/images/icons/twitter/twitter-128.png" alt="Share on Twitter" class="twitter">
+  </a>
+  <a href="https://plus.google.com/share?url=http://scottksmith.com/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/" target="_blank">
+    <img src="/images/icons/googleplus/googleplus-128.png" alt="Share on Google+" class="googleplus">
+  </a>
+  <a href="https://www.facebook.com/sharer/sharer.php?u=http://scottksmith.com/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/" target="_blank">
+    <img src="/images/icons/facebook/facebook-128.png" alt="Share on Facebook" class="facebook">
+  </a>
+  <a href="https://www.linkedin.com/shareArticle?mini=true&title=Twitatron: Building a production web app with Node&url=http://scottksmith.com/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/" target="_blank">
+    <img src="/images/icons/linkedin/linkedin-128.png" alt="Share on LinkedIn" class="linkedin">
+  </a>
+  <a href="mailto:?body=http://scottksmith.com/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/&subject=Twitatron: Building a production web app with Node">
+    <img src="/images/icons/email/email-128.png" alt="Share via Email" class="email">
+  </a>
+</div> -->
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/09/29/3-essential-sublime-text-plugins-for-node-and-javascript-developers/" title="Previous Post: 3 Essential Sublime Text Plugins for Node &amp; JavaScript developers">&laquo; 3 Essential Sublime Text Plugins for Node &amp; JavaScript developers</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/10/21/getting-started-with-algolia-real-time-search/" title="Next Post: Getting Started With Algolia Real Time Search">Getting Started With Algolia Real Time Search &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section id="links">
+  <div>
+    <a href="https://twitter.com/scottksmith95" target="_blank">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter" alt="Scott Smith on Twitter">
+    </a>
+  </div>
+  <div>
+    <a href="https://github.com/scottksmith95" target="_blank">
+      <img src="/images/icons/github/github-128.png" class="github" alt="Scott Smith on GitHub">
+    </a>
+  </div>
+  <div>
+    <a href="https://www.linkedin.com/profile/view?id=15073485" target="_blank">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin" alt="Scott Smith on LinkedIn">
+    </a>
+  </div>
+  <div>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email" alt="Scott Smith's Email">
+    </a>
+  </div>
+  <div>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss" "Site RSS Feed">
+    </a>
+  </div>
+</section>
+
+<section id="about">
+  <p>Software developer, learner, writer, & speaker.</p>
+  <p>Currently jailbreaking the degree at Degreed and promoting lifelong learning.</p>
+  <p>Past projects incude coderbits which was sold to Appirio in 2014 and Favatron.</p>
+</section><section id="newsletter">
+  <img src="/images/icons/email/email-128.png">
+  <h2>Get My Latest Articles</h2>
+  <form action="//favatron.us5.list-manage.com/subscribe/post?u=e8909f2779b99d9865361d28e&amp;id=1d7e590a16" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Email address" required>
+    <div style="position: absolute; left: -5000px;">
+      <input type="text" name="b_e8909f2779b99d9865361d28e_1d7e590a16" tabindex="-1" value="">
+    </div>
+    <div class="clear">
+      <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+    </div>
+  </form>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><span style="text-align: center">
+  Copyright &copy; 2017 <a rel="author" href="https://plus.google.com/107452035819962532888?rel=author">Scott Smith</a>
+</span>
+
+<div class="icons">
+  <span>
+    <a href="https://twitter.com/scottksmith95">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter">
+    </a>
+  </span>
+  <span>
+    <a href="https://github.com/scottksmith95">
+      <img src="/images/icons/github/github-128.png" class="github">
+    </a>
+  </span>
+  <span>
+    <a href="https://www.linkedin.com/profile/view?id=15073485">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin">
+    </a>
+  </span>
+  <span>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email">
+    </a>
+  </span>
+  <span>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss">
+    </a>
+  </span>
+</div></footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'scottksmithblog';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://scottksmith.com/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/';
+        var disqus_url = 'http://scottksmith.com/blog/2014/10/05/twitatron-building-a-production-web-app-with-node/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+<script src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-40783302-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+</body>
+</html>

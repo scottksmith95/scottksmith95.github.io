@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Sublime Text | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/sublime-text/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[3 Essential Sublime Text Plugins for Node &amp; JavaScript developers]]></title>
+    <link href="http://scottksmith.com/blog/2014/09/29/3-essential-sublime-text-plugins-for-node-and-javascript-developers/"/>
+    <updated>2014-09-29T14:20:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2014/09/29/3-essential-sublime-text-plugins-for-node-and-javascript-developers</id>
+    <content type="html"><![CDATA[<p>Check out these 3 great and essential Sublime Text plugins every JavaScript and Node developer should know about and use.</p>
+
+<h3>JsFormat</h3>
+
+<p><a href="https://github.com/jdc0589/JsFormat">https://github.com/jdc0589/JsFormat</a></p>
+
+<p>JsFormat is a JavaScript formatting plugin. Behind the scenes, it uses the command line formatter from <a href="http://jsbeautifier.org/">jsbeautifier.org</a> to format full or portions of JavaScript and JSON files.</p>
+
+<p><strong>Features</strong></p>
+
+<ol>
+<li>JavaScript formatting</li>
+<li>JSON formatting</li>
+<li>Full file formatting</li>
+<li>Selected text formatting</li>
+<li>Customizable settings for formatting options</li>
+<li>Customize per project with .jsbeautifyrc settings file</li>
+</ol>
+
+
+<p><strong>Usage</strong></p>
+
+<p>Either <code>cmd+alt+f</code> on OS X or <code>ctrl+alt+f</code> on Linux/Windows</p>
+
+<h3>JSHint</h3>
+
+<p><a href="https://github.com/uipoet/sublime-jshint">https://github.com/uipoet/sublime-jshint</a></p>
+
+<p>"JSHint is a community-driven tool to detect errors and potential problems in JavaScript code and to enforce your team's coding conventions. It is very flexible so you can easily adjust it to your particular coding guidelines and the environment you expect your code to execute in. JSHint is open source and will always stay this way." - <a href="http://www.jshint.com/about/">JSHint</a></p>
+
+<p><img src="/images/jshint.png" alt="Example of JSHint" /></p>
+
+<p><strong>Usage</strong></p>
+
+<p><code>ctrl+j</code> on OS X or <code>alt+j</code> on Linux/Windows</p>
+
+<p>If you would like to have JSHint run anytime you save a JavaScript file (highly suggest this), you will need to install the <a href="https://github.com/alexnj/SublimeOnSaveBuild">SublimeOnSaveBuild package</a>.</p>
+
+<h3>JavaScriptNext</h3>
+
+<p><a href="https://github.com/Benvie/JavaScriptNext.tmLanguage">https://github.com/Benvie/JavaScriptNext.tmLanguage</a></p>
+
+<p>This plugin is a better syntax highlighter for JavaScript. Not only does it improve syntax highlighting for current ES5, it also adds syntax highlighting for new ES6 syntax such as modules, succinct methods, arrow functions, classes, and generators.</p>
+
+<p>Here is the original JavaScript syntax highlighter:</p>
+
+<p><img src="/images/jssyntax.png" alt="Original JavaScript Syntax Highlighter" /></p>
+
+<p>Here is the new JavaScript syntax highlighter:</p>
+
+<p><img src="/images/jsnextsyntax.png" alt="New JavaScript Syntax Highlighter" /></p>
+
+<p><strong>Usage</strong></p>
+
+<p>You can either set individual JavaScript files to use this syntax highlighter by changing it in the "View -> Syntax" menu or you can change it for all JavaScript files in the "View -> Syntax -> Open all with current extension as".</p>
+
+<h3>Wrap up</h3>
+
+<p>These 3 plugins have been very beneficial to me as a JavaScript and Node developer. If you know of other useful plugins, feel free to share them in the comments.</p>
+
+<p>If you found this article or others useful be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+]]></content>
+  </entry>
+  
+</feed>

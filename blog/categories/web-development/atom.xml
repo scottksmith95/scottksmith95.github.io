@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[web development | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/web-development/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[localtunnel]]></title>
+    <link href="http://scottksmith.com/blog/2012/10/19/localtunnel/"/>
+    <updated>2012-10-19T14:51:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/10/19/localtunnel</id>
+    <content type="html"><![CDATA[<p>Ever wanted to share your localhost web server to the world? How about testing your localhost web server easily from mobile or other devices?</p>
+
+<p>If so, then you should check out <a href="http://progrium.com/localtunnel/">localtunnel</a>.</p>
+
+<p>Localtunnel allows you to easily share your localhost web server to the rest of the world.</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[LINQPad | Scott Smith]]></title>
+  <link href="http://scottksmith.com/blog/categories/linqpad/atom.xml" rel="self"/>
+  <link href="http://scottksmith.com/"/>
+  <updated>2017-04-01T19:09:20-07:00</updated>
+  <id>http://scottksmith.com/</id>
+  <author>
+    <name><![CDATA[Scott Smith]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[JSON Output in LINQPad]]></title>
+    <link href="http://scottksmith.com/blog/2012/05/15/json-output-in-linqpad/"/>
+    <updated>2012-05-15T13:50:00-07:00</updated>
+    <id>http://scottksmith.com/blog/2012/05/15/json-output-in-linqpad</id>
+    <content type="html"><![CDATA[<p>This post discusses a very simple but powerful way to provide functionality for outputting formatted JSON in LINQPad using extension methods.</p>
+
+
+<p><a href="http://geekswithblogs.net/EltonStoneman/archive/2012/05/11/extension-method-for-outputting-formatted-json-in-linqpad.aspx">http://geekswithblogs.net/EltonStoneman/archive/2012/05/11/extension-method-for-outputting-formatted-json-in-linqpad.aspx</a></p>
+
+]]></content>
+  </entry>
+  
+</feed>

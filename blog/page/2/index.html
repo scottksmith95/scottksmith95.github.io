@@ -1,0 +1,1104 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Scott Smith</title>
+  <meta name="author" content="Scott Smith">
+
+  
+  <meta name="description" content=" Learn how to super charge your Node.js development with these npm tips and tricks. ">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://scottksmith.com/blog/page/2">
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@scottksmith95" />
+  <meta name="twitter:title" content="Scott Smith" />
+  <meta name="twitter:description" content=" Learn how to super charge your Node.js development with these npm tips and tricks. " />
+  <meta name="twitter:url" content="http://scottksmith.com/blog/page/2" />
+
+  <meta property="og:title" content="Scott Smith"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:description" content=" Learn how to super charge your Node.js development with these npm tips and tricks. "/>
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+  <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196">
+  <link rel="icon" type="image/png" href="/favicon-160x160.png" sizes="160x160">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <style>
+  #DegreedButton.degreed-28-full,.degreed-28-full {
+    background-color: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+    background-image: url(data:image/png;base64,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) !important;
+    height: 28px !important;
+    width: 162px !important;
+  }
+  </style>
+  <link href="/atom.xml" rel="alternate" title="Scott Smith" type="application/atom+xml">
+
+  <script src="//load.sumome.com/" data-sumo-site-id="0d857e605c25378eb99ef0880f3d471e6d4792fd62b3c1e378fa89057293706c" async="async"></script>
+</head>
+
+<body   >
+  <header role="banner"><div class="logo">
+  <img src="/images/logo.png" alt="Site Logo">
+</div>
+<hgroup>
+  <h1><a href="/">Scott Smith</a></h1>
+  <h2>
+    <a href="/">Blog</a>
+    <a href="/blog/categories/tutorials">Tutorials</a>
+    <a href="/projects">Projects</a>
+    <a href="/speaking">Speaking</a>
+    <a href="/atom.xml" class="rss">RSS</a>
+  </h2>
+</hgroup>
+</header>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2014/06/25/8-npm-tips-for-better-node-development/">8 NPM Tips for Better Node Development</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-06-25T11:20:00-07:00" pubdate data-updated="true">Jun 25<span>th</span>, 2014</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    Learn how to super charge your Node.js development with these npm tips and tricks.
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/29/beer-locker-building-a-restful-api-with-node-passport/">Beer Locker: Building a RESTful API With Node - Passport</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-29T10:47:00-07:00" pubdate data-updated="true">May 29<span>th</span>, 2014</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    In this part of the beer locker series, we will dive into creating user accounts and authentication using Passport. By the end of this article you will have learned how to add user accounts, implement authentication, and control access to beer lockers.
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/05/beer-locker-building-a-restful-api-with-node-crud/">Beer Locker: Building a RESTful API With Node - CRUD</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-05T12:48:00-07:00" pubdate data-updated="true">May 5<span>th</span>, 2014</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    In this beer locker part, we will dive a bit deeper and learn how to implement CRUD operations on our beer locker. By the end of this article you will have learned how to connect to a MongoDB, used Mongoose for object modeling, and have implemented GET, PUT, POST, and DELETE endpoints.
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/02/building-restful-apis-with-node/">Beer Locker: Building a RESTful API With Node</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-02T09:26:00-07:00" pubdate data-updated="true">May 2<span>nd</span>, 2014</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    In this multipart series we’ll be creating a RESTful API using Node, Express, Mongoose to interact with MongoDB, Passport for authentication, OAuth2orize for OAuth support, and explore best practices and tools.
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2013/08/01/the-birth-of-bit-making-ideas-happen/">The Birth of Bit: Making Ideas Happen</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-01T12:00:00-07:00" pubdate data-updated="true">Aug 1<span>st</span>, 2013</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    We all have ideas. In the space we work it is nearly impossible not to. We are developers and designers; the makers of the digital world. They key is having the ability to take the leap and transform an idea into a reality. Why do so many people not follow through with their ideas? Read on to learn practical tips on how to take an idea and make it real.
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2013/05/14/deeper-dive-into-scriptcs/">Deeper Dive Into ScriptCS</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-05-14T10:33:00-07:00" pubdate data-updated="true">May 14<span>th</span>, 2013</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    In this article, we will be exploring the newish REPL interactive mode, script packs, and many other cool features of ScriptCS.
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2013/05/08/getting-started-with-scriptcs/">Getting Started With ScriptCS</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-05-08T07:58:00-07:00" pubdate data-updated="true">May 8<span>th</span>, 2013</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    Introduction to ScriptCS, what it is, how to install, writing our own, and some tooling.
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2013/05/07/using-at-and-with-html-helpers-in-razor-views/">Using @ and _ With HTML Helpers in Razor Views</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-05-07T11:38:00-07:00" pubdate data-updated="true">May 7<span>th</span>, 2013</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p>Here is a tip for you .NET developers.</p>
+
+
+
+
+<p>When you are using HTML helpers there are times when you need to add extra attributes to the HTML element being produced by the helper. Two attributes that are commonly added are the class and data- attribute. HTML helpers support the ability to pass in an anonymous object for setting these attributes. The helper will take each item out of the anonymous object and add them to the html element as attributes.</p>
+
+
+
+
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2012/11/08/productivity-power-tools-2012/">Productivity Power Tools 2012</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-08T15:00:00-08:00" pubdate data-updated="true">Nov 8<span>th</span>, 2012</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p>The Visual Studio Engineering Team has released the productivity power tools for Visual Studio 2012.</p>
+
+<p><a href="http://blogs.msdn.com/b/visualstudio/archive/2012/11/07/productivity-power-tools-2012.aspx">http://blogs.msdn.com/b/visualstudio/archive/2012/11/07/productivity-power-tools-2012.aspx</a></p>
+
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2012/10/31/signalr-awesome-real-time-with-net-part-2/">SignalR: Awesome Real-Time With .NET - Part 2</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-10-31T14:59:00-07:00" pubdate data-updated="true">Oct 31<span>st</span>, 2012</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p>Welcome to part two of the series SignalR: Awesome Real-Time with .NET.</p>
+
+<p>Part 1 - <a href="http://scottksmith95.wordpress.com/2012/10/30/signalr-awesome-real-time-with-net/">SignalR: Awesome Real-Time with .NET</a></p>
+
+<p>Part 2 - SignalR: Awesome Real-Time with .NET - Part 2</p>
+
+<p>For this post, we will start where we left off from part one. If you don&#8217;t want to follow part one and create the solution, project, code, etc, you can get the source on <a href="https://github.com/scottksmith95/SignalRTutorial">GitHub</a>.</p>
+
+<p><strong>Step 1 - Specifying the route for the Hub</strong></p>
+
+<p>Because Hubs are at a higher level than PersistentConnections, there is no need to manually set the route for the Hub. Some of the magic I talked about before does this for us automatically by creating the route /SignalR. To change the route for the Hub you need to register the route in the Global.asax file and update any client side references to the Hub.</p>
+
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2012/10/31/chocolatey-nuget/">Chocolatey NuGet</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-10-31T14:58:00-07:00" pubdate data-updated="true">Oct 31<span>st</span>, 2012</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p>Chocolatey NuGet?!</p>
+
+<p>From the site:</p>
+
+<blockquote><strong>Let&#8217;s get Chocolatey!</strong>
+Chocolatey NuGet is a Machine Package Manager, somewhat like apt-get, but built with Windows in mind.
+
+<strong>Easy Install!</strong>
+To install chocolatey now, open a command prompt and paste some text</blockquote>
+
+
+<p>To install simply paste the following into a command prompt:</p>
+
+<p>@powershell -NoProfile -ExecutionPolicy unrestricted -Command &#8220;iex ((new-object net.webclient).DownloadString(&#8216;http://bit.ly/psChocInstall&#8217;))&#8221; &amp;&amp; SET PATH=%PATH%;%systemdrive%\chocolatey\bin</p>
+
+<p>Don&#8217;t feel comfortable running commands you found on some random blog? I don&#8217;t blame you. Head over to their site to learn more about <a href="http://chocolatey.org/">Chocolatey NuGet</a>.</p>
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2012/10/30/signalr-awesome-real-time-with-net/">SignalR: Awesome Real-Time With .NET</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-10-30T14:53:00-07:00" pubdate data-updated="true">Oct 30<span>th</span>, 2012</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p>Welcome to part one of the series SignalR: Awesome Real-Time with .NET</p>
+
+<p>Part 1 - SignalR: Awesome Real-Time with .NET</p>
+
+<p>Part 2 - <a href="http://scottksmith95.wordpress.com/2012/10/31/signalr-awesome-real-time-with-net-part-2/">SignalR: Awesome Real-Time with .NET - Part 2</a></p>
+
+<p><strong>What is SignalR?</strong></p>
+
+<p>SignalR is an async signaling library for .NET to help build real-time, multi-user interactive web applications</p>
+
+<p>Or&#8230;</p>
+
+<p>A real cool .NET framework hosted in ASP.NET and a JavaScript library (on the client side that helps build collaborative web apps quickly and painlessly. It is open source and freely available on <a href="https://github.com/SignalR/SignalR">GitHub</a>.</p>
+
+<p>And&#8230;</p>
+
+<p>It doesn&#8217;t have to be hosted in ASP.NET. It can also be hosted using OWIN (Open Web Interface for .NET) or self host (console, windows service, azure, etc.).</p>
+
+<p>A JavaScript library isn&#8217;t the only client side implementation as well. As of today, there are jQuery, Native .NET, WP7, iOS, Silverlight, WinRT, and Android (via Mono) implementations.</p>
+
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2012/10/19/localtunnel/">Localtunnel</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-10-19T14:51:00-07:00" pubdate data-updated="true">Oct 19<span>th</span>, 2012</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p>Ever wanted to share your localhost web server to the world? How about testing your localhost web server easily from mobile or other devices?</p>
+
+<p>If so, then you should check out <a href="http://progrium.com/localtunnel/">localtunnel</a>.</p>
+
+<p>Localtunnel allows you to easily share your localhost web server to the rest of the world.</p>
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2012/08/16/introtorx-dot-com/">IntroToRx.com</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-08-16T14:50:00-07:00" pubdate data-updated="true">Aug 16<span>th</span>, 2012</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p><a href="http://introtorx.com/">http://introtorx.com/</a></p>
+
+
+<p>IntroToRx.com is the online resource for getting started with the <a href="http://msdn.microsoft.com/en-us/data/gg577609">Reactive Extensions to .Net</a>. Originally starting life as a <a href="http://leecampbell.blogspot.co.uk/2010/08/reactive-extensions-for-net.html">blog series</a>, it has now flourished into an online book. You can read it online via the website, or get a copy of the Kindle edition for reading offline.</p>
+
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2012/06/27/a-visual-git-reference/">A Visual Git Reference</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-27T14:44:00-07:00" pubdate data-updated="true">Jun 27<span>th</span>, 2012</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p>I just stumbled upon this helpful nugget of visualization. The page provides a visual reference of the most command git commands.</p>
+
+
+<p><a href="http://marklodato.github.com/visual-git-guide/index-en.html">http://marklodato.github.com/visual-git-guide/index-en.html</a></p>
+
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2012/05/31/zen-coding/">Zen Coding</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-31T14:38:00-07:00" pubdate data-updated="true">May 31<span>st</span>, 2012</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p>Never write HTML again!</p>
+
+<p>Ok, so you might still need to write HTML, but Zen Coding provides an amazingly simplistic syntax for generating HTML. Take the following HTML for example:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="cp">&lt;!DOCTYPE HTML&gt;</span>
+</span><span class='line'><span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">&quot;en-US&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'><span class="nt">&lt;head&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">&quot;UTF-8&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;title&gt;&lt;/title&gt;</span>
+</span><span class='line'><span class="nt">&lt;/head&gt;</span>
+</span><span class='line'><span class="nt">&lt;body&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;container&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;nav&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;li&gt;&lt;/li&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;li&gt;&lt;/li&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;li&gt;&lt;/li&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;li&gt;&lt;/li&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;li&gt;&lt;/li&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;/ul&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;/body&gt;</span>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>It is simple and straightforward but why type it out by hand if you don&#8217;t have to. With Zen Coding you don&#8217;t! The followng will generate the HTML shown above:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>html:5&gt;div#container&gt;div#nav&gt;ul&gt;li*5
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The Zen Coding concept is beautifully simple: You declare a series of nested HTML or XML elements using an intuitive and expressive inline syntax, and the plugin generates the markup for you.</p>
+
+<p>There are addons to many IDEs, tools, and editors for Zen Coding including Visual Studio, Sublime Text 2, Coda, &#8230;</p>
+
+<p>Learn more here: <a href="https://github.com/sergeche/zen-coding">https://github.com/sergeche/zen-coding</a></p>
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2012/05/30/tinkerbin/">Tinkerbin</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-30T14:34:00-07:00" pubdate data-updated="true">May 30<span>th</span>, 2012</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p>Tinkerbin lets you play around with HTML, JavaScript and CSS without creating files or uploading to servers.</p>
+
+
+<p>It also supports CoffeeScript, Sass (with Compass), Less, HAML, and more.</p>
+
+
+<p>Try it here:</p>
+
+
+<p><a href="http://tinkerbin.com/">http://tinkerbin.com/</a></p>
+
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2012/05/29/try-f-number/">Try F#</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-29T13:54:00-07:00" pubdate data-updated="true">May 29<span>th</span>, 2012</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p>The goal of the Try F# site and application is to make it simple, fast, and easy for people to try out the F# language.</p>
+
+
+<p>Check it out here:</p>
+
+
+<p><a href="http://www.tryfsharp.org/Tutorials.aspx">http://www.tryfsharp.org/Tutorials.aspx</a></p>
+
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2012/05/16/windows-8-camp-in-a-box/">Windows 8 Camp in a Box</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-16T13:52:00-07:00" pubdate data-updated="true">May 16<span>th</span>, 2012</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p>Microsoft provides free training events in the form of dev camps. One such dev camp is <a href="http://www.devcamps.ms/windows">Windows 8 Developer Camp</a>. Windows 8 Developer Camps are free, fun, no-fluff events for developers, by developers. You learn from experts in a low-key, interactive way and then get hands-on time to apply what you’ve learned.</p>
+
+
+<p>If you don&#8217;t have the time or ability to attend these events in person, you can still benefit from them by downloading the Windows 8 Camp in a Box. There are two versions available: C# and JavaScript.</p>
+
+
+<p>You can get it here:</p>
+
+
+<p><a href="http://www.microsoft.com/en-us/download/details.aspx?id=29854">http://www.microsoft.com/en-us/download/details.aspx?id=29854</a></p>
+
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title"><a href="/blog/2012/05/15/json-output-in-linqpad/">JSON Output in LINQPad</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-15T13:50:00-07:00" pubdate data-updated="true">May 15<span>th</span>, 2012</time>
+      </p>
+    
+    
+  </header>
+
+
+  <div class="entry-content">
+    <p>This post discusses a very simple but powerful way to provide functionality for outputting formatted JSON in LINQPad using extension methods.</p>
+
+
+<p><a href="http://geekswithblogs.net/EltonStoneman/archive/2012/05/11/extension-method-for-outputting-formatted-json-in-linqpad.aspx">http://geekswithblogs.net/EltonStoneman/archive/2012/05/11/extension-method-for-outputting-formatted-json-in-linqpad.aspx</a></p>
+
+
+  </div>
+  <footer></footer>
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/3/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section id="links">
+  <div>
+    <a href="https://twitter.com/scottksmith95" target="_blank">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter" alt="Scott Smith on Twitter">
+    </a>
+  </div>
+  <div>
+    <a href="https://github.com/scottksmith95" target="_blank">
+      <img src="/images/icons/github/github-128.png" class="github" alt="Scott Smith on GitHub">
+    </a>
+  </div>
+  <div>
+    <a href="https://www.linkedin.com/profile/view?id=15073485" target="_blank">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin" alt="Scott Smith on LinkedIn">
+    </a>
+  </div>
+  <div>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email" alt="Scott Smith's Email">
+    </a>
+  </div>
+  <div>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss" "Site RSS Feed">
+    </a>
+  </div>
+</section>
+
+<section id="about">
+  <p>Software developer, learner, writer, & speaker.</p>
+  <p>Currently jailbreaking the degree at Degreed and promoting lifelong learning.</p>
+  <p>Past projects incude coderbits which was sold to Appirio in 2014 and Favatron.</p>
+</section><section id="newsletter">
+  <img src="/images/icons/email/email-128.png">
+  <h2>Get My Latest Articles</h2>
+  <form action="//favatron.us5.list-manage.com/subscribe/post?u=e8909f2779b99d9865361d28e&amp;id=1d7e590a16" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Email address" required>
+    <div style="position: absolute; left: -5000px;">
+      <input type="text" name="b_e8909f2779b99d9865361d28e_1d7e590a16" tabindex="-1" value="">
+    </div>
+    <div class="clear">
+      <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+    </div>
+  </form>
+</section>
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><span style="text-align: center">
+  Copyright &copy; 2017 <a rel="author" href="https://plus.google.com/107452035819962532888?rel=author">Scott Smith</a>
+</span>
+
+<div class="icons">
+  <span>
+    <a href="https://twitter.com/scottksmith95">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter">
+    </a>
+  </span>
+  <span>
+    <a href="https://github.com/scottksmith95">
+      <img src="/images/icons/github/github-128.png" class="github">
+    </a>
+  </span>
+  <span>
+    <a href="https://www.linkedin.com/profile/view?id=15073485">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin">
+    </a>
+  </span>
+  <span>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email">
+    </a>
+  </span>
+  <span>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss">
+    </a>
+  </span>
+</div></footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'scottksmithblog';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+<script src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-40783302-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,613 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Secure Node Apps Against OWASP Top 10 - Cross Site Scripting - Scott Smith</title>
+  <meta name="author" content="Scott Smith">
+
+  
+  <meta name="description" content="In this multipart series, we will explore some of the the OWASP top web application security flaws including how they work and best practices to protect your application from them. The focus will be &hellip;">
+  <meta name="keywords" content="Node.js, JavaScript, Security, OWASP">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://scottksmith.com/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting">
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@scottksmith95" />
+  <meta name="twitter:title" content="Secure Node Apps Against OWASP Top 10 - Cross Site Scripting - Scott Smith" />
+  <meta name="twitter:description" content="In this multipart series, we will explore some of the the OWASP top web application security flaws including how they work and best practices to protect your application from them. The focus will be &hellip;" />
+  <meta name="twitter:url" content="http://scottksmith.com/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting" />
+
+  <meta property="og:title" content="Secure Node Apps Against OWASP Top 10 - Cross Site Scripting - Scott Smith"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:description" content="In this multipart series, we will explore some of the the OWASP top web application security flaws including how they work and best practices to protect your application from them. The focus will be &hellip;"/>
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+  <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196">
+  <link rel="icon" type="image/png" href="/favicon-160x160.png" sizes="160x160">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <style>
+  #DegreedButton.degreed-28-full,.degreed-28-full {
+    background-color: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+    background-image: url(data:image/png;base64,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) !important;
+    height: 28px !important;
+    width: 162px !important;
+  }
+  </style>
+  <link href="/atom.xml" rel="alternate" title="Scott Smith" type="application/atom+xml">
+
+  <script src="//load.sumome.com/" data-sumo-site-id="0d857e605c25378eb99ef0880f3d471e6d4792fd62b3c1e378fa89057293706c" async="async"></script>
+</head>
+
+<body   >
+  <header role="banner"><div class="logo">
+  <img src="/images/logo.png" alt="Site Logo">
+</div>
+<hgroup>
+  <h1><a href="/">Scott Smith</a></h1>
+  <h2>
+    <a href="/">Blog</a>
+    <a href="/blog/categories/tutorials">Tutorials</a>
+    <a href="/projects">Projects</a>
+    <a href="/speaking">Speaking</a>
+    <a href="/atom.xml" class="rss">RSS</a>
+  </h2>
+</hgroup>
+</header>
+  <div id="main">
+    <div id="content">
+      <div style="padding-top: 0;">
+<article class="hentry" role="article">
+  
+  <header style="padding-top: 0;">
+    
+      <h1 class="entry-title">Secure Node Apps Against OWASP Top 10 - Cross Site Scripting</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-06-22T07:44:00-07:00" pubdate data-updated="true">Jun 22<span>nd</span>, 2015</time>
+      </p>
+    
+    
+      <button style="margin-top: 20px;" onclick="var e=document.createElement('script');e.setAttribute('charset','UTF-8');e.setAttribute('src','https://az287915.vo.msecnd.net/scripts/degreed/media/bookmarklet.js?id=1&v=' + Math.random()*99999999);document.getElementsByTagName('body')[0].appendChild(e)" title="+ Degreed" id="DegreedButton" class="degreed-28-full">+ Degreed</button>
+    
+  </header>
+
+
+<div class="entry-content">
+  <p>Welcome to part 3 of the OWASP security series</p>
+
+<ol>
+<li><a href="/blog/2015/06/08/secure-node-apps-against-owasp-top-10-injection/">Injection</a></li>
+<li><a href="/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/">Broken Authentication &amp; Session Management</a></li>
+<li><a href="/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/">Cross Site Scripting (XSS)</a></li>
+<li><a href="/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/">Cross Site Request Forgery (CSRF)</a></li>
+<li>Using Components with Known Vulnerabilities (Coming soon)</li>
+</ol>
+
+
+<p>In this multipart series, we will explore some of the the <a href="https://www.owasp.org/index.php/Top_10_2013">OWASP top web application security flaws</a> including how they work and best practices to protect your application from them. The focus will be on Express web applications in Node, but the principles shown can be applied to any framework or environment.</p>
+
+<p>This part will cover <a href="https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS%29">cross site scripting (XSS)</a>.</p>
+
+<h3>Cross Site Scripting (XSS)</h3>
+
+<p>So what exactly is a cross site scripting vulnerability?</p>
+
+<p>XSS, the most prevalent web application security flaw, occurs when an application includes user supplied data in a page sent to the browser without properly validating, escaping, or sanitizing that content.</p>
+
+<p>An XSS attack occurs when an attacker sends text-based scripts that exploit the interpreter in the browser. Essentially, the attacker takes advantage of the user&#8217;s trust in the website. By this, I mean the end user viewing your web application trusts the content you are sending back. Because of this implicit trust, an attacker can exploit it by having your web application return malicious content.</p>
+
+<p>There are two main types of XSS attacks:</p>
+
+<ol>
+<li>Non-persistent</li>
+<li>Persistent</li>
+</ol>
+
+
+<h3>Non-persistent</h3>
+
+<p>Non-persistent, also referred to as reflected, are attacks where injected scripts are sent to a user&#8217;s browser via the user&#8217;s own request to the web application. These types of attacks are done by tricking the victim into initiating the attack via email, some other website, social media, etc. The result is the user clicks a malicious link, submits a form, or makes a request to a malicious site. In doing so, the user&#8217;s browser is used as the medium to send the injected code to the web application through the request which is then reflected back to user in the response. The browser then executes the injected code because it came from the web application which it trusts.</p>
+
+<p>The following diagram shows how this type of attack is done. We will go over it step by step.</p>
+
+<p><img src="/images/xss1.png" alt="XSS Non-persistent" /></p>
+
+<p>In this example, Site (our web application) implements a search function at the endpoint <code>/search?q=searchTerm</code>. An attacker has found that when they do a normal search on the site, the results page shows the search term along with the results. After some testing, the attacker finds that the site is not escaping or sanitizing the search term before showing it in the results page. The attacker has just found an XSS vulnerability.</p>
+
+<p>Here is one way the attacker could exploit this vulnerability.</p>
+
+<h4>GET /index.html</h4>
+
+<p>The attacker has a page on a site they control and shares a link on social media. Our user clicks the link to see what it is and their browser makes a request to <code>/index.html</code> on the attacker&#8217;s site.</p>
+
+<h4>HTTP/1.1 200 OK</h4>
+
+<p>Requests to <code>/index.html</code> returns the following HTML content. If you look at the anchor tag, you will see it links directly to the search page on our web application and supplies JavaScript as the search term.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;html&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;https://site.com/search?q=&lt;script&gt;alert(&#39;hacked&#39;)&lt;/script&gt;&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    Click Here
+</span><span class='line'>  <span class="nt">&lt;/a&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>GET /search?q=&#8230;</h4>
+
+<p>If the user clicks the link, and many will, their browser will make a request to our search page along with the malicious JavaScript in the search term.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='http'><span class='line'><span class="err">https://site.com/search?q=&lt;script&gt;alert(&#39;hacked&#39;)&lt;/script&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>HTTP/1.1 200 OK</h4>
+
+<p>Because our site is not properly escaping the search term being supplied by the user, we will return a response to the user that includes the injected JavaScript. In this example, it would just create an alert, but the attacker could do anything including injecting script tags that fetch other JavaScript.</p>
+
+<p>Here is the response in a normal case</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;html&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nt">&lt;div&gt;</span>
+</span><span class='line'>    You searched for: Puppies
+</span><span class='line'>  <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Here is the response in our exploited case</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;html&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nt">&lt;div&gt;</span>
+</span><span class='line'>    You searched for: <span class="nt">&lt;script&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="s1">&#39;hacked&#39;</span><span class="p">)</span><span class="nt">&lt;/script&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/div&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>Send valuable data</h4>
+
+<p>The end user&#8217;s browser will now execute the script that was injected into the page. The attacker could send valuable information embedded on the page, include other scripts to further the exploit, and more.</p>
+
+<p>In this example, the attacker setup a page that the user had to click a link on. This attack could be done easier by simply returning a 302 response with the Location header set to the search page on our web application. This takes out the step of the user needing to click a link and makes the attack more probable. The user&#8217;s browser would get redirected to the exploited link and the attack would occur.</p>
+
+<h3>Persistent</h3>
+
+<p>Persistent, also referred to as stored, are attacks where the injected script is permanently stored on the target web application&#8217;s database. Victims are then tricked into clicking a link to the web application that returns back the injected script in the response after retrieving it from the database or persistent storage.</p>
+
+<p>The following diagram shows how this type of attack is done. We will go over it step by step.</p>
+
+<p><img src="/images/xss2.png" alt="XSS Persistent" /></p>
+
+<p>In this example, Site (our web application) allows users to POST comments at the endpoint <code>/comment</code>. An attacker has found that when they POST comments on the site, the posted data is not escaped or sanitized before storing it and/or showing it. The attacker has just found an XSS vulnerability.</p>
+
+<p>Here is one way the attacker could exploit this vulnerability.</p>
+
+<h4>POST /comment</h4>
+
+<p>The attacker knows they can POST comments to the site that allow scripts to be injected. The attacker will POST an exploited comment to the site with the following content.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;script&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="s1">&#39;hacked&#39;</span><span class="p">)</span><span class="nt">&lt;/script&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This comment is now persisted because the content is stored in the database. Anytime a user views the comment, the injected script will be executed.</p>
+
+<h4>GET /comment?id=1</h4>
+
+<p>A user is browsing the site and views the exploited comment. They could get to this comment by just being on the site or could be directly to it via email, social share, etc.</p>
+
+<h4>HTTP/1.1 200 OK</h4>
+
+<p>Because our site is not properly escaping or sanitizing input or output, the resulting response to the user will include the injected script.</p>
+
+<h4>Send valuable data</h4>
+
+<p>The injected script will be executed on the end user&#8217;s browser which allows the attacker to get a hold of valuable information embedded on the page, include other scripts to further the exploit, and more.</p>
+
+<h3>Solution 1</h3>
+
+<p>The first solution is to always validate, escape, or sanitize user input. As a rule, all user input should be treated as malicious. If you build your application in a way that distrusts user input, you will end up with a more secure system.</p>
+
+<p>This can be done by either sanitizing all user input as it enters the system or as it leaves. The following code is one way to do this in an Express application. What we are doing here is setting up middleware that will process all posted data by sanitizing it. I like this pattern because it avoids the case where newly added forms could be missed if you are sanitizing per input.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">express</span>    <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">bodyParser</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;body-parser&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">validator</span>  <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express-validator&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">bodyParser</span><span class="p">.</span><span class="nx">urlencoded</span><span class="p">());</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">validator</span><span class="p">());</span>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">item</span> <span class="k">in</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">req</span><span class="p">.</span><span class="nx">sanitize</span><span class="p">(</span><span class="nx">item</span><span class="p">).</span><span class="nx">escape</span><span class="p">();</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="nx">next</span><span class="p">();</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>With this code in place, our previous exploit examples of injecting JavaScript would turn</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;script&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="s1">&#39;hacked&#39;</span><span class="p">)</span><span class="nt">&lt;/script&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>into the following</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="ni">&amp;gt;</span>script<span class="ni">&amp;lt;</span>alert(<span class="ni">&amp;#x27;</span>hacked<span class="ni">&amp;#x27;</span>)<span class="ni">&amp;gt;</span>/script<span class="ni">&amp;lt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>One issue with sanitizing user input as it enters the system is if someone is able to get data into your database or persistent storage through another means. If this happens, your application can still be vulnerable to XSS attacks. In this case, you will want to consider sanitizing data as it leaves your application.</p>
+
+<h3>Solution 2</h3>
+
+<p>The second solution is to tell the web browser to allow content only from trusted sources.</p>
+
+<p>This can be done by taking advantage of a powerful response header called Content Security Policy or CSP. CSP is a response header that tells the browser the domains it should consider as valid sources of content.</p>
+
+<p>This can be used in two ways for our applications. First, we can tell the browser which domains it is allowed to trust and run JavaScript from. Second, we can tell the browser to not allow any in-line script. These two methods can protect many of our users (the ones with browsers that support CSP) from XSS attacks. If the attacker cannot get the browser to load or execute the injected JavaScript, then the attack is stopped.</p>
+
+<p>The following code shows an example Express application using the <code>helmet</code> package to implement CSP.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">helmet</span>  <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;helmet&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">helmet</span><span class="p">.</span><span class="nx">csp</span><span class="p">({</span>
+</span><span class='line'>  <span class="nx">defaultSrc</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;&#39;self&#39;&quot;</span><span class="p">],</span>
+</span><span class='line'>  <span class="nx">scriptSrc</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;*.google-analytics.com&#39;</span><span class="p">],</span>
+</span><span class='line'>  <span class="nx">styleSrc</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;&#39;unsafe-inline&#39;&quot;</span><span class="p">],</span>
+</span><span class='line'>  <span class="nx">imgSrc</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;*.google-analytics.com&#39;</span><span class="p">],</span>
+</span><span class='line'>  <span class="nx">connectSrc</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;&#39;none&#39;&quot;</span><span class="p">],</span>
+</span><span class='line'>  <span class="nx">fontSrc</span><span class="o">:</span> <span class="p">[],</span>
+</span><span class='line'>  <span class="nx">objectSrc</span><span class="o">:</span> <span class="p">[],</span>
+</span><span class='line'>  <span class="nx">mediaSrc</span><span class="o">:</span> <span class="p">[],</span>
+</span><span class='line'>  <span class="nx">frameSrc</span><span class="o">:</span> <span class="p">[]</span>
+</span><span class='line'><span class="p">}));</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In this example, we are telling the browser to only allow scripts from our own domain as well as *.google-analytics.com.</p>
+
+<p>Here is what the response headers look like with newlines added for readability.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='http'><span class='line'><span class="err">Content-Security-Policy: </span>
+</span><span class='line'><span class="err">  default-src &#39;self&#39;;</span>
+</span><span class='line'><span class="err">  script-src *.google-analytics.com;</span>
+</span><span class='line'><span class="err">  object-src ;</span>
+</span><span class='line'><span class="err">  img-src *.google-analytics.com;</span>
+</span><span class='line'><span class="err">  media-src ;</span>
+</span><span class='line'><span class="err">  frame-src ;</span>
+</span><span class='line'><span class="err">  font-src ;</span>
+</span><span class='line'><span class="err">  connect-src &#39;none&#39;;</span>
+</span><span class='line'><span class="err">  style-src &#39;unsafe-inline&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Solution 3</h3>
+
+<p>The final solution is to do a deep analysis of your application and understand all the ways in which you could/should protect yourself. This <a href="https://www.owasp.org/index.php/XSS_(Cross_Site_Scripting">cheat sheet</a>_Prevention_Cheat_Sheet) provided by OWASP does a great job of discussing all the rules you should follow.</p>
+
+<h3>Wrap up</h3>
+
+<p>I hope that by learning how XSS attacks are performed you have a better understanding of how to protect your applications. I have shown a few ways in which you can protect yourself but it is important to learn more on this subject using the links I shared above. Also, these solutions are not exclusive. You should implement many layers of protection for your application.</p>
+
+<p>I have a lot more tutorials coming so be sure to <a href="http://scottksmith.com/atom.xml">subscribe to my RSS feed</a> or <a href="https://twitter.com/scottksmith95">follow me on Twitter</a>. Also, if there are certain topics you would like me to write on, feel free to leave comments and let me know.</p>
+
+</div>
+
+
+  <button onclick="var e=document.createElement('script');e.setAttribute('charset','UTF-8');e.setAttribute('src','https://az287915.vo.msecnd.net/scripts/degreed/media/bookmarklet.js?id=1&v=' + Math.random()*99999999);document.getElementsByTagName('body')[0].appendChild(e)
+  " title="+ Degreed" id="DegreedButton" class="degreed-28-full">+ Degreed</button>
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Scott Smith</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-06-22T07:44:00-07:00" pubdate data-updated="true">Jun 22<span>nd</span>, 2015</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/javascript/'>JavaScript</a>, <a class='category' href='/blog/categories/node-dot-js/'>Node.js</a>, <a class='category' href='/blog/categories/owasp/'>OWASP</a>, <a class='category' href='/blog/categories/security/'>Security</a>
+  
+</span>
+
+
+    </p>
+    
+      <!-- <div class="sharing">
+  <h4>Share On:</h4>
+  <a href="https://twitter.com/intent/tweet?text=Secure Node Apps Against OWASP Top 10 - Cross Site Scripting&url=http://scottksmith.com/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/&via=scottksmith95" target="_blank">
+    <img src="/images/icons/twitter/twitter-128.png" alt="Share on Twitter" class="twitter">
+  </a>
+  <a href="https://plus.google.com/share?url=http://scottksmith.com/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/" target="_blank">
+    <img src="/images/icons/googleplus/googleplus-128.png" alt="Share on Google+" class="googleplus">
+  </a>
+  <a href="https://www.facebook.com/sharer/sharer.php?u=http://scottksmith.com/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/" target="_blank">
+    <img src="/images/icons/facebook/facebook-128.png" alt="Share on Facebook" class="facebook">
+  </a>
+  <a href="https://www.linkedin.com/shareArticle?mini=true&title=Secure Node Apps Against OWASP Top 10 - Cross Site Scripting&url=http://scottksmith.com/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/" target="_blank">
+    <img src="/images/icons/linkedin/linkedin-128.png" alt="Share on LinkedIn" class="linkedin">
+  </a>
+  <a href="mailto:?body=http://scottksmith.com/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/&subject=Secure Node Apps Against OWASP Top 10 - Cross Site Scripting">
+    <img src="/images/icons/email/email-128.png" alt="Share via Email" class="email">
+  </a>
+</div> -->
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/06/15/secure-node-apps-against-owasp-top-10-authentication-and-sessions/" title="Previous Post: Secure Node Apps Against OWASP Top 10 - Authentication &amp; Sessions">&laquo; Secure Node Apps Against OWASP Top 10 - Authentication &amp; Sessions</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/06/29/secure-node-apps-against-owasp-top-10-cross-site-request-forgery/" title="Next Post: Secure Node Apps Against OWASP Top 10 - Cross Site Request Forgery">Secure Node Apps Against OWASP Top 10 - Cross Site Request Forgery &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section id="links">
+  <div>
+    <a href="https://twitter.com/scottksmith95" target="_blank">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter" alt="Scott Smith on Twitter">
+    </a>
+  </div>
+  <div>
+    <a href="https://github.com/scottksmith95" target="_blank">
+      <img src="/images/icons/github/github-128.png" class="github" alt="Scott Smith on GitHub">
+    </a>
+  </div>
+  <div>
+    <a href="https://www.linkedin.com/profile/view?id=15073485" target="_blank">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin" alt="Scott Smith on LinkedIn">
+    </a>
+  </div>
+  <div>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email" alt="Scott Smith's Email">
+    </a>
+  </div>
+  <div>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss" "Site RSS Feed">
+    </a>
+  </div>
+</section>
+
+<section id="about">
+  <p>Software developer, learner, writer, & speaker.</p>
+  <p>Currently jailbreaking the degree at Degreed and promoting lifelong learning.</p>
+  <p>Past projects incude coderbits which was sold to Appirio in 2014 and Favatron.</p>
+</section><section id="newsletter">
+  <img src="/images/icons/email/email-128.png">
+  <h2>Get My Latest Articles</h2>
+  <form action="//favatron.us5.list-manage.com/subscribe/post?u=e8909f2779b99d9865361d28e&amp;id=1d7e590a16" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Email address" required>
+    <div style="position: absolute; left: -5000px;">
+      <input type="text" name="b_e8909f2779b99d9865361d28e_1d7e590a16" tabindex="-1" value="">
+    </div>
+    <div class="clear">
+      <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+    </div>
+  </form>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><span style="text-align: center">
+  Copyright &copy; 2017 <a rel="author" href="https://plus.google.com/107452035819962532888?rel=author">Scott Smith</a>
+</span>
+
+<div class="icons">
+  <span>
+    <a href="https://twitter.com/scottksmith95">
+      <img src="/images/icons/twitter/twitter-128.png" class="twitter">
+    </a>
+  </span>
+  <span>
+    <a href="https://github.com/scottksmith95">
+      <img src="/images/icons/github/github-128.png" class="github">
+    </a>
+  </span>
+  <span>
+    <a href="https://www.linkedin.com/profile/view?id=15073485">
+      <img src="/images/icons/linkedin/linkedin-128.png" class="linkedin">
+    </a>
+  </span>
+  <span>
+    <a href="mailto:scottksmith95@gmail.com">
+      <img src="/images/icons/email/email-128.png" class="email">
+    </a>
+  </span>
+  <span>
+    <a href="/atom.xml">
+      <img src="/images/icons/rss/rss-128.png" class="rss">
+    </a>
+  </span>
+</div></footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'scottksmithblog';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://scottksmith.com/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/';
+        var disqus_url = 'http://scottksmith.com/blog/2015/06/22/secure-node-apps-against-owasp-top-10-cross-site-scripting/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+<script src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+<script src="/javascripts/octopress.js" type="text/javascript"></script>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-40783302-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+</body>
+</html>
